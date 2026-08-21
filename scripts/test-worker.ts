@@ -200,11 +200,41 @@ async function runWorkerTests() {
     // 5. Job Execution Engine & Handler Verification
     // ------------------------------------------------------------------------
     console.log('\n5️⃣ Testing Execution Engine & Handler Execution...');
-    const [sampleJob] = await claimJobs({ workerId: worker1Id, batchSize: 1, queueId });
+    const execQueueRes = await fetch(`${baseUrl}/api/v1/queues`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        projectId,
+        name: `exec-test-queue-${Date.now().toString().slice(-4)}`,
+        priority: 50,
+      }),
+    });
+    const execQueueData = (await execQueueRes.json()) as any;
+    const execQueueId = execQueueData.queue.id;
+
+    const validJobRes = await fetch(`${baseUrl}/api/v1/jobs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        queueId: execQueueId,
+        type: 'email_notification',
+        payload: { to: 'valid-exec@example.com', subject: 'Execution Test' },
+      }),
+    });
+    const validJobData = (await validJobRes.json()) as any;
+    const sampleJobId = validJobData.job.id;
+
+    const [sampleJob] = await claimJobs({ workerId: worker1Id, batchSize: 1, queueId: execQueueId });
     await executeJob(sampleJob, worker1Id);
 
     const executedDbJob = await prisma.job.findUnique({
-      where: { id: sampleJob.id },
+      where: { id: sampleJobId },
       include: { executions: true, logs: true },
     });
 
