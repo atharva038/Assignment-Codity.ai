@@ -1,0 +1,65 @@
+version: '3.8'
+
+# ==============================================================================
+# Distributed Job Scheduler Infrastructure Docker Compose
+# Services: PostgreSQL 16, Redis 7, Adminer Live DB Browser
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # PostgreSQL Database Service
+  # Primary ACID storage for Jobs, Queues, Workers, Logs, and Dead Letter Queue
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: job_scheduler_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: jobs_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d jobs_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # Redis Cache & Coordination Service
+  # Fast distributed lock storage, PubSub message bus, and caching layer
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: job_scheduler_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # Adminer Live Database Web Browser
+  # Visual GUI for viewing tables, live jobs, executions, and logs in browser
+  # Accessible at: http://localhost:8080
+  # ----------------------------------------------------------------------------
+  adminer:
+    image: adminer:latest
+    container_name: job_scheduler_adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  redis_data:

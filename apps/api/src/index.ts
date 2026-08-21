@@ -1,0 +1,31 @@
+/**
+ * ============================================================================
+ * Express API Server Entrypoint — Distributed Job Scheduler
+ * ============================================================================
+ * Initializes and starts the Express server with graceful shutdown handlers.
+ */
+
+import dotenv from 'dotenv';
+import { createApp } from './app.js';
+import { logger } from '@job-scheduler/logger';
+
+dotenv.config();
+
+const PORT = process.env.PORT || 3000;
+const app = createApp();
+
+const server = app.listen(PORT, () => {
+  logger.info(`🚀 API Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+});
+
+// Graceful process termination handlers
+function gracefulShutdown(signal: string) {
+  logger.info(`Received ${signal}. Shutting down API server gracefully...`);
+  server.close(() => {
+    logger.info('HTTP server closed. Exiting process.');
+    process.exit(0);
+  });
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

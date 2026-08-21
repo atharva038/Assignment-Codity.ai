@@ -1,0 +1,414 @@
+// ============================================================================
+// Prisma Database Schema — Distributed Job Scheduler
+// ============================================================================
+// Database: PostgreSQL 16
+// Designed for high-concurrency atomic job claiming using `FOR UPDATE SKIP LOCKED`.
+// Includes comprehensive indexing for status filtering, queue queues, worker heartbeats,
+// execution logs, scheduled cron jobs, and dead-letter queue (DLQ).
+//
+// KEY DESIGN DECISIONS (viva-ready):
+//   1. Job.availableAt replaces "scheduledAt" — clearer intent: the timestamp
+//      after which a worker is allowed to pick up the job (not when it was
+//      scheduled by the user). Worker claim query: `WHERE availableAt <= NOW()`.
+//   2. JobExecution uses its own ExecutionStatus enum instead of reusing
+//      JobStatus, because an execution can only be RUNNING / COMPLETED / FAILED
+//      — it never transitions through QUEUED, RETRYING, DEAD, etc.
+//   3. Queue → Job uses onDelete: Restrict to prevent accidental mass deletion
+//      of production job history when a queue is removed.
+//   4. DLQ stores a FK reference back to the original Job row (not a copy).
+//      The Job row is kept with status=DEAD so audit history is preserved.
+//   5. ScheduledJob has a lockToken + lockExpiresAt pair for atomic cron
+//      evaluation — prevents duplicate job creation when multiple scheduler
+//      replicas race on the same cron tick.
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Authentication & Multi-Tenant Management
+// ----------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id           String               @id @default(uuid())
+  email        String               @unique
+  passwordHash String
+  name         String
+  role         Role                 @default(USER)
+  memberships  OrganizationMember[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("users")
+}
+
+model Organization {
+  id        String               @id @default(uuid())
+  name      String
+  slug      String               @unique
+  members   OrganizationMember[]
+  projects  Project[]
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid())
+  organizationId String
+  userId         String
+  role           OrgRole      @default(MEMBER)
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model Project {
+  id             String         @id @default(uuid())
+  organizationId String
+  name           String
+  slug           String
+  description    String?
+  queues         Queue[]
+  scheduledJobs  ScheduledJob[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, slug])
+  @@map("projects")
+}
+
+// ----------------------------------------------------------------------------
+// Queue & Retry Configuration
+// ----------------------------------------------------------------------------
+
+enum QueueStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum RetryPolicyType {
+  FIXED
+  LINEAR
+  EXPONENTIAL
+}
+
+model RetryPolicy {
+  id                String          @id @default(uuid())
+  name              String
+  type              RetryPolicyType @default(EXPONENTIAL)
+  maxAttempts       Int             @default(3)
+  initialDelayMs    Int             @default(1000)
+  maxDelayMs        Int             @default(60000)
+  backoffMultiplier Float           @default(2.0)
+  queues            Queue[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("retry_policies")
+}
+
+model Queue {
+  id               String         @id @default(uuid())
+  projectId        String
+  name             String
+  priority         Int            @default(10) // Higher value = higher processing priority
+  concurrencyLimit Int            @default(5)  // Max active jobs running in parallel for this queue
+  status           QueueStatus    @default(ACTIVE)
+  retryPolicyId    String?
+  jobs             Job[]
+  scheduledJobs    ScheduledJob[]
+  deadLetterJobs   DeadLetterJob[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  project          Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  retryPolicy      RetryPolicy?   @relation(fields: [retryPolicyId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, name])
+  @@index([status, priority])
+  @@map("queues")
+}
+
+// ----------------------------------------------------------------------------
+// Job State Engine & Execution History
+// ----------------------------------------------------------------------------
+
+// JobStatus tracks the lifecycle of the *Job* itself across retries and scheduling.
+enum JobStatus {
+  QUEUED     // Ready for immediate pickup by a worker
+  SCHEDULED  // Delayed / future execution — not yet eligible for claiming
+  CLAIMED    // Atomically locked by a worker (FOR UPDATE SKIP LOCKED)
+  RUNNING    // Handler function is actively executing
+  COMPLETED  // Successfully finished
+  FAILED     // Most recent attempt failed; will evaluate retry eligibility
+  RETRYING   // Backoff delay period before re-entering QUEUED
+  DEAD       // All retry attempts exhausted — moved to DLQ but row kept
+  CANCELLED  // Manually cancelled by user or API
+}
+
+// ExecutionStatus tracks the outcome of a *single attempt* inside JobExecution.
+// Separated from JobStatus because an execution never goes through QUEUED,
+// RETRYING, DEAD, or CANCELLED — those are job-level lifecycle states.
+enum ExecutionStatus {
+  RUNNING    // Attempt is currently executing
+  COMPLETED  // Attempt finished successfully
+  FAILED     // Attempt ended with an error
+  TIMED_OUT  // Attempt exceeded its timeout threshold
+}
+
+model Job {
+  id             String         @id @default(uuid())
+  queueId        String
+  type           String         // e.g. "email_notification", "report_generation", "webhook_delivery"
+  payload        Json           // Input parameters passed to execution handler
+  priority       Int            @default(10)
+  status         JobStatus      @default(QUEUED)
+  attempts       Int            @default(0)
+  maxAttempts    Int            @default(3)
+
+  // availableAt — the earliest timestamp at which a worker may claim this job.
+  // For immediate jobs this is NOW(). For delayed jobs the user-specified future time.
+  // After a retry backoff it is set to NOW() + backoffDelay.
+  // Worker claim query filters: WHERE status = 'QUEUED' AND availableAt <= NOW()
+  availableAt    DateTime       @default(now())
+
+  timeoutMs      Int            @default(30000) // Max allowed execution duration before lease timeout
+  idempotencyKey String?        // Ensures exactly-once ingestion when provided
+  lastWorkerId   String?
+  lockedUntil    DateTime?      // Lease expiry for crash recovery — if NOW() > lockedUntil, job is stale
+
+  claimedAt      DateTime?      // When a worker atomically claimed this job
+  startedAt      DateTime?      // When handler execution began
+  completedAt    DateTime?      // When handler returned success
+  failedAt       DateTime?      // When handler threw / timed out
+  errorReason    String?
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Restrict: prevent accidental cascade deletion of all job history when a
+  // queue is removed. Force the admin to drain / archive jobs first.
+  queue          Queue          @relation(fields: [queueId], references: [id], onDelete: Restrict)
+  worker         Worker?        @relation(fields: [lastWorkerId], references: [id], onDelete: SetNull)
+  executions     JobExecution[]
+  logs           JobLog[]
+  deadLetterJob  DeadLetterJob? // 1:1 — if this job died, its DLQ entry points back here
+
+  // Indexes optimized for Worker FOR UPDATE SKIP LOCKED query performance
+  @@unique([queueId, idempotencyKey])
+  @@index([queueId, status, priority, availableAt]) // Primary claim index
+  @@index([status, availableAt])                    // Scheduler promotion index
+  @@index([lockedUntil, status])                    // Stale lease recovery index
+  @@map("jobs")
+}
+
+model JobExecution {
+  id           String          @id @default(uuid())
+  jobId        String
+  workerId     String?
+  attemptNumber Int
+  status       ExecutionStatus @default(RUNNING) // Uses its own enum, not JobStatus
+  startedAt    DateTime        @default(now())
+  completedAt  DateTime?
+  durationMs   Int?
+  errorReason  String?
+  stackTrace   String?
+  result       Json?
+
+  createdAt    DateTime        @default(now())
+
+  job          Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  worker       Worker?         @relation(fields: [workerId], references: [id], onDelete: SetNull)
+  logs         JobLog[]
+
+  // Unique constraint: a job can only have one execution record per attempt number.
+  // This prevents duplicate execution rows if a race condition occurs.
+  @@unique([jobId, attemptNumber])
+  @@map("job_executions")
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+
+model JobLog {
+  id          String        @id @default(uuid())
+  jobId       String
+  executionId String?
+  workerId    String?
+  level       LogLevel      @default(INFO)
+  message     String
+  metadata    Json?
+  timestamp   DateTime      @default(now())
+
+  job         Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  execution   JobExecution? @relation(fields: [executionId], references: [id], onDelete: SetNull)
+  worker      Worker?       @relation(fields: [workerId], references: [id], onDelete: SetNull)
+
+  @@index([jobId, timestamp])
+  @@map("job_logs")
+}
+
+// ----------------------------------------------------------------------------
+// Worker Fleet & Heartbeats
+// ----------------------------------------------------------------------------
+
+enum WorkerStatus {
+  ONLINE
+  OFFLINE
+  DRAINING
+}
+
+model Worker {
+  id              String            @id @default(uuid())
+  workerName      String
+  hostname        String
+  ipAddress       String?
+  pid             Int
+  status          WorkerStatus      @default(ONLINE)
+  concurrency     Int               @default(5)
+  activeJobsCount Int               @default(0)
+  lastHeartbeatAt DateTime          @default(now())
+  startedAt       DateTime          @default(now())
+  stoppedAt       DateTime?
+  metadata        Json?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  jobs            Job[]
+  executions      JobExecution[]
+  logs            JobLog[]
+  heartbeats      WorkerHeartbeat[]
+
+  @@index([status, lastHeartbeatAt])
+  @@map("workers")
+}
+
+model WorkerHeartbeat {
+  id          String   @id @default(uuid())
+  workerId    String
+  cpuUsage    Float?   // Percentage 0-100
+  memoryUsage Float?   // MB used
+  activeJobs  Int      @default(0)
+  timestamp   DateTime @default(now())
+
+  worker      Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([workerId, timestamp])
+  @@map("worker_heartbeats")
+}
+
+// ----------------------------------------------------------------------------
+// Recurring Cron Scheduler
+// ----------------------------------------------------------------------------
+// ATOMIC SCHEDULING DESIGN (viva-ready):
+//   When multiple scheduler replicas run in parallel, they all evaluate
+//   `WHERE enabled = true AND nextRunAt <= NOW()` at the same interval.
+//   Without a lock, two replicas could both create a job for the same cron tick.
+//
+//   Solution: optimistic lock via lockToken + lockExpiresAt.
+//     1. Scheduler attempts UPDATE ... SET lockToken = <uuid>, lockExpiresAt = NOW()+10s
+//        WHERE id = <id> AND (lockToken IS NULL OR lockExpiresAt < NOW())
+//     2. If rowCount == 1, this replica "owns" the tick — it creates the job
+//        and advances nextRunAt.
+//     3. If rowCount == 0, another replica already claimed it — skip.
+//   lockExpiresAt acts as a dead-man timer: if the winning replica crashes
+//   mid-tick, the lock auto-expires and another replica can pick it up.
+// ----------------------------------------------------------------------------
+
+model ScheduledJob {
+  id             String    @id @default(uuid())
+  projectId      String
+  queueId        String
+  name           String
+  cronExpression String    // Standard 5-field cron (e.g. "*/5 * * * *")
+  jobType        String
+  payload        Json
+  priority       Int       @default(10)
+  enabled        Boolean   @default(true)
+  nextRunAt      DateTime
+  lastRunAt      DateTime?
+
+  // Distributed lock fields for atomic cron evaluation across scheduler replicas
+  lockToken      String?   // UUID claimed by the winning scheduler replica
+  lockExpiresAt  DateTime? // Auto-expires so crashed schedulers don't hold locks forever
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  queue          Queue     @relation(fields: [queueId], references: [id], onDelete: Cascade)
+
+  @@index([enabled, nextRunAt])
+  @@map("scheduled_jobs")
+}
+
+// ----------------------------------------------------------------------------
+// Dead Letter Queue (DLQ)
+// ----------------------------------------------------------------------------
+// DESIGN DECISION (viva-ready):
+//   The original Job row is KEPT with status = DEAD.  DeadLetterJob stores a
+//   FK back to it (`originalJobId → Job.id`) rather than copying all the
+//   payload / metadata.  This means:
+//     - Full audit trail preserved — you can inspect all prior executions and
+//       logs via the original Job.
+//     - No data duplication — payload, type, queueId are read through the
+//       relation instead of being copied.
+//     - Replay creates a NEW Job row and marks this DLQ entry as RETRIED.
+// ----------------------------------------------------------------------------
+
+enum DLQResolutionStatus {
+  PENDING
+  RETRIED
+  ARCHIVED
+}
+
+model DeadLetterJob {
+  id               String              @id @default(uuid())
+  originalJobId    String              @unique // 1:1 — each dead job has exactly one DLQ entry
+  queueId          String
+  attempts         Int                 // Final attempt count when the job was declared dead
+  finalErrorReason String?             // Error message from the last failed execution
+  stackTrace       String?             // Stack trace from the last failed execution
+  failedWorkerId   String?             // Worker that ran the final failing attempt
+  resolutionStatus DLQResolutionStatus @default(PENDING)
+  resolvedAt       DateTime?
+
+  createdAt        DateTime            @default(now())
+
+  // FK back to the original Job — the Job row is preserved with status=DEAD
+  originalJob      Job                 @relation(fields: [originalJobId], references: [id], onDelete: Restrict)
+  queue            Queue               @relation(fields: [queueId], references: [id], onDelete: Restrict)
+
+  @@index([resolutionStatus, createdAt])
+  @@map("dead_letter_jobs")
+}

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+
+.env
+*.log
+
+# Prisma generated artifacts
+packages/database/src/generated/
+
+# OS Files
+.DS_Store
+Thumbs.db
