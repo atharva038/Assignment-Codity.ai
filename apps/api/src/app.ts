@@ -18,6 +18,8 @@ import { projectsRouter } from './routes/projects.js';
 import { retryPoliciesRouter } from './routes/retryPolicies.js';
 import { queuesRouter } from './routes/queues.js';
 import { jobsRouter } from './routes/jobs.js';
+import { dlqRouter } from './routes/dlq.js';
+import { scheduledJobsRouter } from './routes/scheduledJobs.js';
 
 export function createApp(): Express {
   const app = express();
@@ -44,6 +46,8 @@ export function createApp(): Express {
   app.use('/api/v1/retry-policies', retryPoliciesRouter);
   app.use('/api/v1/queues', queuesRouter);
   app.use('/api/v1/jobs', jobsRouter);
+  app.use('/api/v1/dlq', dlqRouter);
+  app.use('/api/v1/scheduled-jobs', scheduledJobsRouter);
 
   // Global 404 Route Handler
   app.use((_req: Request, res: Response) => {

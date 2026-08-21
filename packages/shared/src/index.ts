@@ -11,3 +11,4 @@ export * from './schemas/project.js';
 export * from './schemas/queue.js';
 export * from './schemas/retryPolicy.js';
 export * from './schemas/job.js';
+export * from './schemas/scheduledJob.js';
