@@ -10,7 +10,11 @@
  * - Sample Jobs in QUEUED, COMPLETED, and SCHEDULED states
  */
 
+import dotenv from 'dotenv';
 import { PrismaClient, JobStatus, QueueStatus, RetryPolicyType, Role, OrgRole } from '@prisma/client';
+
+dotenv.config({ path: '../../.env' });
+dotenv.config();
 
 const prisma = new PrismaClient();
 

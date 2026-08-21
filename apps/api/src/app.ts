@@ -12,6 +12,12 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { logger } from '@job-scheduler/logger';
 import { healthRouter } from './routes/health.js';
+import { authRouter } from './routes/auth.js';
+import { organizationsRouter } from './routes/organizations.js';
+import { projectsRouter } from './routes/projects.js';
+import { retryPoliciesRouter } from './routes/retryPolicies.js';
+import { queuesRouter } from './routes/queues.js';
+import { jobsRouter } from './routes/jobs.js';
 
 export function createApp(): Express {
   const app = express();
@@ -27,9 +33,17 @@ export function createApp(): Express {
     next();
   });
 
-  // Base Health and Diagnostic Routes
+  // Base Health Diagnostic Route
   app.use('/', healthRouter);
   app.use('/api/v1', healthRouter);
+
+  // API v1 Resource Routers
+  app.use('/api/v1/auth', authRouter);
+  app.use('/api/v1/organizations', organizationsRouter);
+  app.use('/api/v1/projects', projectsRouter);
+  app.use('/api/v1/retry-policies', retryPoliciesRouter);
+  app.use('/api/v1/queues', queuesRouter);
+  app.use('/api/v1/jobs', jobsRouter);
 
   // Global 404 Route Handler
   app.use((_req: Request, res: Response) => {

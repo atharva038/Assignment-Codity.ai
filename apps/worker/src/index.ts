@@ -1,15 +1,20 @@
 /**
  * ============================================================================
- * Worker Process Entrypoint — Distributed Job Scheduler
+ * Worker Process Orchestrator — Distributed Job Scheduler
  * ============================================================================
- * Manages worker registration, heartbeat loops, job polling, concurrency control,
- * execution handlers, retry backoff evaluation, and graceful shutdown handling.
+ * Coordinates worker node registration, heartbeat telemetry, polling claim engine
+ * using PostgreSQL `FOR UPDATE SKIP LOCKED`, concurrent job execution, and graceful
+ * shutdown signal handling.
  */
 
 import dotenv from 'dotenv';
 import os from 'os';
 import { randomUUID } from 'crypto';
+import { prisma, JobStatus } from '@job-scheduler/database';
 import { logger } from '@job-scheduler/logger';
+import { WorkerHeartbeatManager } from './heartbeat.js';
+import { claimJobs } from './claim.js';
+import { executeJob } from './executor.js';
 
 dotenv.config();
 
@@ -17,40 +22,108 @@ const WORKER_ID = process.env.WORKER_ID || `worker-${os.hostname()}-${randomUUID
 const CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || '5', 10);
 const POLL_INTERVAL_MS = parseInt(process.env.WORKER_POLL_INTERVAL_MS || '1000', 10);
 
-logger.info({ workerId: WORKER_ID, concurrency: CONCURRENCY }, '🚀 Worker process initializing...');
-
 let isRunning = true;
+let activeCount = 0;
+
+const heartbeatManager = new WorkerHeartbeatManager(WORKER_ID, CONCURRENCY);
 
 /**
- * Worker execution loop stub
+ * Worker main startup routine
  */
-async function runWorkerLoop() {
-  logger.info({ workerId: WORKER_ID }, 'Worker polling loop active.');
-  
+async function startWorker() {
+  logger.info({ workerId: WORKER_ID, concurrency: CONCURRENCY }, '🚀 Worker node starting up...');
+
+  // 1. Register worker in database fleet
+  await heartbeatManager.register();
+  heartbeatManager.startHeartbeatLoop(5000);
+
+  // 2. Start continuous polling claim loop
+  runPollingLoop();
+}
+
+/**
+ * Main continuous polling and execution loop
+ */
+async function runPollingLoop() {
   while (isRunning) {
     try {
-      // Worker polling logic will be implemented in Core Job System Phase
+      // 1. Promote RETRYING jobs whose backoff delay has elapsed back to QUEUED state
+      await prisma.$executeRaw`
+        UPDATE "jobs"
+        SET "status" = ${JobStatus.QUEUED}::"JobStatus",
+            "updatedAt" = NOW()
+        WHERE "status" = ${JobStatus.RETRYING}::"JobStatus"
+          AND "availableAt" <= NOW();
+      `;
+
+      // 2. Calculate available capacity slots based on worker concurrency limit
+      const availableCapacity = CONCURRENCY - activeCount;
+
+      if (availableCapacity > 0) {
+        // 3. Atomically claim eligible jobs using FOR UPDATE SKIP LOCKED
+        const claimedJobs = await claimJobs({
+          workerId: WORKER_ID,
+          batchSize: availableCapacity,
+        });
+
+        if (claimedJobs.length > 0) {
+          logger.info({ workerId: WORKER_ID, count: claimedJobs.length }, '⚡ Atomically claimed jobs');
+
+          // 4. Dispatch claimed jobs concurrently
+          for (const job of claimedJobs) {
+            activeCount++;
+            heartbeatManager.setActiveJobsCount(activeCount);
+
+            // Execute job asynchronously without blocking polling loop
+            executeJob(job, WORKER_ID)
+              .catch((err) => {
+                logger.error({ jobId: job.id, err }, 'Unhandled error during job execution wrapper');
+              })
+              .finally(() => {
+                activeCount--;
+                heartbeatManager.setActiveJobsCount(activeCount);
+              });
+          }
+        }
+      }
+
       await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
     } catch (err) {
       logger.error({ workerId: WORKER_ID, err }, 'Error in worker polling loop');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 }
 
 /**
- * Graceful shutdown procedure handling SIGINT and SIGTERM
+ * Graceful shutdown procedure handling SIGINT and SIGTERM signals
  */
-function gracefulShutdown(signal: string) {
-  logger.info({ workerId: WORKER_ID, signal }, 'Graceful worker shutdown initiated. Draining active jobs...');
+async function gracefulShutdown(signal: string) {
+  logger.info({ workerId: WORKER_ID, signal, activeCount }, '🛑 Graceful worker shutdown initiated. Draining active jobs...');
   isRunning = false;
 
-  setTimeout(() => {
-    logger.info({ workerId: WORKER_ID }, 'Worker process exited cleanly.');
-    process.exit(0);
-  }, 1000);
+  const shutdownTimeout = setTimeout(async () => {
+    logger.warn({ workerId: WORKER_ID, activeCount }, 'Shutdown timeout reached. Force exiting worker...');
+    await heartbeatManager.shutdown();
+    process.exit(1);
+  }, 10000);
+
+  // Poll until in-flight active jobs complete
+  while (activeCount > 0) {
+    logger.info({ workerId: WORKER_ID, remainingJobs: activeCount }, 'Draining in-flight jobs...');
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  clearTimeout(shutdownTimeout);
+  await heartbeatManager.shutdown();
+  logger.info({ workerId: WORKER_ID }, 'Worker process drained and exited cleanly.');
+  process.exit(0);
 }
 
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
-runWorkerLoop();
+startWorker().catch((err) => {
+  logger.error({ err }, 'Fatal error starting worker node');
+  process.exit(1);
+});

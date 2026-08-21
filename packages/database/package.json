@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.10.2",
-    "@job-scheduler/shared": "*"
+    "@job-scheduler/shared": "*",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "prisma": "^5.10.2",

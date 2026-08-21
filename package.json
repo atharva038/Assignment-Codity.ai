@@ -10,8 +10,11 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "typecheck": "npm run typecheck --workspaces",
+    "test:api": "tsx scripts/test-api.ts",
+    "test:worker": "tsx scripts/test-worker.ts",
     "db:generate": "npm run db:generate --workspace=@job-scheduler/database",
     "db:migrate": "npm run db:migrate --workspace=@job-scheduler/database",
+    "db:push": "npm run db:push --workspace=@job-scheduler/database",
     "db:seed": "npm run db:seed --workspace=@job-scheduler/database",
     "db:studio": "npm run db:studio --workspace=@job-scheduler/database",
     "dev:api": "npm run dev --workspace=@job-scheduler/api",
