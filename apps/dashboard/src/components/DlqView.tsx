@@ -200,13 +200,12 @@ export const DlqView: React.FC<DlqViewProps> = ({ dlqJobs, onRefresh }) => {
                     </td>
                     <td className="py-4 px-6">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                          item.resolutionStatus === 'PENDING'
+                        className={`px-3 py-1 rounded-full text-xs font-bold border ${item.resolutionStatus === 'PENDING'
                             ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30'
                             : item.resolutionStatus === 'RETRIED'
-                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
-                            : 'bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-400 border-stone-300 dark:border-zinc-700'
-                        }`}
+                              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                              : 'bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-400 border-stone-300 dark:border-zinc-700'
+                          }`}
                       >
                         {item.resolutionStatus}
                       </span>
@@ -272,11 +271,10 @@ export const DlqView: React.FC<DlqViewProps> = ({ dlqJobs, onRefresh }) => {
                       {idx > 0 && arr[idx - 1] !== p - 1 && <span className="text-zinc-400 px-1">...</span>}
                       <button
                         onClick={() => setCurrentPage(p)}
-                        className={`w-8 h-8 rounded-full font-mono text-xs font-bold transition-all ${
-                          currentPage === p
+                        className={`w-8 h-8 rounded-full font-mono text-xs font-bold transition-all ${currentPage === p
                             ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
                             : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                        }`}
+                          }`}
                       >
                         {p}
                       </button>
@@ -393,31 +391,28 @@ export const DlqView: React.FC<DlqViewProps> = ({ dlqJobs, onRefresh }) => {
                 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
                   <button
                     onClick={() => setActiveTab('trace')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-all flex items-center gap-1.5 ${
-                      activeTab === 'trace'
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-all flex items-center gap-1.5 ${activeTab === 'trace'
                         ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30'
                         : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     <Terminal className="w-3.5 h-3.5" /> Stack Trace
                   </button>
                   <button
                     onClick={() => setActiveTab('payload')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-all flex items-center gap-1.5 ${
-                      activeTab === 'payload'
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-all flex items-center gap-1.5 ${activeTab === 'payload'
                         ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30'
                         : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     <Layers className="w-3.5 h-3.5" /> Input Payload
                   </button>
                   <button
                     onClick={() => setActiveTab('metadata')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-all flex items-center gap-1.5 ${
-                      activeTab === 'metadata'
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-all flex items-center gap-1.5 ${activeTab === 'metadata'
                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
                         : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     <Cpu className="w-3.5 h-3.5" /> Metadata
                   </button>

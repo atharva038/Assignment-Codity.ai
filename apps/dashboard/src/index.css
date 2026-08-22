@@ -4,11 +4,19 @@
 
 @layer base {
   body {
-    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     transition: background-color 0.25s ease, color 0.25s ease;
+    letter-spacing: -0.01em;
   }
-  code, pre {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'Fira Code', 'JetBrains Mono', monospace;
+    letter-spacing: -0.015em;
   }
 }
 
