@@ -11,7 +11,21 @@ import { logger } from '@job-scheduler/logger';
 import { initWsManager } from './ws/WsManager.js';
 import { startStatsEmitter } from './ws/statsEmitter.js';
 
-dotenv.config();
+import path from 'node:path';
+import fs from 'node:fs';
+
+// Resolve .env from current directory or monorepo root
+const envPaths = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '../../.env'),
+  path.resolve(process.cwd(), '../.env'),
+];
+
+for (const envPath of envPaths) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+}
 
 const PORT = process.env.PORT || 3000;
 const app = createApp();

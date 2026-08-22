@@ -51,13 +51,6 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
     fetchWorkflows();
   }, []);
 
-  // Realtime update trigger when WebSocket/polling snapshot pulses
-  useEffect(() => {
-    if (lastUpdatedTs) {
-      fetchWorkflowsSilently();
-    }
-  }, [lastUpdatedTs]);
-
   // Active polling loop while any workflow in the list is RUNNING / PENDING
   useEffect(() => {
     const hasActiveWorkflows = workflows.some((w) => w.status === 'RUNNING' || w.status === 'PENDING');

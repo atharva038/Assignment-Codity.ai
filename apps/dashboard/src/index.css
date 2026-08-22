@@ -4,37 +4,130 @@
 
 @layer base {
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
   code, pre {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
   }
 }
 
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* ============================================================================
+ * LIGHT BEIGE THEME (Ultra High Contrast, Crisp Typography)
+ * ============================================================================ */
+.light,
+html.light,
+body.light,
+.light-theme {
+  background-color: #FDFBF7 !important;
+  color: #1C1917 !important;
 }
 
-.glass-card {
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6 {
+  color: #1C1917 !important;
+}
+
+.light p {
+  color: #44403C !important;
+}
+
+.light .glass-panel {
+  background-color: #FFFFFF !important;
+  border-color: #E7E2D9 !important;
+  color: #1C1917 !important;
+  box-shadow: 0 4px 20px -4px rgba(28, 25, 23, 0.05) !important;
+}
+
+.light .glass-card {
+  background-color: #F5F0E6 !important;
+  border-color: #E7E2D9 !important;
+  color: #1C1917 !important;
+}
+
+.light th {
+  background-color: #F5F0E6 !important;
+  color: #292524 !important;
+  border-color: #E7E2D9 !important;
+}
+
+.light td {
+  color: #1C1917 !important;
+  border-color: #E7E2D9 !important;
+}
+
+.light tr:hover {
+  background-color: #FAF7F2 !important;
+}
+
+/* ============================================================================
+ * PITCH BLACK THEME (Ultra High Contrast Dark)
+ * ============================================================================ */
+.dark,
+html.dark,
+body.dark,
+.dark-theme {
+  background-color: #000000 !important;
+  color: #F4F4F5 !important;
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #FFFFFF !important;
+}
+
+.dark p {
+  color: #A1A1AA !important;
+}
+
+.dark .glass-panel {
+  background-color: rgba(18, 18, 21, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #F4F4F5 !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .glass-card {
+  background-color: rgba(28, 28, 33, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #F4F4F5 !important;
+}
+
+.dark th {
+  background-color: #09090b !important;
+  color: #A1A1AA !important;
+  border-color: #27272a !important;
+}
+
+.dark td {
+  color: #F4F4F5 !important;
+  border-color: rgba(39, 39, 42, 0.6) !important;
+}
+
+.dark tr:hover {
+  background-color: rgba(24, 24, 27, 0.6) !important;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+  background: rgba(249, 115, 22, 0.4);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(249, 115, 22, 0.8);
 }

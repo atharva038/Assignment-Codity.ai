@@ -70,13 +70,6 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
     fetchServerJobs(false);
   }, [currentPage, selectedStatus, searchQuery]);
 
-  useEffect(() => {
-    if (lastUpdatedTs) {
-      fetchServerJobs(true);
-    }
-  }, [lastUpdatedTs]);
-
-
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
     setCurrentPage(1);
@@ -99,19 +92,19 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'QUEUED':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-blue-500/10';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
       case 'RUNNING':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-amber-500/10';
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30';
       case 'COMPLETED':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10';
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
       case 'FAILED':
-        return 'bg-rose-500/10 text-rose-400 border-rose-500/30 shadow-rose-500/10';
+        return 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30';
       case 'RETRYING':
-        return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30 shadow-indigo-500/10';
+        return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30';
       case 'DEAD':
-        return 'bg-rose-950/60 text-rose-400 border-rose-800/80';
+        return 'bg-rose-950/40 text-rose-500 border-rose-800/80';
       default:
-        return 'bg-slate-800 text-slate-400 border-slate-700';
+        return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700';
     }
   };
 
@@ -120,15 +113,15 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
   return (
     <div className="space-y-6">
       {/* Header Search & Filter Bar */}
-      <div className="glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
+      <div className="glass-panel p-5 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
         <div className="relative flex-1 max-w-lg">
-          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
+          <Search className="w-4 h-4 absolute left-4 top-3.5 text-zinc-400" />
           <input
             type="text"
             placeholder="Search jobs by ID or handler type..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500 transition-colors shadow-inner"
+            className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full pl-11 pr-4 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors shadow-inner"
           />
         </div>
 
@@ -137,10 +130,10 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
             <button
               key={status}
               onClick={() => handleStatusChange(status)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 selectedStatus === status
-                  ? 'bg-brand-600 text-white border-brand-500 shadow-lg shadow-brand-500/25'
-                  : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
+                  ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20'
+                  : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               {status}
@@ -151,20 +144,20 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
               fetchServerJobs();
               onRefresh();
             }}
-            className="p-2.5 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors ml-2 shadow-md"
+            className="p-2.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded-full transition-colors ml-2 shadow-sm"
             title="Refresh Jobs"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-brand-400' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-orange-500' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Jobs Data Table — Server-Side Paginated */}
-      <div className="glass-panel rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col">
+      {/* Jobs Data Table — Minimalist High Contrast */}
+      <div className="glass-panel rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 shadow-xl flex flex-col">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-950/80 text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
                 <th className="py-4 px-6">Job UUID</th>
                 <th className="py-4 px-6">Handler Type</th>
                 <th className="py-4 px-6">Lifecycle Status</th>
@@ -174,14 +167,14 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
                 <th className="py-4 px-6 text-right">Inspect</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-sm">
+            <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/60 text-sm">
               {serverJobs.map((job) => (
-                <tr key={job.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="py-4 px-6 font-mono text-xs text-brand-400 font-semibold">
+                <tr key={job.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors text-zinc-800 dark:text-zinc-200">
+                  <td className="py-4 px-6 font-mono text-xs text-orange-600 dark:text-orange-400 font-bold">
                     {job.id}
                   </td>
-                  <td className="py-4 px-6 font-semibold text-white">
-                    <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-indigo-300">
+                  <td className="py-4 px-6 font-semibold">
+                    <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-mono text-zinc-700 dark:text-zinc-300">
                       {job.type}
                     </span>
                   </td>
@@ -190,28 +183,28 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
                       {job.status}
                     </span>
                   </td>
-                  <td className="py-4 px-6 font-mono text-slate-200 font-bold">{job.priority}</td>
-                  <td className="py-4 px-6 text-slate-400 font-mono text-xs">
+                  <td className="py-4 px-6 font-mono font-bold text-zinc-900 dark:text-zinc-100">{job.priority}</td>
+                  <td className="py-4 px-6 text-zinc-600 dark:text-zinc-400 font-mono text-xs">
                     {job.attempts} / {job.maxAttempts}
                   </td>
-                  <td className="py-4 px-6 text-xs text-slate-400 font-mono">
+                  <td className="py-4 px-6 text-xs text-zinc-500 dark:text-zinc-400 font-mono">
                     {new Date(job.createdAt).toLocaleTimeString()}
                   </td>
                   <td className="py-4 px-6 text-right">
                     <button
                       onClick={() => inspectJob(job.id)}
-                      className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition-all border border-slate-700 shadow-md"
+                      className="p-2 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full transition-all border border-zinc-200 dark:border-zinc-800 shadow-sm"
                       title="Inspect Job Logs & Details"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 text-orange-500" />
                     </button>
                   </td>
                 </tr>
               ))}
-              {serverJobs.length === 0 && !loading && (
+              {serverJobs.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-500">
-                    No jobs found matching your search and status filter criteria.
+                  <td colSpan={7} className="py-12 text-center text-zinc-500">
+                    No jobs match the current status filter or search query.
                   </td>
                 </tr>
               )}
@@ -219,20 +212,20 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
           </table>
         </div>
 
-        {/* Server-Side Pagination Footer */}
+        {/* Minimalist Pagination Footer */}
         {totalCount > 0 && (
-          <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <div className="text-slate-400 font-mono">
-              Showing <strong className="text-white">{startIndex + 1}</strong> to{' '}
-              <strong className="text-white">{Math.min(startIndex + pageSize, totalCount)}</strong> of{' '}
-              <strong className="text-white">{totalCount.toLocaleString()}</strong> Jobs (Server-Side Paginated)
+          <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="text-zinc-600 dark:text-zinc-400 font-mono">
+              Showing <strong className="text-zinc-900 dark:text-white">{startIndex + 1}</strong> to{' '}
+              <strong className="text-zinc-900 dark:text-white">{Math.min(startIndex + pageSize, totalCount)}</strong> of{' '}
+              <strong className="text-zinc-900 dark:text-white">{totalCount}</strong> Total Jobs
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1 || loading}
-                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold transition-all"
+                disabled={currentPage === 1}
+                className="px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold transition-all shadow-sm"
               >
                 <ChevronLeft className="w-4 h-4" /> Previous
               </button>
@@ -242,13 +235,13 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
                   .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
                   .map((p, idx, arr) => (
                     <React.Fragment key={p}>
-                      {idx > 0 && arr[idx - 1] !== p - 1 && <span className="text-slate-600 px-1">...</span>}
+                      {idx > 0 && arr[idx - 1] !== p - 1 && <span className="text-zinc-400 px-1">...</span>}
                       <button
                         onClick={() => setCurrentPage(p)}
-                        className={`w-8 h-8 rounded-xl font-mono text-xs font-bold transition-all ${
+                        className={`w-8 h-8 rounded-full font-mono text-xs font-bold transition-all ${
                           currentPage === p
-                            ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
-                            : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+                            ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
+                            : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                         }`}
                       >
                         {p}
@@ -259,8 +252,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
 
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages || loading}
-                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold transition-all"
+                disabled={currentPage === totalPages}
+                className="px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold transition-all shadow-sm"
               >
                 Next <ChevronRight className="w-4 h-4" />
               </button>
@@ -269,68 +262,69 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
         )}
       </div>
 
-      {/* Job Details & Log Stream Modal */}
+      {/* Inspect Job Details Drawer / Modal */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-dark-900 border border-slate-800 rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            <div className="p-6 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-brand-500/10 text-brand-400 rounded-2xl border border-brand-500/20">
-                  <Terminal className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Job Details & Microsecond Logs</h3>
-                  <p className="text-xs font-mono text-slate-400 mt-0.5">{selectedJob.id}</p>
-                </div>
+        <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150 text-zinc-900 dark:text-zinc-100">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-orange-500" /> Job Execution Details
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">UUID: {selectedJob.id}</p>
               </div>
               <button
                 onClick={() => setSelectedJob(null)}
-                className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/80"
+                className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-white rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+                <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                  <span className="text-zinc-500">Status:</span>{' '}
+                  <span className={`ml-2 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${getStatusBadge(selectedJob.status)}`}>
+                    {selectedJob.status}
+                  </span>
+                </div>
+                <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                  <span className="text-zinc-500">Attempts:</span>{' '}
+                  <span className="text-zinc-900 dark:text-white font-bold ml-2">{selectedJob.attempts} / {selectedJob.maxAttempts}</span>
+                </div>
+              </div>
+
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Input Payload (JSON)</h4>
-                <pre className="bg-slate-950 p-4 rounded-2xl text-xs text-emerald-400 overflow-x-auto border border-slate-800/80 font-mono shadow-inner">
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2">Payload Data</h4>
+                <pre className="p-3.5 bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono text-orange-600 dark:text-orange-400 overflow-x-auto">
                   {JSON.stringify(selectedJob.payload, null, 2)}
                 </pre>
               </div>
 
-              {selectedJob.executions && selectedJob.executions.length > 0 && (
+              {selectedJob.logs && selectedJob.logs.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Execution Attempt History</h4>
-                  <div className="space-y-2">
-                    {selectedJob.executions.map((exec) => (
-                      <div key={exec.id} className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
-                        <span className="font-bold text-slate-200">Attempt #{exec.attemptNumber}</span>
-                        <span className={`px-2.5 py-0.5 rounded-full font-bold border ${getStatusBadge(exec.status)}`}>{exec.status}</span>
-                        <span className="font-mono text-slate-400">{exec.durationMs ? `${exec.durationMs}ms` : 'In progress'}</span>
+                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2">Execution Logs</h4>
+                  <div className="bg-zinc-950 p-3.5 rounded-2xl border border-zinc-800 text-xs font-mono space-y-1.5 max-h-40 overflow-y-auto">
+                    {selectedJob.logs.map((l, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <span className="text-zinc-500 text-[10px]">{new Date(l.timestamp).toLocaleTimeString()}</span>
+                        <span className={`font-bold ${l.level === 'ERROR' ? 'text-rose-400' : 'text-emerald-400'}`}>[{l.level}]</span>
+                        <span className="text-zinc-300">{l.message}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+            </div>
 
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Microsecond Execution Log Stream</h4>
-                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 font-mono text-xs max-h-60 overflow-y-auto shadow-inner">
-                  {selectedJob.logs && selectedJob.logs.length > 0 ? (
-                    selectedJob.logs.map((log, idx) => (
-                      <div key={idx} className="flex gap-3">
-                        <span className="text-slate-500 select-none">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                        <span className={log.level === 'ERROR' ? 'text-rose-400' : log.level === 'WARN' ? 'text-amber-400' : 'text-slate-300'}>
-                          [{log.level}] {log.message}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <span className="text-slate-500">No logs generated yet.</span>
-                  )}
-                </div>
-              </div>
+            <div className="flex justify-end border-t border-zinc-200 dark:border-zinc-800 pt-4">
+              <button
+                onClick={() => setSelectedJob(null)}
+                className="px-5 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-bold rounded-full transition-all"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

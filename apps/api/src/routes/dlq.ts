@@ -183,3 +183,55 @@ dlqRouter.post('/:id/archive', async (req: Request, res: Response) => {
 
   res.status(200).json({ message: 'Dead Letter Job archived successfully', deadLetterJob: updatedDlq });
 });
+
+/**
+ * POST /api/v1/dlq/:id/ai-summary
+ * Triggers AI failure analysis for a dead letter job, saves the summary in database, and returns results.
+ */
+dlqRouter.post('/:id/ai-summary', async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const dlqJob = await prisma.deadLetterJob.findUnique({
+    where: { id },
+    include: {
+      originalJob: {
+        include: {
+          logs: { orderBy: { timestamp: 'asc' }, take: 50 },
+        },
+      },
+    },
+  });
+
+  if (!dlqJob) {
+    res.status(404).json({ error: 'Not Found', message: 'Dead Letter Job not found' });
+    return;
+  }
+
+  // Import AI summarizer service
+  const { analyzeJobFailure } = await import('../services/aiSummarizer.js');
+
+  const diagnosticResult = await analyzeJobFailure({
+    jobType: dlqJob.originalJob.type,
+    payload: (dlqJob.originalJob.payload as Record<string, unknown>) || {},
+    attempts: dlqJob.attempts,
+    finalErrorReason: dlqJob.finalErrorReason || undefined,
+    stackTrace: dlqJob.stackTrace || undefined,
+    logs: dlqJob.originalJob.logs.map((l) => ({ level: l.level, message: l.message, timestamp: l.timestamp })),
+  });
+
+  // Save diagnostic summary to database
+  const updatedDlq = await prisma.deadLetterJob.update({
+    where: { id },
+    data: {
+      aiSummary: diagnosticResult.summary,
+      aiSuggestedFix: diagnosticResult.suggestedFix,
+      aiAnalyzedAt: new Date(diagnosticResult.analyzedAt),
+    },
+  });
+
+  res.status(200).json({
+    message: 'AI failure summary generated successfully',
+    diagnostic: diagnosticResult,
+    deadLetterJob: updatedDlq,
+  });
+});

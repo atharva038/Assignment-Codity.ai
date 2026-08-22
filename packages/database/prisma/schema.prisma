@@ -456,6 +456,11 @@ model DeadLetterJob {
   resolutionStatus DLQResolutionStatus @default(PENDING)
   resolvedAt       DateTime?
 
+  // AI-generated diagnostic failure summary & resolution recommendation
+  aiSummary        String?
+  aiSuggestedFix   String?
+  aiAnalyzedAt     DateTime?
+
   createdAt        DateTime            @default(now())
 
   // FK back to the original Job — the Job row is preserved with status=DEAD

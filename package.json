@@ -26,6 +26,7 @@
     "test:worker": "tsx scripts/test-worker.ts",
     "test:scheduler": "tsx scripts/test-scheduler.ts",
     "test:workflows": "tsx scripts/test-workflows.ts",
+    "test:ai": "tsx scripts/test-ai-summary.ts",
     "redis:monitor": "tsx scripts/monitor-redis.ts"
   },
   "devDependencies": {
