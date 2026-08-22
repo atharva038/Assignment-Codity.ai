@@ -21,13 +21,24 @@ queuesRouter.use(authenticateToken);
  * Creates a queue under a project.
  */
 queuesRouter.post('/', validate(createQueueSchema), async (req: Request, res: Response) => {
-  const { projectId, name, priority, concurrencyLimit, retryPolicyId } = req.body;
+  let targetProjectId = req.body.projectId;
+  const { name, priority, concurrencyLimit, retryPolicyId } = req.body;
+
+  if (!targetProjectId) {
+    const userProj = await prisma.project.findFirst();
+    targetProjectId = userProj?.id;
+  }
+
+  if (!targetProjectId) {
+    res.status(400).json({ error: 'Bad Request', message: 'No project available to assign queue' });
+    return;
+  }
 
   // Check unique queue name per project
   const existingQueue = await prisma.queue.findUnique({
     where: {
       projectId_name: {
-        projectId,
+        projectId: targetProjectId,
         name,
       },
     },
@@ -40,7 +51,7 @@ queuesRouter.post('/', validate(createQueueSchema), async (req: Request, res: Re
 
   const queue = await prisma.queue.create({
     data: {
-      projectId,
+      projectId: targetProjectId,
       name,
       priority,
       concurrencyLimit,

@@ -11,7 +11,17 @@ import { CreateJobModal } from './components/CreateJobModal.js';
 export function App() {
   const [activeTab, setActiveTab] = useState<'overview' | 'queues' | 'jobs' | 'workers' | 'dlq'>('overview');
   const [queues, setQueues] = useState<any[]>([]);
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    totalJobs: 0,
+    queued: 0,
+    running: 0,
+    completed: 0,
+    failed: 0,
+    dead: 0,
+    pendingDlq: 0,
+    totalDlq: 0,
+    activeWorkers: 1,
+  });
   const [workers, setWorkers] = useState<any[]>([]);
   const [dlqJobs, setDlqJobs] = useState<any[]>([]);
   const [throughputData, setThroughputData] = useState<any[]>([]);
@@ -22,34 +32,50 @@ export function App() {
     try {
       setRefreshing(true);
 
-      const [queuesRes, jobsRes, dlqRes] = await Promise.all([
+      const [queuesRes, statsRes, dlqRes, workersRes] = await Promise.all([
         fetchApi<{ queues: any[] }>('/queues').catch(() => ({ queues: [] })),
-        fetchApi<{ jobs: any[] }>('/jobs?limit=50').catch(() => ({ jobs: [] })),
+        fetchApi<{ stats: any }>('/jobs/stats').catch(() => ({
+          stats: { total: 0, queued: 0, running: 0, completed: 0, failed: 0, dead: 0, pendingDlq: 0, totalDlq: 0 },
+        })),
         fetchApi<{ deadLetterJobs: any[] }>('/dlq').catch(() => ({ deadLetterJobs: [] })),
+        fetchApi<{ workers: any[] }>('/workers').catch(() => ({ workers: [] })),
       ]);
 
+      const s = statsRes.stats || { total: 0, queued: 0, running: 0, completed: 0, failed: 0, dead: 0, pendingDlq: 0, totalDlq: 0 };
+      const fetchedWorkers = workersRes.workers || [];
       setQueues(queuesRes.queues || []);
-      setJobs(jobsRes.jobs || []);
+      setStats({
+        totalJobs: s.total,
+        queued: s.queued,
+        running: s.running,
+        completed: s.completed,
+        failed: s.failed,
+        dead: s.dead,
+        pendingDlq: s.pendingDlq || 0,
+        totalDlq: s.totalDlq || 0,
+        activeWorkers: fetchedWorkers.filter((w: any) => w.status === 'ONLINE').length || 1,
+      });
       setDlqJobs(dlqRes.deadLetterJobs || []);
 
-      setWorkers([
-        {
-          id: 'worker-node-1',
-          workerName: 'Worker Node Alpha (Mac)',
-          hostname: 'worker-mac-01',
-          status: 'ONLINE',
-          concurrency: 5,
-          activeJobsCount: (jobsRes.jobs || []).filter((j: any) => j.status === 'RUNNING').length,
-          lastHeartbeatAt: new Date().toISOString(),
-        },
-      ]);
+      if (fetchedWorkers.length > 0) {
+        setWorkers(fetchedWorkers);
+      } else {
+        setWorkers([
+          {
+            id: 'worker-node-1',
+            workerName: 'Worker Node Alpha (Mac)',
+            hostname: 'worker-mac-01',
+            status: 'ONLINE',
+            concurrency: 5,
+            activeJobsCount: s.running,
+            lastHeartbeatAt: new Date().toISOString(),
+          },
+        ]);
+      }
 
       const timeStr = new Date().toLocaleTimeString();
-      const completedCount = (jobsRes.jobs || []).filter((j: any) => j.status === 'COMPLETED').length;
-      const failedCount = (jobsRes.jobs || []).filter((j: any) => j.status === 'FAILED' || j.status === 'DEAD').length;
-
       setThroughputData((prev) => {
-        const next = [...prev, { time: timeStr, completed: completedCount, failed: failedCount }];
+        const next = [...prev, { time: timeStr, completed: s.completed, failed: s.failed + s.dead }];
         return next.slice(-10);
       });
     } catch (err) {
@@ -65,19 +91,9 @@ export function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const stats = {
-    totalJobs: jobs.length,
-    queued: jobs.filter((j) => j.status === 'QUEUED').length,
-    running: jobs.filter((j) => j.status === 'RUNNING').length,
-    completed: jobs.filter((j) => j.status === 'COMPLETED').length,
-    failed: jobs.filter((j) => j.status === 'FAILED' || j.status === 'RETRYING').length,
-    dead: jobs.filter((j) => j.status === 'DEAD').length,
-    activeWorkers: workers.length,
-  };
-
   return (
     <div className="min-h-screen bg-dark-900 text-slate-100 flex flex-col antialiased selection:bg-brand-500 selection:text-white">
-      {/* Top Header Navigation — Responsive */}
+      {/* Top Header Navigation */}
       <header className="border-b border-slate-800 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -117,9 +133,9 @@ export function App() {
           {[
             { id: 'overview', label: 'Overview & Metrics', icon: LayoutDashboard },
             { id: 'queues', label: 'Queues & Controls', icon: Layers, count: queues.length },
-            { id: 'jobs', label: 'Job Explorer', icon: ListFilter, count: jobs.length },
-            { id: 'workers', label: 'Worker Fleet', icon: Cpu, count: workers.length },
-            { id: 'dlq', label: 'Dead Letter Queue', icon: AlertOctagon, count: dlqJobs.length, badgeColor: 'bg-rose-500/20 text-rose-400' },
+            { id: 'jobs', label: 'Job Explorer', icon: ListFilter, count: stats.totalJobs },
+            { id: 'workers', label: 'Worker Fleet', icon: Cpu, count: stats.activeWorkers },
+            { id: 'dlq', label: 'Dead Letter Queue', icon: AlertOctagon, count: stats.pendingDlq, badgeColor: 'bg-rose-500/20 text-rose-400' },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -133,7 +149,7 @@ export function App() {
                     : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-brand-400' : 'text-slate-500'}`} />
+                {typeof Icon === 'function' && <Icon className={`w-4 h-4 ${isActive ? 'text-brand-400' : 'text-slate-500'}`} />}
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
                   <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${tab.badgeColor || 'bg-slate-800 text-slate-300'}`}>
@@ -150,7 +166,7 @@ export function App() {
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 flex-1 w-full">
         {activeTab === 'overview' && <Overview stats={stats} throughputData={throughputData} />}
         {activeTab === 'queues' && <QueuesView queues={queues} onRefresh={loadDashboardData} />}
-        {activeTab === 'jobs' && <JobsView jobs={jobs} onRefresh={loadDashboardData} />}
+        {activeTab === 'jobs' && <JobsView jobs={[]} onRefresh={loadDashboardData} />}
         {activeTab === 'workers' && <WorkersView workers={workers} />}
         {activeTab === 'dlq' && <DlqView dlqJobs={dlqJobs} onRefresh={loadDashboardData} />}
       </main>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Eye, RefreshCw, X, FileText, CheckCircle2, AlertTriangle, Clock, Terminal, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Eye, RefreshCw, X, FileText, CheckCircle2, AlertTriangle, Clock, Terminal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchApi } from '../services/api.js';
 
 interface JobItem {
@@ -23,30 +23,68 @@ interface JobsViewProps {
   onRefresh: () => void;
 }
 
-export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
+export const JobsView: React.FC<JobsViewProps> = ({ onRefresh }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null);
-  const [jobDetailsLoading, setJobDetailsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchesStatus = selectedStatus === 'ALL' || job.status === selectedStatus;
-    const matchesSearch =
-      !searchQuery ||
-      job.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.type.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+  // Server-side pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize] = useState<number>(10);
+  const [serverJobs, setServerJobs] = useState<JobItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
+
+  const fetchServerJobs = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      });
+
+      if (selectedStatus !== 'ALL') {
+        params.append('status', selectedStatus);
+      }
+      if (searchQuery.trim()) {
+        params.append('search', searchQuery.trim());
+      }
+
+      const data = await fetchApi<{ jobs: JobItem[]; pagination: { total: number; totalPages: number } }>(
+        `/jobs?${params.toString()}`
+      );
+
+      setServerJobs(data.jobs || []);
+      setTotalCount(data.pagination?.total || 0);
+      setTotalPages(Math.max(1, data.pagination?.totalPages || 1));
+    } catch (err) {
+      console.error('Error fetching server jobs:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchServerJobs();
+  }, [currentPage, selectedStatus, searchQuery]);
+
+  const handleStatusChange = (status: string) => {
+    setSelectedStatus(status);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
 
   const inspectJob = async (jobId: string) => {
-    setJobDetailsLoading(true);
     try {
       const data = await fetchApi<{ job: JobItem }>(`/jobs/${jobId}`);
       setSelectedJob(data.job);
     } catch (err: any) {
       alert(`Error fetching job details: ${err.message}`);
-    } finally {
-      setJobDetailsLoading(false);
     }
   };
 
@@ -69,6 +107,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
     }
   };
 
+  const startIndex = (currentPage - 1) * pageSize;
+
   return (
     <div className="space-y-6">
       {/* Header Search & Filter Bar */}
@@ -79,7 +119,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
             type="text"
             placeholder="Search jobs by ID or handler type..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500 transition-colors shadow-inner"
           />
         </div>
@@ -88,7 +128,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
           {['ALL', 'QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'RETRYING', 'DEAD'].map((status) => (
             <button
               key={status}
-              onClick={() => setSelectedStatus(status)}
+              onClick={() => handleStatusChange(status)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
                 selectedStatus === status
                   ? 'bg-brand-600 text-white border-brand-500 shadow-lg shadow-brand-500/25'
@@ -99,75 +139,127 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
             </button>
           ))}
           <button
-            onClick={onRefresh}
+            onClick={() => {
+              fetchServerJobs();
+              onRefresh();
+            }}
             className="p-2.5 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors ml-2 shadow-md"
             title="Refresh Jobs"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-brand-400' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Jobs Data Table — Mobile Responsive Scroll */}
-      <div className="glass-panel rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
-        <div className="overflow-x-auto">
+      {/* Jobs Data Table — Server-Side Paginated */}
+      <div className="glass-panel rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col">
+        <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse min-w-[700px]">
-          <thead>
-            <tr className="border-b border-slate-800 bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              <th className="py-4 px-6">Job UUID</th>
-              <th className="py-4 px-6">Handler Type</th>
-              <th className="py-4 px-6">Lifecycle Status</th>
-              <th className="py-4 px-6">Priority</th>
-              <th className="py-4 px-6">Attempts</th>
-              <th className="py-4 px-6">Created Timestamp</th>
-              <th className="py-4 px-6 text-right">Inspect</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/60 text-sm">
-            {filteredJobs.map((job) => (
-              <tr key={job.id} className="hover:bg-slate-800/30 transition-colors">
-                <td className="py-4 px-6 font-mono text-xs text-brand-400 font-semibold">
-                  {job.id}
-                </td>
-                <td className="py-4 px-6 font-semibold text-white">
-                  <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-indigo-300">
-                    {job.type}
-                  </span>
-                </td>
-                <td className="py-4 px-6">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadge(job.status)}`}>
-                    {job.status}
-                  </span>
-                </td>
-                <td className="py-4 px-6 font-mono text-slate-200 font-bold">{job.priority}</td>
-                <td className="py-4 px-6 text-slate-400 font-mono text-xs">
-                  {job.attempts} / {job.maxAttempts}
-                </td>
-                <td className="py-4 px-6 text-xs text-slate-400 font-mono">
-                  {new Date(job.createdAt).toLocaleTimeString()}
-                </td>
-                <td className="py-4 px-6 text-right">
-                  <button
-                    onClick={() => inspectJob(job.id)}
-                    className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition-all border border-slate-700 shadow-md"
-                    title="Inspect Job Logs & Details"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                </td>
+            <thead>
+              <tr className="border-b border-slate-800 bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <th className="py-4 px-6">Job UUID</th>
+                <th className="py-4 px-6">Handler Type</th>
+                <th className="py-4 px-6">Lifecycle Status</th>
+                <th className="py-4 px-6">Priority</th>
+                <th className="py-4 px-6">Attempts</th>
+                <th className="py-4 px-6">Created Timestamp</th>
+                <th className="py-4 px-6 text-right">Inspect</th>
               </tr>
-            ))}
-            {filteredJobs.length === 0 && (
-              <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-500">
-                  No jobs found matching your search and status filter criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 text-sm">
+              {serverJobs.map((job) => (
+                <tr key={job.id} className="hover:bg-slate-800/30 transition-colors">
+                  <td className="py-4 px-6 font-mono text-xs text-brand-400 font-semibold">
+                    {job.id}
+                  </td>
+                  <td className="py-4 px-6 font-semibold text-white">
+                    <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-indigo-300">
+                      {job.type}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadge(job.status)}`}>
+                      {job.status}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6 font-mono text-slate-200 font-bold">{job.priority}</td>
+                  <td className="py-4 px-6 text-slate-400 font-mono text-xs">
+                    {job.attempts} / {job.maxAttempts}
+                  </td>
+                  <td className="py-4 px-6 text-xs text-slate-400 font-mono">
+                    {new Date(job.createdAt).toLocaleTimeString()}
+                  </td>
+                  <td className="py-4 px-6 text-right">
+                    <button
+                      onClick={() => inspectJob(job.id)}
+                      className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition-all border border-slate-700 shadow-md"
+                      title="Inspect Job Logs & Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {serverJobs.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
+                    No jobs found matching your search and status filter criteria.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Server-Side Pagination Footer */}
+        {totalCount > 0 && (
+          <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="text-slate-400 font-mono">
+              Showing <strong className="text-white">{startIndex + 1}</strong> to{' '}
+              <strong className="text-white">{Math.min(startIndex + pageSize, totalCount)}</strong> of{' '}
+              <strong className="text-white">{totalCount.toLocaleString()}</strong> Jobs (Server-Side Paginated)
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1 || loading}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold transition-all"
+              >
+                <ChevronLeft className="w-4 h-4" /> Previous
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                  .map((p, idx, arr) => (
+                    <React.Fragment key={p}>
+                      {idx > 0 && arr[idx - 1] !== p - 1 && <span className="text-slate-600 px-1">...</span>}
+                      <button
+                        onClick={() => setCurrentPage(p)}
+                        className={`w-8 h-8 rounded-xl font-mono text-xs font-bold transition-all ${
+                          currentPage === p
+                            ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
+                            : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    </React.Fragment>
+                  ))}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages || loading}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold transition-all"
+              >
+                Next <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
 
       {/* Job Details & Log Stream Modal */}
       {selectedJob && (
@@ -192,7 +284,6 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
             </div>
 
             <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              {/* Job Payload JSON */}
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Input Payload (JSON)</h4>
                 <pre className="bg-slate-950 p-4 rounded-2xl text-xs text-emerald-400 overflow-x-auto border border-slate-800/80 font-mono shadow-inner">
@@ -200,7 +291,6 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
                 </pre>
               </div>
 
-              {/* Execution Attempt History */}
               {selectedJob.executions && selectedJob.executions.length > 0 && (
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Execution Attempt History</h4>
@@ -216,7 +306,6 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, onRefresh }) => {
                 </div>
               )}
 
-              {/* Microsecond Execution Logs */}
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Microsecond Execution Log Stream</h4>
                 <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 font-mono text-xs max-h-60 overflow-y-auto shadow-inner">

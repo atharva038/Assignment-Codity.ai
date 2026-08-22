@@ -7,7 +7,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { prisma, JobStatus } from '@job-scheduler/database';
+import { prisma, JobStatus, DLQResolutionStatus } from '@job-scheduler/database';
 import { createJobSchema, batchCreateJobSchema, jobQuerySchema } from '@job-scheduler/shared';
 import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
@@ -147,7 +147,7 @@ jobsRouter.get('/', async (req: Request, res: Response) => {
   const { queueId, status, type, workerId, search, page = '1', limit = '20' } = req.query;
 
   const pageNum = Math.max(1, parseInt(page as string, 10));
-  const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10)));
+  const limitNum = Math.min(1000, Math.max(1, parseInt(limit as string, 10)));
   const skip = (pageNum - 1) * limitNum;
 
   const whereClause: Record<string, unknown> = {};
@@ -182,7 +182,7 @@ jobsRouter.get('/', async (req: Request, res: Response) => {
           select: { id: true, workerName: true, status: true },
         },
       },
-      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+      orderBy: { createdAt: 'desc' },
       skip,
       take: limitNum,
     }),
@@ -198,6 +198,25 @@ jobsRouter.get('/', async (req: Request, res: Response) => {
       totalPages: Math.ceil(totalCount / limitNum),
     },
   });
+});
+
+/**
+ * GET /api/v1/jobs/stats
+ * Returns high-performance integer metrics (total, queued, running, completed, failed, dead).
+ */
+jobsRouter.get('/stats', async (_req: Request, res: Response) => {
+  const [total, queued, running, completed, failed, dead, pendingDlq, totalDlq] = await Promise.all([
+    prisma.job.count(),
+    prisma.job.count({ where: { status: JobStatus.QUEUED } }),
+    prisma.job.count({ where: { status: JobStatus.RUNNING } }),
+    prisma.job.count({ where: { status: JobStatus.COMPLETED } }),
+    prisma.job.count({ where: { status: { in: [JobStatus.FAILED, JobStatus.RETRYING] } } }),
+    prisma.job.count({ where: { status: JobStatus.DEAD } }),
+    prisma.deadLetterJob.count({ where: { resolutionStatus: DLQResolutionStatus.PENDING } }),
+    prisma.deadLetterJob.count(),
+  ]);
+
+  res.status(200).json({ stats: { total, queued, running, completed, failed, dead, pendingDlq, totalDlq } });
 });
 
 /**
