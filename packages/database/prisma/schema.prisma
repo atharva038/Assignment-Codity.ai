@@ -93,6 +93,7 @@ model Project {
   description    String?
   queues         Queue[]
   scheduledJobs  ScheduledJob[]
+  workflows      Workflow[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -100,6 +101,34 @@ model Project {
 
   @@unique([organizationId, slug])
   @@map("projects")
+}
+
+// ----------------------------------------------------------------------------
+// Workflow DAG & Dependencies
+// ----------------------------------------------------------------------------
+
+enum WorkflowStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model Workflow {
+  id          String         @id @default(uuid())
+  projectId   String
+  name        String
+  description String?
+  status      WorkflowStatus @default(PENDING)
+  jobs        Job[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, status])
+  @@map("workflows")
 }
 
 // ----------------------------------------------------------------------------
@@ -160,6 +189,7 @@ model Queue {
 
 // JobStatus tracks the lifecycle of the *Job* itself across retries and scheduling.
 enum JobStatus {
+  BLOCKED    // Waiting on upstream DAG parent dependencies before entering QUEUED
   QUEUED     // Ready for immediate pickup by a worker
   SCHEDULED  // Delayed / future execution — not yet eligible for claiming
   CLAIMED    // Atomically locked by a worker (FOR UPDATE SKIP LOCKED)
@@ -182,49 +212,72 @@ enum ExecutionStatus {
 }
 
 model Job {
-  id             String         @id @default(uuid())
-  queueId        String
-  type           String         // e.g. "email_notification", "report_generation", "webhook_delivery"
-  payload        Json           // Input parameters passed to execution handler
-  priority       Int            @default(10)
-  status         JobStatus      @default(QUEUED)
-  attempts       Int            @default(0)
-  maxAttempts    Int            @default(3)
+  id                    String          @id @default(uuid())
+  queueId               String
+  workflowId            String?
+  type                  String          // e.g. "email_notification", "report_generation", "webhook_delivery"
+  payload               Json            // Input parameters passed to execution handler
+  priority              Int             @default(10)
+  status                JobStatus       @default(QUEUED)
+  attempts              Int             @default(0)
+  maxAttempts           Int             @default(3)
+
+  unresolvedParentCount Int             @default(0) // Count of unfinished parent dependencies in DAG
 
   // availableAt — the earliest timestamp at which a worker may claim this job.
   // For immediate jobs this is NOW(). For delayed jobs the user-specified future time.
   // After a retry backoff it is set to NOW() + backoffDelay.
   // Worker claim query filters: WHERE status = 'QUEUED' AND availableAt <= NOW()
-  availableAt    DateTime       @default(now())
+  availableAt           DateTime        @default(now())
 
-  timeoutMs      Int            @default(30000) // Max allowed execution duration before lease timeout
-  idempotencyKey String?        // Ensures exactly-once ingestion when provided
-  lastWorkerId   String?
-  lockedUntil    DateTime?      // Lease expiry for crash recovery — if NOW() > lockedUntil, job is stale
+  timeoutMs             Int             @default(30000) // Max allowed execution duration before lease timeout
+  idempotencyKey        String?         // Ensures exactly-once ingestion when provided
+  lastWorkerId          String?
+  lockedUntil           DateTime?       // Lease expiry for crash recovery — if NOW() > lockedUntil, job is stale
 
-  claimedAt      DateTime?      // When a worker atomically claimed this job
-  startedAt      DateTime?      // When handler execution began
-  completedAt    DateTime?      // When handler returned success
-  failedAt       DateTime?      // When handler threw / timed out
-  errorReason    String?
+  claimedAt             DateTime?       // When a worker atomically claimed this job
+  startedAt             DateTime?       // When handler execution began
+  completedAt           DateTime?       // When handler returned success
+  failedAt              DateTime?       // When handler threw / timed out
+  errorReason           String?
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
 
   // Restrict: prevent accidental cascade deletion of all job history when a
   // queue is removed. Force the admin to drain / archive jobs first.
-  queue          Queue          @relation(fields: [queueId], references: [id], onDelete: Restrict)
-  worker         Worker?        @relation(fields: [lastWorkerId], references: [id], onDelete: SetNull)
-  executions     JobExecution[]
-  logs           JobLog[]
-  deadLetterJob  DeadLetterJob? // 1:1 — if this job died, its DLQ entry points back here
+  queue                 Queue           @relation(fields: [queueId], references: [id], onDelete: Restrict)
+  workflow              Workflow?       @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  worker                Worker?         @relation(fields: [lastWorkerId], references: [id], onDelete: SetNull)
+  executions            JobExecution[]
+  logs                  JobLog[]
+  deadLetterJob         DeadLetterJob?  // 1:1 — if this job died, its DLQ entry points back here
+
+  parentDependencies    JobDependency[] @relation("ChildDependencies")
+  childDependencies     JobDependency[] @relation("ParentDependencies")
 
   // Indexes optimized for Worker FOR UPDATE SKIP LOCKED query performance
   @@unique([queueId, idempotencyKey])
   @@index([queueId, status, priority, availableAt]) // Primary claim index
   @@index([status, availableAt])                    // Scheduler promotion index
   @@index([lockedUntil, status])                    // Stale lease recovery index
+  @@index([workflowId])
   @@map("jobs")
+}
+
+model JobDependency {
+  id          String   @id @default(uuid())
+  parentJobId String
+  childJobId  String
+  createdAt   DateTime @default(now())
+
+  parentJob   Job      @relation("ParentDependencies", fields: [parentJobId], references: [id], onDelete: Cascade)
+  childJob    Job      @relation("ChildDependencies", fields: [childJobId], references: [id], onDelete: Cascade)
+
+  @@unique([parentJobId, childJobId])
+  @@index([parentJobId])
+  @@index([childJobId])
+  @@map("job_dependencies")
 }
 
 model JobExecution {

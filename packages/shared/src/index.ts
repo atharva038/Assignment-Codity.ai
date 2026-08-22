@@ -12,3 +12,5 @@ export * from './schemas/queue.js';
 export * from './schemas/retryPolicy.js';
 export * from './schemas/job.js';
 export * from './schemas/scheduledJob.js';
+export * from './schemas/workflow.js';
+export * from './utils/dag.js';

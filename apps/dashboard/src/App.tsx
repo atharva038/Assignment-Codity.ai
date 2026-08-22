@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Layers, ListFilter, Cpu, AlertOctagon, Plus, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, Layers, ListFilter, Cpu, AlertOctagon, Plus, RefreshCw, GitMerge } from 'lucide-react';
 import { useRealtimeTransport } from './hooks/useRealtimeTransport.js';
 import { TransportToggle } from './components/TransportToggle.js';
 import { Overview } from './components/Overview.js';
@@ -7,10 +7,11 @@ import { QueuesView } from './components/QueuesView.js';
 import { JobsView } from './components/JobsView.js';
 import { WorkersView } from './components/WorkersView.js';
 import { DlqView } from './components/DlqView.js';
+import { WorkflowsView } from './components/WorkflowsView.js';
 import { CreateJobModal } from './components/CreateJobModal.js';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'queues' | 'jobs' | 'workers' | 'dlq'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'queues' | 'jobs' | 'workers' | 'dlq' | 'workflows'>('overview');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const {
@@ -77,6 +78,7 @@ export function App() {
             { id: 'overview', label: 'Overview & Metrics', icon: LayoutDashboard },
             { id: 'queues', label: 'Queues & Controls', icon: Layers, count: queues.length },
             { id: 'jobs', label: 'Job Explorer', icon: ListFilter, count: stats.totalJobs },
+            { id: 'workflows', label: 'Workflows & DAGs', icon: GitMerge, badgeColor: 'bg-indigo-500/20 text-indigo-400' },
             { id: 'workers', label: 'Worker Fleet', icon: Cpu, count: stats.activeWorkers },
             { id: 'dlq', label: 'Dead Letter Queue', icon: AlertOctagon, count: stats.pendingDlq, badgeColor: 'bg-rose-500/20 text-rose-400' },
           ].map((tab) => {
@@ -110,6 +112,7 @@ export function App() {
         {activeTab === 'overview' && <Overview stats={stats} throughputData={throughputData} transportMode={transportMode} />}
         {activeTab === 'queues' && <QueuesView queues={queues} onRefresh={loadDashboardData} />}
         {activeTab === 'jobs' && <JobsView jobs={[]} onRefresh={loadDashboardData} lastUpdatedTs={lastUpdatedTs} />}
+        {activeTab === 'workflows' && <WorkflowsView onRefresh={loadDashboardData} lastUpdatedTs={lastUpdatedTs} />}
         {activeTab === 'workers' && <WorkersView workers={workers} />}
         {activeTab === 'dlq' && <DlqView dlqJobs={dlqJobs} onRefresh={loadDashboardData} />}
       </main>

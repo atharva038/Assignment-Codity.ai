@@ -22,6 +22,8 @@
  *   CANCELLED ──► terminal, set by user/API
  */
 export enum JobStatus {
+  /** Job blocked waiting on upstream DAG parent dependencies to complete */
+  BLOCKED = 'BLOCKED',
   /** Job created and awaiting a worker to claim it */
   QUEUED = 'QUEUED',
   /** Job set to run at a future timestamp (delayed or recurring) */
@@ -39,6 +41,22 @@ export enum JobStatus {
   /** Permanent failure after reaching maxAttempts; Job row kept, DLQ entry created */
   DEAD = 'DEAD',
   /** Job cancelled manually by user or API command */
+  CANCELLED = 'CANCELLED',
+}
+
+/**
+ * Operational states of a Multi-Job Workflow DAG.
+ */
+export enum WorkflowStatus {
+  /** Workflow created, awaiting initial job executions */
+  PENDING = 'PENDING',
+  /** At least one job in the workflow is actively executing or ready */
+  RUNNING = 'RUNNING',
+  /** All jobs in the workflow completed successfully */
+  COMPLETED = 'COMPLETED',
+  /** One or more jobs failed permanently causing workflow termination */
+  FAILED = 'FAILED',
+  /** Workflow manually cancelled by user */
   CANCELLED = 'CANCELLED',
 }
 

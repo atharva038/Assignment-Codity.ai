@@ -10,10 +10,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodSchema, ZodError } from 'zod';
 
-export function validate(schema: ZodSchema) {
+export function validate(schema: ZodSchema, target: 'body' | 'query' | 'params' = 'body') {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      req.body = await schema.parseAsync(req.body);
+      req[target] = await schema.parseAsync(req[target]);
       next();
     } catch (error) {
       if (error instanceof ZodError) {

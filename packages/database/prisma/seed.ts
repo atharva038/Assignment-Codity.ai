@@ -172,6 +172,79 @@ async function main() {
   });
 
   console.log('✅ Seeded initial demo jobs!');
+
+  // 7. Seed Sample Workflow DAG
+  const demoWf = await prisma.workflow.create({
+    data: {
+      projectId: demoProject.id,
+      name: 'Data Processing & Executive Summary Pipeline',
+      description: 'Automated 4-step fan-out fan-in DAG workflow',
+      status: 'RUNNING',
+    },
+  });
+
+  const jobA = await prisma.job.create({
+    data: {
+      queueId: reportQueue.id,
+      workflowId: demoWf.id,
+      type: 'report_generation',
+      payload: { reportType: 'raw_telemetry' },
+      priority: 30,
+      status: JobStatus.QUEUED,
+      unresolvedParentCount: 0,
+      availableAt: new Date(),
+    },
+  });
+
+  const jobB = await prisma.job.create({
+    data: {
+      queueId: emailQueue.id,
+      workflowId: demoWf.id,
+      type: 'email_notification',
+      payload: { to: 'devs@codity.ai', subject: 'Telemetry Ingested' },
+      priority: 20,
+      status: JobStatus.BLOCKED,
+      unresolvedParentCount: 1,
+      availableAt: new Date(),
+    },
+  });
+
+  const jobC = await prisma.job.create({
+    data: {
+      queueId: emailQueue.id,
+      workflowId: demoWf.id,
+      type: 'email_notification',
+      payload: { to: 'management@codity.ai', subject: 'Raw Data Ready' },
+      priority: 20,
+      status: JobStatus.BLOCKED,
+      unresolvedParentCount: 1,
+      availableAt: new Date(),
+    },
+  });
+
+  const jobD = await prisma.job.create({
+    data: {
+      queueId: reportQueue.id,
+      workflowId: demoWf.id,
+      type: 'report_generation',
+      payload: { reportType: 'FINAL_EXEC_PDF' },
+      priority: 10,
+      status: JobStatus.BLOCKED,
+      unresolvedParentCount: 2,
+      availableAt: new Date(),
+    },
+  });
+
+  await prisma.jobDependency.createMany({
+    data: [
+      { parentJobId: jobA.id, childJobId: jobB.id },
+      { parentJobId: jobA.id, childJobId: jobC.id },
+      { parentJobId: jobB.id, childJobId: jobD.id },
+      { parentJobId: jobC.id, childJobId: jobD.id },
+    ],
+  });
+
+  console.log('✅ Seeded demo workflow DAG:', demoWf.name);
   console.log('🎉 Seeding completed successfully.');
 }
 

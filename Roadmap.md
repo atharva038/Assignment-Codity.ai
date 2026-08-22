@@ -1188,7 +1188,7 @@ Pick **1–2**, not all of them.
 ### Medium
 
 * [ ] Distributed locking
-* [ ] Workflow dependencies
+* [x] Workflow dependencies
 
 ### Hard
 

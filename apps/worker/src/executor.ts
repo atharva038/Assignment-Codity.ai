@@ -11,6 +11,7 @@ import { prisma, Job, JobStatus, ExecutionStatus, LogLevel, DLQResolutionStatus 
 import { calculateRetryDelay, RetryPolicyType } from '@job-scheduler/shared';
 import { logger } from '@job-scheduler/logger';
 import { getJobHandler } from './handlers/registry.js';
+import { onJobCompleted, onJobFailedOrCancelled } from './dependencyEngine.js';
 
 export async function executeJob(job: Job & { queue?: any }, workerId: string): Promise<void> {
   const startTime = Date.now();
@@ -90,6 +91,9 @@ export async function executeJob(job: Job & { queue?: any }, workerId: string): 
     });
 
     logger.info({ jobId: job.id, durationMs }, '✅ Job execution completed successfully');
+
+    // Evaluate DAG child dependency resolution
+    await onJobCompleted(job.id);
   } catch (err: any) {
     const durationMs = Date.now() - startTime;
     const errorReason = err?.message || 'Unknown execution error';
@@ -209,6 +213,9 @@ export async function executeJob(job: Job & { queue?: any }, workerId: string): 
       ]);
 
       logger.error({ jobId: job.id, attempts: attemptNumber }, '☠️ Job attempts exhausted. Routed to DLQ');
+
+      // Trigger cascading cancellation for downstream child DAG dependencies
+      await onJobFailedOrCancelled(job.id, errorReason);
     }
   }
 }

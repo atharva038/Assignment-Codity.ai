@@ -21,6 +21,7 @@ import { jobsRouter } from './routes/jobs.js';
 import { dlqRouter } from './routes/dlq.js';
 import { scheduledJobsRouter } from './routes/scheduledJobs.js';
 import { workersRouter } from './routes/workers.js';
+import { workflowsRouter } from './routes/workflows.js';
 
 export function createApp(): Express {
   const app = express();
@@ -50,6 +51,7 @@ export function createApp(): Express {
   app.use('/api/v1/dlq', dlqRouter);
   app.use('/api/v1/scheduled-jobs', scheduledJobsRouter);
   app.use('/api/v1/workers', workersRouter);
+  app.use('/api/v1/workflows', workflowsRouter);
 
   // Global 404 Route Handler
   app.use((_req: Request, res: Response) => {

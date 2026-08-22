@@ -195,7 +195,8 @@ queuesRouter.get('/:id/stats', async (req: Request, res: Response) => {
     _count: { _all: true },
   });
 
-  const stats = {
+  const stats: Record<string, number> = {
+    BLOCKED: 0,
     QUEUED: 0,
     SCHEDULED: 0,
     CLAIMED: 0,
