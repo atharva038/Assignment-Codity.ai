@@ -13,9 +13,10 @@ interface OverviewProps {
     activeWorkers: number;
   };
   throughputData: Array<{ time: string; completed: number; failed: number }>;
+  transportMode?: 'polling' | 'websocket';
 }
 
-export const Overview: React.FC<OverviewProps> = ({ stats, throughputData }) => {
+export const Overview: React.FC<OverviewProps> = ({ stats, throughputData, transportMode = 'polling' }) => {
   const totalFinished = stats.completed + stats.failed + stats.dead;
   const successRate = totalFinished > 0 ? Math.round((stats.completed / totalFinished) * 100) : 100;
 
@@ -113,10 +114,15 @@ export const Overview: React.FC<OverviewProps> = ({ stats, throughputData }) => 
               </h4>
               <p className="text-xs text-slate-400">Real-time completed vs failed execution velocity</p>
             </div>
-            <span className="self-start sm:self-auto px-3 py-1 bg-brand-500/10 text-brand-400 text-[11px] font-semibold rounded-full border border-brand-500/20">
-              Live Polling (3s)
+            <span className={`self-start sm:self-auto px-3 py-1 text-[11px] font-semibold rounded-full border ${
+              transportMode === 'websocket'
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                : 'bg-brand-500/10 text-brand-400 border-brand-500/20'
+            }`}>
+              {transportMode === 'websocket' ? '⚡ Live WebSocket Push (2s)' : 'Live Polling (3s)'}
             </span>
           </div>
+
 
           <div className="h-56 sm:h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">

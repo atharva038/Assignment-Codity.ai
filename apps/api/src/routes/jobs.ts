@@ -11,6 +11,8 @@ import { prisma, JobStatus, DLQResolutionStatus } from '@job-scheduler/database'
 import { createJobSchema, batchCreateJobSchema, jobQuerySchema } from '@job-scheduler/shared';
 import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { emitStatsSnapshot } from '../ws/statsEmitter.js';
+
 
 export const jobsRouter = Router();
 
@@ -78,11 +80,14 @@ jobsRouter.post('/', validate(createJobSchema), async (req: Request, res: Respon
     },
   });
 
+  emitStatsSnapshot().catch(() => {});
+
   res.status(201).json({
     message: isDelayed ? 'Delayed job scheduled successfully' : 'Job created and queued successfully',
     job,
     deduplicated: false,
   });
+
 });
 
 /**

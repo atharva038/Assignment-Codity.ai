@@ -31,3 +31,7 @@ export interface SystemMetricsSummary {
   successRatePercentage: number;
   averageExecutionTimeMs: number;
 }
+
+export * from './ws-events.js';
+
+

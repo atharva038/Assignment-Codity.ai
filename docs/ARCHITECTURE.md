@@ -33,10 +33,12 @@ graph TD
 
 ## 2. Component Specifications
 
-### A. Express API Layer (`apps/api`)
+### A. Express API Layer & WebSocket Server (`apps/api`)
 - **JWT Authentication & Tenant Security**: Parses Bearer tokens and enforces multi-tenant organization boundaries.
 - **Zod Request Validation**: Validates all incoming payloads before database mutation.
 - **Job Ingestion Engine**: Handles single jobs, delayed jobs (`availableAt`), batch requests, and `idempotencyKey` deduplication.
+- **Real-Time WebSocket Transport**: `WsManager` server attached to `/ws` providing real-time `stats:snapshot` push and Redis Pub/Sub event broadcasting with dual-mode HTTP Polling toggle (see [WEBSOCKET_IMPLEMENTATION.md](file:///Users/atharva_beast/Desktop/Coading/Assignment-Codity.ai/docs/WEBSOCKET_IMPLEMENTATION.md)).
+
 
 ### B. Database Layer (`packages/database` — PostgreSQL 16)
 - **Atomic Job Claiming**: Uses native `SELECT ... FOR UPDATE SKIP LOCKED` for zero-contention row locking.

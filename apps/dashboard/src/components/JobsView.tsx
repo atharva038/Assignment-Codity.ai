@@ -21,9 +21,10 @@ interface JobItem {
 interface JobsViewProps {
   jobs: JobItem[];
   onRefresh: () => void;
+  lastUpdatedTs?: number;
 }
 
-export const JobsView: React.FC<JobsViewProps> = ({ onRefresh }) => {
+export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null);
@@ -36,8 +37,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh }) => {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
 
-  const fetchServerJobs = async () => {
-    setLoading(true);
+  const fetchServerJobs = async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     try {
       const params = new URLSearchParams({
         page: currentPage.toString(),
@@ -61,13 +62,20 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh }) => {
     } catch (err) {
       console.error('Error fetching server jobs:', err);
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchServerJobs();
+    fetchServerJobs(false);
   }, [currentPage, selectedStatus, searchQuery]);
+
+  useEffect(() => {
+    if (lastUpdatedTs) {
+      fetchServerJobs(true);
+    }
+  }, [lastUpdatedTs]);
+
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
