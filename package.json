@@ -10,23 +10,22 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "typecheck": "npm run typecheck --workspaces",
-    "test": "npm run test:api && npm run test:worker && npm run test:scheduler",
-    "test:api": "tsx scripts/test-api.ts",
-    "test:ws": "tsx scripts/test-websocket.ts",
-    "test:redis": "tsx scripts/test-redis.ts",
-    "test:worker": "tsx scripts/test-worker.ts",
-
-
-    "test:scheduler": "tsx scripts/test-scheduler.ts",
+    "dev:api": "npm run dev --workspace=@job-scheduler/api",
+    "dev:worker": "npm run dev --workspace=@job-scheduler/worker",
+    "dev:scheduler": "npm run dev --workspace=@job-scheduler/scheduler",
+    "dev:dashboard": "npm run dev --workspace=@job-scheduler/dashboard",
     "db:generate": "npm run db:generate --workspace=@job-scheduler/database",
     "db:migrate": "npm run db:migrate --workspace=@job-scheduler/database",
     "db:push": "npm run db:push --workspace=@job-scheduler/database",
     "db:seed": "npm run db:seed --workspace=@job-scheduler/database",
     "db:studio": "npm run db:studio --workspace=@job-scheduler/database",
-    "dev:api": "npm run dev --workspace=@job-scheduler/api",
-    "dev:worker": "npm run dev --workspace=@job-scheduler/worker",
-    "dev:scheduler": "npm run dev --workspace=@job-scheduler/scheduler",
-    "dev:dashboard": "npm run dev --workspace=@job-scheduler/dashboard"
+    "test": "npm run test:api && npm run test:ws && npm run test:redis && npm run test:worker && npm run test:scheduler",
+    "test:api": "tsx scripts/test-api.ts",
+    "test:ws": "tsx scripts/test-websocket.ts",
+    "test:redis": "tsx scripts/test-redis.ts",
+    "test:worker": "tsx scripts/test-worker.ts",
+    "test:scheduler": "tsx scripts/test-scheduler.ts",
+    "redis:monitor": "tsx scripts/monitor-redis.ts"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
