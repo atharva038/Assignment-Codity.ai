@@ -19,14 +19,16 @@
     "db:push": "npm run db:push --workspace=@job-scheduler/database",
     "db:seed": "npm run db:seed --workspace=@job-scheduler/database",
     "db:studio": "npm run db:studio --workspace=@job-scheduler/database",
-    "test": "npm run test:api && npm run test:ws && npm run test:redis && npm run test:worker && npm run test:scheduler && npm run test:workflows",
+    "test": "npm run test:api && npm run test:ws && npm run test:redis && npm run test:ratelimit && npm run test:worker && npm run test:scheduler && npm run test:workflows",
     "test:api": "tsx scripts/test-api.ts",
     "test:ws": "tsx scripts/test-websocket.ts",
     "test:redis": "tsx scripts/test-redis.ts",
+    "test:ratelimit": "tsx scripts/test-rate-limit.ts",
     "test:worker": "tsx scripts/test-worker.ts",
     "test:scheduler": "tsx scripts/test-scheduler.ts",
     "test:workflows": "tsx scripts/test-workflows.ts",
     "test:ai": "tsx scripts/test-ai-summary.ts",
+
     "redis:monitor": "tsx scripts/monitor-redis.ts"
   },
   "devDependencies": {

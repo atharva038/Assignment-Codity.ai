@@ -1,6 +1,8 @@
 import React from 'react';
 import { AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Layers, Activity, CheckCircle2, Cpu, Zap, TrendingUp, AlertOctagon } from 'lucide-react';
+import { RateLimitStats } from './RateLimitStats';
+
 
 interface OverviewProps {
   stats: {
@@ -104,7 +106,11 @@ export const Overview: React.FC<OverviewProps> = ({ stats, throughputData, trans
       </div>
 
       {/* Visual Graphs — Responsive Grid */}
+      <RateLimitStats />
+
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+
         {/* Throughput Area Chart */}
         <div className="lg:col-span-2 glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-2xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 sm:mb-6">

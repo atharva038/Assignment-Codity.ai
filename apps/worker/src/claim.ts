@@ -14,6 +14,7 @@
  */
 
 import { prisma, Prisma, Job, JobStatus } from '@job-scheduler/database';
+import { checkRateLimit } from '@job-scheduler/redis';
 
 export interface ClaimJobsOptions {
   workerId: string;
@@ -36,8 +37,8 @@ export async function claimJobs(options: ClaimJobsOptions): Promise<Job[]> {
   const claimedJobs = await prisma.$transaction(async (tx) => {
     // Raw query selecting candidate jobs from ACTIVE queues where availableAt <= NOW()
     const candidateJobs = queueId
-      ? await tx.$queryRaw<Array<{ id: string; timeoutMs: number }>>`
-          SELECT j."id", j."timeoutMs"
+      ? await tx.$queryRaw<Array<{ id: string; timeoutMs: number; queueId: string }>>`
+          SELECT j."id", j."timeoutMs", j."queueId"
           FROM "jobs" j
           INNER JOIN "queues" q ON j."queueId" = q."id"
           WHERE j."status" = ${JobStatus.QUEUED}::"JobStatus"
@@ -48,8 +49,8 @@ export async function claimJobs(options: ClaimJobsOptions): Promise<Job[]> {
           FOR UPDATE SKIP LOCKED
           LIMIT ${batchSize};
         `
-      : await tx.$queryRaw<Array<{ id: string; timeoutMs: number }>>`
-          SELECT j."id", j."timeoutMs"
+      : await tx.$queryRaw<Array<{ id: string; timeoutMs: number; queueId: string }>>`
+          SELECT j."id", j."timeoutMs", j."queueId"
           FROM "jobs" j
           INNER JOIN "queues" q ON j."queueId" = q."id"
           WHERE j."status" = ${JobStatus.QUEUED}::"JobStatus"
@@ -64,9 +65,37 @@ export async function claimJobs(options: ClaimJobsOptions): Promise<Job[]> {
       return [];
     }
 
-    const candidateIds = candidateJobs.map((j) => j.id);
+    // Filter candidate jobs by Queue Rate Limits
+    const candidateQueueIds = Array.from(new Set(candidateJobs.map(j => j.queueId)));
+    const queues = await tx.queue.findMany({
+      where: { id: { in: candidateQueueIds } },
+      select: { id: true, rateLimitMaxJobs: true, rateLimitWindowMs: true },
+    });
 
-    // Atomically transition claimed jobs to CLAIMED / RUNNING state
+    const queueMap = new Map(queues.map(q => [q.id, q]));
+    const allowedCandidateIds: string[] = [];
+
+    for (const job of candidateJobs) {
+      const q = queueMap.get(job.queueId);
+      if (q && q.rateLimitMaxJobs && q.rateLimitMaxJobs > 0) {
+        const rateCheck = await checkRateLimit(
+          `queue_exec:${q.id}`,
+          q.rateLimitMaxJobs,
+          q.rateLimitWindowMs || 60000
+        );
+        if (rateCheck.allowed) {
+          allowedCandidateIds.push(job.id);
+        }
+      } else {
+        allowedCandidateIds.push(job.id);
+      }
+    }
+
+    if (allowedCandidateIds.length === 0) {
+      return [];
+    }
+
+    // Atomically transition allowed candidate jobs to CLAIMED / RUNNING state
     const now = new Date();
     await tx.$executeRaw`
       UPDATE "jobs"
@@ -77,12 +106,12 @@ export async function claimJobs(options: ClaimJobsOptions): Promise<Job[]> {
           "attempts" = "attempts" + 1,
           "lockedUntil" = ${now} + ("timeoutMs" * INTERVAL '1 millisecond'),
           "updatedAt" = ${now}
-      WHERE "id" IN (${Prisma.join(candidateIds)});
+      WHERE "id" IN (${Prisma.join(allowedCandidateIds)});
     `;
 
     // Fetch full updated Job objects
     const jobs = await tx.job.findMany({
-      where: { id: { in: candidateIds } },
+      where: { id: { in: allowedCandidateIds } },
       include: {
         queue: {
           include: {
@@ -97,3 +126,4 @@ export async function claimJobs(options: ClaimJobsOptions): Promise<Job[]> {
 
   return claimedJobs;
 }
+

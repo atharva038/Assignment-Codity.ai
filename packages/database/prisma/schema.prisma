@@ -168,6 +168,8 @@ model Queue {
   priority         Int            @default(10) // Higher value = higher processing priority
   concurrencyLimit Int            @default(5)  // Max active jobs running in parallel for this queue
   status           QueueStatus    @default(ACTIVE)
+  rateLimitWindowMs Int           @default(60000) // Execution window duration in ms
+  rateLimitMaxJobs  Int?          // Max job executions allowed per window (null = unlimited)
   retryPolicyId    String?
   jobs             Job[]
   scheduledJobs    ScheduledJob[]

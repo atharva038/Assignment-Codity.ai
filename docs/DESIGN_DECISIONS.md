@@ -53,3 +53,14 @@ This document details the core architectural rationale and trade-offs made durin
 
 ### Decision: $T_{delay} = \min(T_{initial} \times M^{attempts-1}, T_{max}) \pm \text{Jitter}$
 - **Why**: Adding randomized jitter (+/-10%) prevents the "Thundering Herd" problem, ensuring that multiple failing jobs do not retry at the exact same microsecond and overload downstream services.
+
+---
+
+## 7. Distributed Rate Limiting: Redis Sliding Window Log + In-Memory Fallback
+
+### Decision: Redis Sorted Sets (`ZSET`) with Automatic Thread-Safe Memory Fallback
+- **Why**:
+  1. **Precision Sliding Window**: Fixed window counters suffer from boundary bursts (2x limit at window edge). Sliding window logs using Redis `ZSET` (`ZADD`, `ZREMRANGEBYSCORE`, `ZCARD`) provide exact millisecond sliding window enforcement.
+  2. **Zero-Downtime Resilience**: If Redis goes offline or suffers a network hiccup, the rate limiter automatically degrades gracefully to an in-memory Map with sliding timestamp arrays. The API service continues serving requests safely without crashing.
+  3. **Queue Execution Throttling**: Workers check queue-level rate limits (`q.rateLimitMaxJobs`) before claiming jobs. If a queue exceeds its limit, jobs stay safely in `QUEUED` state and worker claiming for that queue is deferred until the window resets — guaranteeing zero job loss.
+

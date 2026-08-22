@@ -7,10 +7,13 @@ interface QueueItem {
   name: string;
   priority: number;
   concurrencyLimit: number;
+  rateLimitMaxJobs?: number | null;
+  rateLimitWindowMs?: number;
   status: 'ACTIVE' | 'PAUSED';
   retryPolicy?: { name: string; type: string; maxAttempts: number };
   _count?: { jobs: number };
 }
+
 
 interface QueuesViewProps {
   queues: QueueItem[];
@@ -25,6 +28,7 @@ export const QueuesView: React.FC<QueuesViewProps> = ({ queues, onRefresh }) => 
   const [queueName, setQueueName] = useState<string>('');
   const [priority, setPriority] = useState<number>(20);
   const [concurrencyLimit, setConcurrencyLimit] = useState<number>(5);
+  const [rateLimitMaxJobs, setRateLimitMaxJobs] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -66,10 +70,13 @@ export const QueuesView: React.FC<QueuesViewProps> = ({ queues, onRefresh }) => 
           name: queueName.trim().toLowerCase().replace(/\s+/g, '-'),
           priority: Number(priority),
           concurrencyLimit: Number(concurrencyLimit),
+          rateLimitMaxJobs: rateLimitMaxJobs ? Number(rateLimitMaxJobs) : null,
         }),
       });
 
       setQueueName('');
+      setRateLimitMaxJobs('');
+
       setIsCreateModalOpen(false);
       onRefresh();
     } catch (err: any) {
@@ -316,6 +323,20 @@ export const QueuesView: React.FC<QueuesViewProps> = ({ queues, onRefresh }) => 
                 />
                 <span className="text-[11px] text-slate-500 mt-1 block">Max parallel worker threads allowed for this queue.</span>
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Execution Rate Limit (Max Jobs / Min)</label>
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Optional (e.g. 30)"
+                  value={rateLimitMaxJobs}
+                  onChange={(e) => setRateLimitMaxJobs(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500 font-mono"
+                />
+                <span className="text-[11px] text-slate-500 mt-1 block">Max job executions allowed per 60s window (leave empty for unlimited).</span>
+              </div>
+
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
                 <button

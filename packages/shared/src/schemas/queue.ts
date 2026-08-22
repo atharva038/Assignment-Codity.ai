@@ -13,6 +13,8 @@ export const createQueueSchema = z.object({
   priority: z.number().int().min(1).max(100).default(10),
   concurrencyLimit: z.number().int().min(1).max(100).default(5),
   retryPolicyId: z.string().uuid('Invalid Retry Policy UUID').optional(),
+  rateLimitWindowMs: z.number().int().min(1000).max(86400000).optional(),
+  rateLimitMaxJobs: z.number().int().min(1).nullable().optional(),
 });
 
 export const updateQueueSchema = z.object({
@@ -20,7 +22,10 @@ export const updateQueueSchema = z.object({
   concurrencyLimit: z.number().int().min(1).max(100).optional(),
   status: z.nativeEnum(QueueStatus).optional(),
   retryPolicyId: z.string().uuid('Invalid Retry Policy UUID').nullable().optional(),
+  rateLimitWindowMs: z.number().int().min(1000).max(86400000).optional(),
+  rateLimitMaxJobs: z.number().int().min(1).nullable().optional(),
 });
+
 
 export type CreateQueueInput = z.infer<typeof createQueueSchema>;
 export type UpdateQueueInput = z.infer<typeof updateQueueSchema>;

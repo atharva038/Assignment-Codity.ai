@@ -22,7 +22,7 @@ queuesRouter.use(authenticateToken);
  */
 queuesRouter.post('/', validate(createQueueSchema), async (req: Request, res: Response) => {
   let targetProjectId = req.body.projectId;
-  const { name, priority, concurrencyLimit, retryPolicyId } = req.body;
+  const { name, priority, concurrencyLimit, retryPolicyId, rateLimitWindowMs, rateLimitMaxJobs } = req.body;
 
   if (!targetProjectId) {
     const userProj = await prisma.project.findFirst();
@@ -56,6 +56,8 @@ queuesRouter.post('/', validate(createQueueSchema), async (req: Request, res: Re
       priority,
       concurrencyLimit,
       retryPolicyId,
+      rateLimitWindowMs,
+      rateLimitMaxJobs,
     },
     include: {
       retryPolicy: true,
@@ -64,6 +66,7 @@ queuesRouter.post('/', validate(createQueueSchema), async (req: Request, res: Re
 
   res.status(201).json({ message: 'Queue created successfully', queue });
 });
+
 
 /**
  * GET /api/v1/queues
@@ -128,7 +131,7 @@ queuesRouter.get('/:id', async (req: Request, res: Response) => {
  */
 queuesRouter.put('/:id', validate(updateQueueSchema), async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { priority, concurrencyLimit, status, retryPolicyId } = req.body;
+  const { priority, concurrencyLimit, status, retryPolicyId, rateLimitWindowMs, rateLimitMaxJobs } = req.body;
 
   const existingQueue = await prisma.queue.findUnique({ where: { id } });
   if (!existingQueue) {
@@ -143,6 +146,8 @@ queuesRouter.put('/:id', validate(updateQueueSchema), async (req: Request, res: 
       ...(concurrencyLimit !== undefined && { concurrencyLimit }),
       ...(status !== undefined && { status }),
       ...(retryPolicyId !== undefined && { retryPolicyId }),
+      ...(rateLimitWindowMs !== undefined && { rateLimitWindowMs }),
+      ...(rateLimitMaxJobs !== undefined && { rateLimitMaxJobs }),
     },
     include: {
       retryPolicy: true,
@@ -151,6 +156,7 @@ queuesRouter.put('/:id', validate(updateQueueSchema), async (req: Request, res: 
 
   res.status(200).json({ message: 'Queue updated successfully', queue });
 });
+
 
 /**
  * POST /api/v1/queues/:id/pause

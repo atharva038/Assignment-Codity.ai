@@ -47,4 +47,4 @@ export function createRedisClient(): Redis {
     lazyConnect: true,
   });
 }
-
+export * from './rateLimiter.js';

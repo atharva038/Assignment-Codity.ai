@@ -12,8 +12,10 @@
   "dependencies": {
     "@job-scheduler/database": "*",
     "@job-scheduler/logger": "*",
+    "@job-scheduler/redis": "*",
     "@job-scheduler/shared": "*",
     "dotenv": "^16.4.5"
+
   },
   "devDependencies": {
     "@types/node": "^20.11.24",

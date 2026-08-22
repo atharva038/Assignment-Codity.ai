@@ -100,3 +100,32 @@ Creates a recurring cron job (e.g. `cronExpression: "*/5 * * * *"`).
 
 ### `POST /scheduled-jobs/:id/toggle`
 Enables or disables recurring schedule.
+
+---
+
+## 6. Rate Limiting & HTTP Headers
+
+All API endpoints enforce sliding-window rate limits and append standard RFC response headers:
+
+### Response Headers
+- `X-RateLimit-Limit`: Maximum permitted request capacity within current window.
+- `X-RateLimit-Remaining`: Remaining request capacity in current window.
+- `X-RateLimit-Reset`: Unix timestamp (in seconds) when window resets.
+
+### Default Tier Limits
+- **Global API Rate Limit**: 120 requests/minute per IP / User.
+- **Strict Auth Guard (`/auth/login`, `/auth/register`)**: 10 requests/minute per IP.
+- **Job Creation Ingestion (`POST /jobs`)**: 60 requests/minute per Tenant / Project.
+
+### HTTP 429 Too Many Requests Error Response
+When a client exceeds the allocated rate limit:
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded. Maximum 10 requests allowed per 60 seconds. Please try again in 45 seconds.",
+  "retryAfter": 45,
+  "resetTime": 1787415400
+}
+```
+Header: `Retry-After: 45`
+
