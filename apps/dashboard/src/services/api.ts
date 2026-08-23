@@ -36,6 +36,7 @@ export function subscribeAuthChange(callback: (token: string | null) => void) {
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getAuthToken();
+  const activeOrgId = localStorage.getItem('active_org_id');
 
   if (!token && endpoint !== '/auth/login' && endpoint !== '/auth/register') {
     throw new Error('Authentication required');
@@ -44,6 +45,7 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(activeOrgId ? { 'x-organization-id': activeOrgId } : {}),
     ...(options.headers || {}),
   };
 

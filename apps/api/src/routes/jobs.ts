@@ -19,6 +19,7 @@ import {
 import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { emitStatsSnapshot } from '../ws/statsEmitter.js';
+import { getActiveOrgId } from '../middleware/tenant.js';
 
 export const jobsRouter = Router();
 
@@ -257,6 +258,7 @@ jobsRouter.post('/sharded', validate(shardedCreateJobSchema), async (req: Reques
  */
 jobsRouter.get('/', async (req: Request, res: Response) => {
   const { queueId, status, type, workerId, search, page = '1', limit = '20' } = req.query;
+  const activeOrgId = getActiveOrgId(req);
 
   const pageNum = Math.max(1, parseInt(page as string, 10));
   const limitNum = Math.min(1000, Math.max(1, parseInt(limit as string, 10)));
@@ -266,7 +268,10 @@ jobsRouter.get('/', async (req: Request, res: Response) => {
 
   if (queueId && typeof queueId === 'string') {
     whereClause.queueId = queueId;
+  } else if (activeOrgId) {
+    whereClause.queue = { project: { organizationId: activeOrgId } };
   }
+
   if (status && typeof status === 'string') {
     whereClause.status = status;
   }
@@ -316,16 +321,20 @@ jobsRouter.get('/', async (req: Request, res: Response) => {
  * GET /api/v1/jobs/stats
  * Returns high-performance integer metrics (total, queued, running, completed, failed, dead).
  */
-jobsRouter.get('/stats', async (_req: Request, res: Response) => {
+jobsRouter.get('/stats', async (req: Request, res: Response) => {
+  const activeOrgId = getActiveOrgId(req);
+  const orgFilter = activeOrgId ? { queue: { project: { organizationId: activeOrgId } } } : {};
+  const dlqOrgFilter = activeOrgId ? { queue: { project: { organizationId: activeOrgId } } } : {};
+
   const [total, queued, running, completed, failed, dead, pendingDlq, totalDlq] = await Promise.all([
-    prisma.job.count(),
-    prisma.job.count({ where: { status: JobStatus.QUEUED } }),
-    prisma.job.count({ where: { status: JobStatus.RUNNING } }),
-    prisma.job.count({ where: { status: JobStatus.COMPLETED } }),
-    prisma.job.count({ where: { status: { in: [JobStatus.FAILED, JobStatus.RETRYING] } } }),
-    prisma.job.count({ where: { status: JobStatus.DEAD } }),
-    prisma.deadLetterJob.count({ where: { resolutionStatus: DLQResolutionStatus.PENDING } }),
-    prisma.deadLetterJob.count(),
+    prisma.job.count({ where: orgFilter }),
+    prisma.job.count({ where: { ...orgFilter, status: JobStatus.QUEUED } }),
+    prisma.job.count({ where: { ...orgFilter, status: JobStatus.RUNNING } }),
+    prisma.job.count({ where: { ...orgFilter, status: JobStatus.COMPLETED } }),
+    prisma.job.count({ where: { ...orgFilter, status: { in: [JobStatus.FAILED, JobStatus.RETRYING] } } }),
+    prisma.job.count({ where: { ...orgFilter, status: JobStatus.DEAD } }),
+    prisma.deadLetterJob.count({ where: { ...dlqOrgFilter, resolutionStatus: DLQResolutionStatus.PENDING } }),
+    prisma.deadLetterJob.count({ where: dlqOrgFilter }),
   ]);
 
   res.status(200).json({ stats: { total, queued, running, completed, failed, dead, pendingDlq, totalDlq } });

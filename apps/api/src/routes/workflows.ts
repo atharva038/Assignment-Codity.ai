@@ -17,6 +17,7 @@ import {
 import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { emitStatsSnapshot } from '../ws/statsEmitter.js';
+import { getActiveOrgId } from '../middleware/tenant.js';
 
 export const workflowsRouter = Router();
 
@@ -153,9 +154,15 @@ workflowsRouter.post('/', validate(CreateWorkflowSchema), async (req: Request, r
  */
 workflowsRouter.get('/', validate(WorkflowQuerySchema, 'query'), async (req: Request, res: Response) => {
   const { projectId, status, page = 1, limit = 10 } = req.query as any;
+  const activeOrgId = getActiveOrgId(req);
 
   const where: any = {};
-  if (projectId) where.projectId = projectId;
+  if (projectId) {
+    where.projectId = projectId;
+  } else if (activeOrgId) {
+    where.project = { organizationId: activeOrgId };
+  }
+
   if (status) where.status = status;
 
   const skip = (Number(page) - 1) * Number(limit);

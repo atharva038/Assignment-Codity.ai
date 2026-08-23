@@ -42,9 +42,17 @@ organizationsRouter.post('/', validate(createOrganizationSchema), async (req: Re
           role: OrgRole.OWNER,
         },
       },
+      projects: {
+        create: {
+          name: 'Default Project',
+          slug: 'default-project',
+          description: 'Default project automatically provisioned for organization.',
+        },
+      },
     },
     include: {
       members: true,
+      projects: true,
     },
   });
 

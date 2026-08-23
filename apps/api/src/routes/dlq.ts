@@ -10,6 +10,7 @@ import { Router, Request, Response } from 'express';
 import { prisma, JobStatus, DLQResolutionStatus, Role } from '@job-scheduler/database';
 import { authenticateToken } from '../middleware/auth.js';
 import { requireSystemRole } from '../middleware/rbac.js';
+import { getActiveOrgId } from '../middleware/tenant.js';
 
 export const dlqRouter = Router();
 
@@ -21,6 +22,7 @@ dlqRouter.use(authenticateToken);
  */
 dlqRouter.get('/', async (req: Request, res: Response) => {
   const { queueId, resolutionStatus, page = '1', limit = '20' } = req.query;
+  const activeOrgId = getActiveOrgId(req);
 
   const pageNum = Math.max(1, parseInt(page as string, 10));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10)));
@@ -30,6 +32,8 @@ dlqRouter.get('/', async (req: Request, res: Response) => {
 
   if (queueId && typeof queueId === 'string') {
     whereClause.queueId = queueId;
+  } else if (activeOrgId) {
+    whereClause.queue = { project: { organizationId: activeOrgId } };
   }
   if (resolutionStatus && (resolutionStatus === 'PENDING' || resolutionStatus === 'RETRIED' || resolutionStatus === 'ARCHIVED')) {
     whereClause.resolutionStatus = resolutionStatus;

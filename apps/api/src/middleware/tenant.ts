@@ -54,3 +54,18 @@ export function requireOrgMember() {
     next();
   };
 }
+
+/**
+ * Extracts active organization ID from x-organization-id header or query param.
+ */
+export function getActiveOrgId(req: Request): string | undefined {
+  const headerOrgId = req.headers['x-organization-id'];
+  if (typeof headerOrgId === 'string' && headerOrgId.trim()) {
+    return headerOrgId.trim();
+  }
+  const queryOrgId = req.query.organizationId;
+  if (typeof queryOrgId === 'string' && queryOrgId.trim()) {
+    return queryOrgId.trim();
+  }
+  return undefined;
+}

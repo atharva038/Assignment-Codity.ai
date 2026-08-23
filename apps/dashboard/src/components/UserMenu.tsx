@@ -11,15 +11,17 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.js';
 import { InviteMemberModal } from './InviteMemberModal.js';
+import { CreateOrgModal } from './CreateOrgModal.js';
 
 interface UserMenuProps {
   variant?: 'sidebar' | 'header';
 }
 
 export function UserMenu({ variant = 'sidebar' }: UserMenuProps) {
-  const { user, isAdmin, orgRole, orgName, switchPersona, logout } = useAuth();
+  const { user, isAdmin, orgRole, orgName, orgId, setActiveOrgId, switchPersona, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -190,6 +192,47 @@ export function UserMenu({ variant = 'sidebar' }: UserMenuProps) {
             </div>
           )}
 
+          {/* Multi-Org Switcher if multiple memberships */}
+          {user?.memberships && user.memberships.length > 1 && (
+            <div className="mb-2 p-2 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 px-1 mb-1">
+                Switch Organization
+              </div>
+              {user.memberships.map((m) => (
+                <button
+                  key={m.organization.id}
+                  onClick={() => {
+                    setActiveOrgId(m.organization.id);
+                    setDropdownOpen(false);
+                  }}
+                  className={`w-full px-2 py-1.5 rounded-lg text-left text-[11px] flex items-center justify-between transition-all ${
+                    m.organization.id === orgId
+                      ? 'bg-orange-500/20 text-orange-300 font-bold'
+                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                  }`}
+                >
+                  <span className="truncate">{m.organization.name}</span>
+                  <span className="text-[9px] font-mono uppercase text-zinc-500">{m.role}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Register Organization Action */}
+          <div className="mb-1">
+            <button
+              type="button"
+              onClick={() => {
+                setDropdownOpen(false);
+                setCreateOrgModalOpen(true);
+              }}
+              className="w-full px-2.5 py-1.5 rounded-lg text-left text-[11px] font-semibold text-zinc-300 hover:bg-zinc-900 hover:text-orange-400 flex items-center gap-2 transition-all"
+            >
+              <Building className="w-3.5 h-3.5 text-orange-400" />
+              <span>Register New Organization</span>
+            </button>
+          </div>
+
           {/* Actions */}
           <div className="space-y-1 pt-1 border-t border-zinc-800/80">
             <button
@@ -207,6 +250,7 @@ export function UserMenu({ variant = 'sidebar' }: UserMenuProps) {
 
       {/* Modals */}
       <InviteMemberModal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)} />
+      <CreateOrgModal isOpen={createOrgModalOpen} onClose={() => setCreateOrgModalOpen(false)} />
     </div>
   );
 }

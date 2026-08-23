@@ -42,6 +42,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, name: string, organizationName?: string) => Promise<boolean>;
   switchPersona: (persona: PersonaType) => Promise<boolean>;
+  createOrganization: (name: string, slug?: string) => Promise<any>;
+  setActiveOrgId: (orgId: string) => void;
   inviteMember: (data: { email: string; name?: string; role: 'MEMBER' | 'ADMIN'; permissions?: string[]; password?: string }) => Promise<any>;
   fetchMembers: () => Promise<any[]>;
   updateMemberRole: (userId: string, role: 'MEMBER' | 'ADMIN' | 'OWNER', permissions?: string[]) => Promise<any>;
@@ -60,6 +62,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeOrgId, setActiveOrgIdState] = useState<string>(() => {
+    return localStorage.getItem('active_org_id') || '';
+  });
 
   const fetchProfile = useCallback(async () => {
     const token = getAuthToken();
@@ -73,10 +78,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await fetchApi<{ user: UserProfile }>('/auth/me');
       if (res.user) {
         setUser(res.user);
+        const savedOrgId = localStorage.getItem('active_org_id');
+        const hasValidOrg = res.user.memberships?.some((m) => m.organization.id === savedOrgId);
+        if (!hasValidOrg && res.user.memberships?.[0]?.organization?.id) {
+          const firstOrgId = res.user.memberships[0].organization.id;
+          localStorage.setItem('active_org_id', firstOrgId);
+          setActiveOrgIdState(firstOrgId);
+        }
       }
     } catch (err: any) {
       console.warn('Failed to load profile, session cleared:', err.message);
       setAuthToken(null);
+      localStorage.removeItem('active_org_id');
       setUser(null);
     } finally {
       setLoading(false);
@@ -104,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
       setAuthToken(data.token);
+      localStorage.removeItem('active_org_id');
       await fetchProfile();
       return true;
     } catch (err: any) {
@@ -141,6 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
       setAuthToken(data.token);
+      if (data.organization?.id) {
+        localStorage.setItem('active_org_id', data.organization.id);
+        setActiveOrgIdState(data.organization.id);
+      }
       await fetchProfile();
       return true;
     } catch (err: any) {
@@ -165,6 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (loginRes.ok) {
         const data = await loginRes.json();
         setAuthToken(data.token);
+        localStorage.removeItem('active_org_id');
         await fetchProfile();
         return true;
       }
@@ -183,6 +202,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (regRes.ok) {
         const data = await regRes.json();
         setAuthToken(data.token);
+        if (data.organization?.id) {
+          localStorage.setItem('active_org_id', data.organization.id);
+          setActiveOrgIdState(data.organization.id);
+        }
         await fetchProfile();
         return true;
       }
@@ -199,15 +222,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setAuthToken(null);
+    localStorage.removeItem('active_org_id');
+    setActiveOrgIdState('');
     setUser(null);
   };
 
   const isAuthenticated = !!user;
-  const orgRole = user?.memberships?.[0]?.role || 'MEMBER';
+  
+  // Find active membership matching activeOrgId or default to first
+  const activeMembership = user?.memberships?.find((m) => m.organization.id === activeOrgId) || user?.memberships?.[0];
+  const orgRole = activeMembership?.role || 'MEMBER';
   const isAdmin = user?.role === 'ADMIN' || orgRole === 'OWNER' || orgRole === 'ADMIN';
-  const orgName = user?.memberships?.[0]?.organization.name || 'Default Organization';
-  const orgId = user?.memberships?.[0]?.organization.id || '';
+  const orgName = activeMembership?.organization.name || 'Default Organization';
+  const orgId = activeMembership?.organization.id || '';
 
+  const setActiveOrgId = useCallback((id: string) => {
+    localStorage.setItem('active_org_id', id);
+    setActiveOrgIdState(id);
+  }, []);
+
+  const createOrganization = useCallback(async (name: string, customSlug?: string) => {
+    const slug = customSlug || `${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const res = await fetchApi<{ message: string; organization: any }>('/organizations', {
+      method: 'POST',
+      body: JSON.stringify({ name, slug }),
+    });
+
+    if (res.organization?.id) {
+      setActiveOrgId(res.organization.id);
+    }
+    await fetchProfile();
+    return res;
+  }, [fetchProfile, setActiveOrgId]);
 
   const inviteMember = useCallback(async (data: { email: string; name?: string; role: 'MEMBER' | 'ADMIN'; permissions?: string[]; password?: string }) => {
     if (!orgId) throw new Error('No active organization found');
@@ -234,7 +280,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, [orgId]);
 
-
   const removeMember = useCallback(async (userId: string) => {
     if (!orgId) throw new Error('No active organization found');
     return fetchApi<{ message: string }>(`/organizations/${orgId}/members/${userId}`, {
@@ -250,6 +295,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     switchPersona,
+    createOrganization,
+    setActiveOrgId,
     inviteMember,
     fetchMembers,
     updateMemberRole,

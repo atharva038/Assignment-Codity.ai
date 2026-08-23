@@ -22,6 +22,7 @@ import {
 import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { EventEngine } from '../services/eventEngine.js';
+import { getActiveOrgId } from '../middleware/tenant.js';
 
 export const eventsRouter = Router();
 
@@ -149,9 +150,15 @@ eventsRouter.post('/publish', validate(PublishEventSchema), async (req: Request,
  */
 eventsRouter.get('/subscriptions', async (req: Request, res: Response) => {
   const { projectId, eventType } = req.query;
+  const activeOrgId = getActiveOrgId(req);
 
   const where: any = {};
-  if (projectId) where.projectId = String(projectId);
+  if (projectId) {
+    where.projectId = String(projectId);
+  } else if (activeOrgId) {
+    where.project = { organizationId: activeOrgId };
+  }
+
   if (eventType) where.eventType = String(eventType);
 
   const subscriptions = await prisma.eventSubscription.findMany({
@@ -292,9 +299,15 @@ eventsRouter.delete('/subscriptions/:id', async (req: Request, res: Response) =>
  */
 eventsRouter.get('/logs', validate(EventQuerySchema, 'query'), async (req: Request, res: Response) => {
   const { projectId, eventType, status, limit = 50, offset = 0 } = req.query as any;
+  const activeOrgId = getActiveOrgId(req);
 
   const where: any = {};
-  if (projectId) where.projectId = String(projectId);
+  if (projectId) {
+    where.projectId = String(projectId);
+  } else if (activeOrgId) {
+    where.project = { organizationId: activeOrgId };
+  }
+
   if (eventType) where.eventType = String(eventType);
   if (status) where.status = status as EventDeliveryStatus;
 

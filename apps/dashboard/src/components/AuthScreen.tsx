@@ -181,12 +181,49 @@ export function AuthScreen({
 
           {/* Manual Auth Form Card */}
           <div className={`p-6 rounded-2xl border ${isDark ? 'bg-zinc-950/90 border-zinc-800' : 'bg-white border-[#E7E2D9]'} shadow-xl space-y-4`}>
+            {/* Tab Switcher */}
+            <div className={`flex rounded-xl p-1 border ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-stone-100 border-stone-200'}`}>
+              <button
+                type="button"
+                onClick={() => { setTab('login'); setFormError(null); }}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  tab === 'login'
+                    ? isDark
+                      ? 'bg-zinc-800 text-orange-400 shadow-sm'
+                      : 'bg-white text-orange-600 shadow-sm'
+                    : isDark
+                      ? 'text-zinc-400 hover:text-zinc-200'
+                      : 'text-stone-500 hover:text-stone-800'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => { setTab('register'); setFormError(null); }}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  tab === 'register'
+                    ? isDark
+                      ? 'bg-zinc-800 text-orange-400 shadow-sm'
+                      : 'bg-white text-orange-600 shadow-sm'
+                    : isDark
+                      ? 'text-zinc-400 hover:text-zinc-200'
+                      : 'text-stone-500 hover:text-stone-800'
+                }`}
+              >
+                <Building className="w-3.5 h-3.5" />
+                Register Organization
+              </button>
+            </div>
+
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
-                Sign In with Credentials
+                {tab === 'login' ? 'Sign In with Credentials' : 'Register New Tenant & Organization'}
               </h3>
               <p className={`text-[11px] ${isDark ? 'text-zinc-500' : 'text-stone-500'} mt-0.5`}>
-                Enter your work email and assigned password.
+                {tab === 'login'
+                  ? 'Enter your work email and assigned password.'
+                  : 'Create a new multi-tenant organization, workspace, and owner account.'}
               </p>
             </div>
 
@@ -199,6 +236,40 @@ export function AuthScreen({
             )}
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
+              {tab === 'register' && (
+                <>
+                  <div>
+                    <label className="text-[11px] font-semibold block mb-1">Full Name</label>
+                    <div className="relative">
+                      <User className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+                      <input
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Alex Mercer"
+                        className={`w-full ${isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-stone-50 border-stone-300 text-stone-900'} border rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-orange-500`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold block mb-1">Organization / Company Name</label>
+                    <div className="relative">
+                      <Building className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+                      <input
+                        type="text"
+                        required
+                        value={orgName}
+                        onChange={(e) => setOrgName(e.target.value)}
+                        placeholder="Acme Aerospace Corp"
+                        className={`w-full ${isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-stone-50 border-stone-300 text-stone-900'} border rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-orange-500`}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div>
                 <label className="text-[11px] font-semibold block mb-1">Email Address</label>
                 <div className="relative">
@@ -235,14 +306,24 @@ export function AuthScreen({
                   disabled={loading}
                   className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                 >
-                  {loading ? 'Authenticating...' : 'Sign In to Workspace'}
+                  {loading
+                    ? tab === 'login'
+                      ? 'Authenticating...'
+                      : 'Registering Organization...'
+                    : tab === 'login'
+                    ? 'Sign In to Workspace'
+                    : 'Create Organization & Launch Fleet'}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </form>
 
             <div className={`pt-3 border-t ${isDark ? 'border-zinc-800/80 text-zinc-500' : 'border-stone-200 text-stone-500'} text-[11px] text-center`}>
-              <span>New team member? Accounts are provisioned directly by your Organization Admin.</span>
+              <span>
+                {tab === 'login'
+                  ? 'New organization owner? Switch tab above to register your workspace.'
+                  : 'Already registered? Switch tab above to sign in.'}
+              </span>
             </div>
           </div>
         </div>

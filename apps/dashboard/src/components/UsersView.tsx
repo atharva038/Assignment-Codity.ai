@@ -18,9 +18,12 @@ import {
   Sparkles,
   Search,
   ChevronDown,
+  Building,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.js';
 import { InviteMemberModal } from './InviteMemberModal.js';
+import { CreateOrgModal } from './CreateOrgModal.js';
 
 interface MemberItem {
   id: string;
@@ -37,12 +40,13 @@ interface MemberItem {
 }
 
 export function UsersView() {
-  const { user: currentUser, isAdmin, orgName, orgId, fetchMembers, updateMemberRole, removeMember } = useAuth();
+  const { user: currentUser, isAdmin, orgName, orgId, setActiveOrgId, fetchMembers, updateMemberRole, removeMember } = useAuth();
   const [members, setMembers] = useState<MemberItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -175,7 +179,21 @@ export function UsersView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {currentUser?.memberships && currentUser.memberships.length > 1 && (
+            <select
+              value={orgId}
+              onChange={(e) => setActiveOrgId(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-200 focus:outline-none focus:border-orange-500"
+            >
+              {currentUser.memberships.map((m) => (
+                <option key={m.organization.id} value={m.organization.id}>
+                  🏢 {m.organization.name} ({m.role})
+                </option>
+              ))}
+            </select>
+          )}
+
           <button
             onClick={loadMembers}
             disabled={refreshing}
@@ -183,6 +201,15 @@ export function UsersView() {
             title="Refresh member roster"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-orange-400' : ''}`} />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setCreateOrgModalOpen(true)}
+            className="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 text-zinc-200 text-xs font-bold flex items-center gap-2 transition-all active:scale-95"
+          >
+            <Building className="w-3.5 h-3.5 text-orange-400" />
+            <span>Register Org</span>
           </button>
 
           <button
@@ -521,6 +548,15 @@ export function UsersView() {
         isOpen={inviteModalOpen}
         onClose={() => {
           setInviteModalOpen(false);
+          loadMembers();
+        }}
+      />
+
+      {/* Register Organization Modal */}
+      <CreateOrgModal
+        isOpen={createOrgModalOpen}
+        onClose={() => {
+          setCreateOrgModalOpen(false);
           loadMembers();
         }}
       />

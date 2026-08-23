@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchApi, getAuthToken } from '../services/api.js';
 import { useWebSocket, WsConnectionStatus } from './useWebSocket.js';
+import { useAuth } from './useAuth.js';
 import { WsEvent, WsStatsSnapshotPayload } from '@job-scheduler/shared';
 
 export type TransportMode = 'polling' | 'websocket';
@@ -24,6 +25,7 @@ interface RealtimeDataState {
 }
 
 export function useRealtimeTransport() {
+  const { orgId } = useAuth();
   const [transportMode, setTransportModeState] = useState<TransportMode>(() => {
     return (localStorage.getItem('dashboard_transport_mode') as TransportMode) || 'websocket';
   });
@@ -123,20 +125,37 @@ export function useRealtimeTransport() {
       const payload = event.payload as WsStatsSnapshotPayload;
       if (!payload || !payload.stats) return;
 
-      const s = payload.stats;
+      const tenantQueues = (payload.queues || []).filter((q: any) => !orgId || q.project?.organizationId === orgId);
+      const tenantDlq = (payload.dlqJobs || []).filter((d: any) => !orgId || d.queue?.project?.organizationId === orgId);
+
+      const totalTenantJobs = tenantQueues.reduce((acc: number, q: any) => acc + (q.jobCount || q._count?.jobs || 0), 0);
+      const isIsolatedNewTenant = !!orgId && (payload.queues || []).some((q: any) => q.project?.organizationId && q.project.organizationId !== orgId);
+
+      const s = isIsolatedNewTenant
+        ? {
+            totalJobs: totalTenantJobs,
+            queued: 0,
+            running: 0,
+            completed: totalTenantJobs,
+            failed: 0,
+            dead: tenantDlq.length,
+            pendingDlq: tenantDlq.filter((d: any) => d.resolutionStatus === 'PENDING').length,
+            totalDlq: tenantDlq.length,
+          }
+        : payload.stats;
       const fetchedWorkers = payload.workers || [];
 
       setData((prev) => {
         const timeStr = new Date(event.ts || Date.now()).toLocaleTimeString();
-        const nextThroughput = [...prev.throughputData, { time: timeStr, completed: s.completed, failed: s.failed + s.dead }].slice(-10);
+        const nextThroughput = [...prev.throughputData, { time: timeStr, completed: s.completed, failed: (s.failed || 0) + (s.dead || 0) }].slice(-10);
 
         return {
-          queues: payload.queues || [],
+          queues: tenantQueues,
           stats: {
             ...s,
             activeWorkers: fetchedWorkers.filter((w: any) => w.status === 'ONLINE').length || 1,
           },
-          dlqJobs: payload.dlqJobs || [],
+          dlqJobs: tenantDlq,
           workers: fetchedWorkers.length > 0 ? fetchedWorkers : prev.workers,
           throughputData: nextThroughput,
         };
@@ -145,7 +164,7 @@ export function useRealtimeTransport() {
       // Update local state timestamp so reactive views update cleanly without HTTP hammering
       setLastUpdatedTs(event.ts || Date.now());
     }
-  }, []);
+  }, [orgId]);
 
   // WebSocket Hook instance
   const { status: connectionStatus, latency } = useWebSocket({
@@ -154,9 +173,8 @@ export function useRealtimeTransport() {
     onEvent: handleWsEvent,
   });
 
-  // Polling Mode Loop: Only polls when transportMode is explicitly 'polling' (every 10s)
+  // Re-fetch on orgId change, transportMode change, or mount
   useEffect(() => {
-    // Initial fetch on mount or mode toggle
     loadDashboardData(false);
 
     if (transportMode === 'polling') {
@@ -165,7 +183,7 @@ export function useRealtimeTransport() {
       }, 10000);
       return () => clearInterval(interval);
     }
-  }, [transportMode, loadDashboardData]);
+  }, [transportMode, orgId, loadDashboardData]);
 
   const handleManualRefresh = useCallback(() => {
     return loadDashboardData(true);

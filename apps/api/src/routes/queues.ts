@@ -12,6 +12,7 @@ import { createQueueSchema, updateQueueSchema } from '@job-scheduler/shared';
 import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { requireQueueAdmin } from '../middleware/rbac.js';
+import { getActiveOrgId } from '../middleware/tenant.js';
 
 export const queuesRouter = Router();
 
@@ -24,9 +25,14 @@ queuesRouter.use(authenticateToken);
 queuesRouter.post('/', validate(createQueueSchema), async (req: Request, res: Response) => {
   let targetProjectId = req.body.projectId;
   const { name, priority, concurrencyLimit, retryPolicyId, rateLimitWindowMs, rateLimitMaxJobs } = req.body;
+  const activeOrgId = getActiveOrgId(req);
 
   if (!targetProjectId) {
-    const userProj = await prisma.project.findFirst();
+    let projectWhere: Record<string, unknown> = {};
+    if (activeOrgId) {
+      projectWhere = { organizationId: activeOrgId };
+    }
+    const userProj = await prisma.project.findFirst({ where: projectWhere });
     targetProjectId = userProj?.id;
   }
 
@@ -71,15 +77,19 @@ queuesRouter.post('/', validate(createQueueSchema), async (req: Request, res: Re
 
 /**
  * GET /api/v1/queues
- * Lists queues (optionally filtered by projectId).
+ * Lists queues (optionally filtered by projectId or active organization).
  */
 queuesRouter.get('/', async (req: Request, res: Response) => {
   const { projectId, status } = req.query;
+  const activeOrgId = getActiveOrgId(req);
 
   const whereClause: Record<string, unknown> = {};
   if (projectId && typeof projectId === 'string') {
     whereClause.projectId = projectId;
+  } else if (activeOrgId) {
+    whereClause.project = { organizationId: activeOrgId };
   }
+
   if (status && (status === 'ACTIVE' || status === 'PAUSED')) {
     whereClause.status = status;
   }

@@ -19,7 +19,7 @@ export async function fetchSystemSnapshot(): Promise<WsStatsSnapshotPayload> {
     await Promise.all([
       prisma.queue.findMany({
         include: {
-          project: { select: { id: true, name: true, slug: true } },
+          project: { select: { id: true, name: true, slug: true, organizationId: true } },
           _count: {
             select: { jobs: true },
           },
@@ -39,7 +39,11 @@ export async function fetchSystemSnapshot(): Promise<WsStatsSnapshotPayload> {
         orderBy: { createdAt: 'desc' },
         include: {
           originalJob: true,
-          queue: true,
+          queue: {
+            include: {
+              project: { select: { id: true, name: true, organizationId: true } },
+            },
+          },
         },
       }),
 
