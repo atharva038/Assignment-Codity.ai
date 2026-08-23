@@ -7,10 +7,11 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { prisma, QueueStatus, JobStatus } from '@job-scheduler/database';
+import { prisma, QueueStatus, JobStatus, Role } from '@job-scheduler/database';
 import { createQueueSchema, updateQueueSchema } from '@job-scheduler/shared';
 import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { requireQueueAdmin } from '../middleware/rbac.js';
 
 export const queuesRouter = Router();
 
@@ -127,9 +128,9 @@ queuesRouter.get('/:id', async (req: Request, res: Response) => {
 
 /**
  * PUT /api/v1/queues/:id
- * Updates queue priority, concurrency limit, status, or retry policy.
+ * Updates queue priority, concurrency limit, status, or retry policy (ADMIN / OWNER ONLY).
  */
-queuesRouter.put('/:id', validate(updateQueueSchema), async (req: Request, res: Response) => {
+queuesRouter.put('/:id', requireQueueAdmin(), validate(updateQueueSchema), async (req: Request, res: Response) => {
   const { id } = req.params;
   const { priority, concurrencyLimit, status, retryPolicyId, rateLimitWindowMs, rateLimitMaxJobs } = req.body;
 
@@ -160,9 +161,9 @@ queuesRouter.put('/:id', validate(updateQueueSchema), async (req: Request, res: 
 
 /**
  * POST /api/v1/queues/:id/pause
- * Pauses queue execution. Workers will skip claiming jobs from this queue.
+ * Pauses queue execution (ADMIN / OWNER ONLY). Workers will skip claiming jobs from this queue.
  */
-queuesRouter.post('/:id/pause', async (req: Request, res: Response) => {
+queuesRouter.post('/:id/pause', requireQueueAdmin(), async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const queue = await prisma.queue.update({
@@ -175,9 +176,9 @@ queuesRouter.post('/:id/pause', async (req: Request, res: Response) => {
 
 /**
  * POST /api/v1/queues/:id/resume
- * Resumes paused queue execution.
+ * Resumes paused queue execution (ADMIN / OWNER ONLY).
  */
-queuesRouter.post('/:id/resume', async (req: Request, res: Response) => {
+queuesRouter.post('/:id/resume', requireQueueAdmin(), async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const queue = await prisma.queue.update({

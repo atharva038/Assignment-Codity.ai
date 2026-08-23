@@ -43,6 +43,19 @@ export const jobQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+export const shardedCreateJobSchema = z.object({
+  shardKey: z.string().min(1, 'Shard key is required for deterministic partitioning'),
+  shardQueueIds: z.array(z.string().uuid('Invalid Queue UUID')).min(1, 'At least 1 shard queue ID is required'),
+  type: z.string().min(1, 'Job type is required'),
+  payload: z.record(z.unknown()).default({}),
+  priority: z.number().int().min(1).max(100).default(10),
+  availableAt: z.string().datetime().optional().or(z.date().optional()),
+  maxAttempts: z.number().int().min(1).max(20).default(3),
+  timeoutMs: z.number().int().min(1000).max(86400000).default(30000),
+  idempotencyKey: z.string().max(255).optional(),
+});
+
 export type CreateJobInput = z.infer<typeof createJobSchema>;
 export type BatchCreateJobInput = z.infer<typeof batchCreateJobSchema>;
+export type ShardedCreateJobInput = z.infer<typeof shardedCreateJobSchema>;
 export type JobQueryParams = z.infer<typeof jobQuerySchema>;

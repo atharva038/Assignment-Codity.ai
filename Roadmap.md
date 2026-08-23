@@ -1180,20 +1180,20 @@ Pick **1–2**, not all of them.
 
 ### Easy-ish
 
-* [ ] Rate limiting
-* [ ] RBAC
-* [ ] WebSockets
-* [ ] AI failure summaries
+* [x] Rate limiting
+* [x] RBAC
+* [x] WebSockets
+* [x] AI failure summaries
 
 ### Medium
 
-* [ ] Distributed locking
+* [x] Distributed locking
 * [x] Workflow dependencies
 
 ### Hard
 
-* [ ] Queue sharding
-* [ ] Event-driven execution
+* [x] Queue sharding
+* [x] Event-driven execution
 
 I'd personally choose:
 

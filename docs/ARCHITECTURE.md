@@ -77,3 +77,24 @@ stateDiagram-v2
     RUNNING --> QUEUED: Reaper Recovery (Worker Process Crashed)
     QUEUED --> CANCELLED: User Cancellation
 ```
+
+---
+
+## 4. Event-Driven Execution & Inbound Webhooks
+
+The platform features an asynchronous **Event Ingestion & Routing Engine** that decouples event emission from job execution.
+
+```mermaid
+graph LR
+    E[Inbound Event / Webhook] -->|HMAC Verification & Idempotency| Router[Event Routing Engine]
+    Router -->|Pattern Match 'payment.*'| Sub[Event Subscriptions]
+    Sub -->|Target = Single Job| J[Job Enqueued in Queue]
+    Sub -->|Target = DAG Workflow| W[Workflow Instantiated]
+    Router --> Log[(EventLog Audit Stream)]
+```
+
+* **Dynamic Payload Interpolation**: Resolves `{{event.variable}}` tokens inside target payload templates into actual event data before enqueuing.
+* **Webhook Security**: Verifies HMAC SHA-256 signatures (`x-signature-sha256`, `x-hub-signature-256`) against pre-shared subscription secrets with timing-safe comparison.
+* **Idempotency Deduplication**: Ingests `idempotencyKey` to prevent duplicate job or workflow dispatches when upstream services retry webhooks.
+* **Dual Execution Target**: Can dynamically dispatch either individual isolated jobs or multi-stage DAG Workflows with topological dependency resolution.
+

@@ -10,6 +10,7 @@
 import { prisma, Job, JobStatus, ExecutionStatus, LogLevel, DLQResolutionStatus } from '@job-scheduler/database';
 import { calculateRetryDelay, RetryPolicyType } from '@job-scheduler/shared';
 import { logger } from '@job-scheduler/logger';
+import { publishJobEvent } from '@job-scheduler/redis';
 import { getJobHandler } from './handlers/registry.js';
 import { onJobCompleted, onJobFailedOrCancelled } from './dependencyEngine.js';
 
@@ -18,6 +19,13 @@ export async function executeJob(job: Job & { queue?: any }, workerId: string): 
   const attemptNumber = job.attempts;
 
   logger.info({ jobId: job.id, type: job.type, attemptNumber, workerId }, '🚀 Execution started for job');
+
+  // Broadcast Real-time Event: Job Running
+  publishJobEvent({
+    type: 'job:updated',
+    payload: { jobId: job.id, status: JobStatus.RUNNING, workerId },
+    ts: Date.now(),
+  }).catch(() => {});
 
   // 1. Create JobExecution record for this attempt
   const execution = await prisma.jobExecution.create({
@@ -91,6 +99,13 @@ export async function executeJob(job: Job & { queue?: any }, workerId: string): 
     });
 
     logger.info({ jobId: job.id, durationMs }, '✅ Job execution completed successfully');
+
+    // Broadcast Real-time Event: Job Completed
+    publishJobEvent({
+      type: 'job:updated',
+      payload: { jobId: job.id, status: JobStatus.COMPLETED, durationMs },
+      ts: Date.now(),
+    }).catch(() => {});
 
     // Evaluate DAG child dependency resolution
     await onJobCompleted(job.id);
@@ -170,6 +185,12 @@ export async function executeJob(job: Job & { queue?: any }, workerId: string): 
       });
 
       logger.info({ jobId: job.id, delayMs, nextAvailableAt }, '🔄 Job scheduled for retry');
+
+      publishJobEvent({
+        type: 'job:updated',
+        payload: { jobId: job.id, status: JobStatus.RETRYING, delayMs, nextAvailableAt },
+        ts: Date.now(),
+      }).catch(() => {});
     } else {
       // Max attempts exhausted: transition to DEAD and route to Dead Letter Queue (DLQ)
       await prisma.$transaction([

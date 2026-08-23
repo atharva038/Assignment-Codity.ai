@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Send, Zap, AlertCircle } from 'lucide-react';
 import { fetchApi } from '../services/api.js';
 
@@ -90,14 +91,14 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-dark-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+      <div className="bg-zinc-950 border border-zinc-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <Zap className="w-5 h-5 text-brand-400" /> Ingest New Background Test Job
+            <Zap className="w-5 h-5 text-orange-500" /> Ingest New Background Test Job
           </h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/60">
+          <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white rounded-xl bg-zinc-900 border border-zinc-800">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -109,83 +110,88 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Target Queue</label>
+            <label className="block text-zinc-400 font-bold mb-1.5 uppercase text-[10px] tracking-wider">Target Queue</label>
             <select
-              value={queueId || queuesList[0]?.id || ''}
+              value={queueId}
               onChange={(e) => setQueueId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-zinc-200 focus:outline-none focus:border-orange-500"
             >
               {queuesList.map((q) => (
-                <option key={q.id} value={q.id}>{q.name}</option>
+                <option key={q.id} value={q.id}>
+                  {q.name}
+                </option>
               ))}
-              {queuesList.length === 0 && (
-                <option value="">No queues available</option>
-              )}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Job Handler Type</label>
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              {['email_notification', 'report_generation', 'webhook_delivery', 'failure_demo'].map((type) => (
+            <label className="block text-zinc-400 font-bold mb-1.5 uppercase text-[10px] tracking-wider">Preset Job Type</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { id: 'email_notification', label: 'Email Task' },
+                { id: 'report_generation', label: 'PDF Report' },
+                { id: 'webhook_delivery', label: 'Webhook' },
+                { id: 'failure_demo', label: 'Failure Demo' },
+              ].map((t) => (
                 <button
                   type="button"
-                  key={type}
-                  onClick={() => handleTypeSelect(type)}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold border text-left transition-all ${
-                    jobType === type
-                      ? 'bg-brand-600/20 text-brand-400 border-brand-500/50 shadow-inner'
-                      : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                  key={t.id}
+                  onClick={() => handleTypeSelect(t.id)}
+                  className={`p-2 rounded-xl border text-center transition-all ${
+                    jobType === t.id
+                      ? 'border-orange-500 bg-orange-500/10 text-orange-400 font-bold'
+                      : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white'
                   }`}
                 >
-                  {type}
+                  {t.label}
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Priority (1 - 100)</label>
+            <label className="block text-zinc-400 font-bold mb-1.5 uppercase text-[10px] tracking-wider">Priority (1 = Highest, 50 = Normal)</label>
             <input
               type="number"
-              min="1"
-              max="100"
+              min={1}
+              max={100}
               value={priority}
               onChange={(e) => setPriority(Number(e.target.value))}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-500 font-mono"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-zinc-200 focus:outline-none focus:border-orange-500 font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Payload (JSON)</label>
+            <label className="block text-zinc-400 font-bold mb-1.5 uppercase text-[10px] tracking-wider">Payload (JSON)</label>
             <textarea
               rows={4}
               value={payloadJson}
               onChange={(e) => setPayloadJson(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-brand-500 shadow-inner"
-            ></textarea>
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-200 focus:outline-none focus:border-orange-500 font-mono text-xs"
+            />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="pt-2 flex justify-end gap-3 border-t border-zinc-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 shadow-lg shadow-brand-500/20 flex items-center gap-2"
+              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/20 flex items-center gap-2"
             >
               <Send className="w-4 h-4" /> {submitting ? 'Ingesting...' : 'Ingest Job'}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

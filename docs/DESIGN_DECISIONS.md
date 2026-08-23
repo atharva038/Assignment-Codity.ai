@@ -64,3 +64,13 @@ This document details the core architectural rationale and trade-offs made durin
   2. **Zero-Downtime Resilience**: If Redis goes offline or suffers a network hiccup, the rate limiter automatically degrades gracefully to an in-memory Map with sliding timestamp arrays. The API service continues serving requests safely without crashing.
   3. **Queue Execution Throttling**: Workers check queue-level rate limits (`q.rateLimitMaxJobs`) before claiming jobs. If a queue exceeds its limit, jobs stay safely in `QUEUED` state and worker claiming for that queue is deferred until the window resets — guaranteeing zero job loss.
 
+---
+
+## 8. Queue Sharding: Consistent Hash Partitioning & Isolated Worker Fleets
+
+### Decision: FNV-1a Deterministic Shard Routing with Partition-Filtered Worker Fleets
+- **Why**:
+  1. **Zero Index Contention**: In high-throughput systems processing millions of jobs, querying a single monolithic queue produces B-Tree index locking contention during `FOR UPDATE SKIP LOCKED` queries. Sharding partitions jobs across multiple queues (`queueId`), utilizing dedicated composite B-Tree indexes (`@@index([queueId, status, priority, availableAt])`).
+  2. **Noisy Neighbor Elimination**: High-volume background tenants cannot starve critical transactional workloads. Dedicated worker fleets bound to specific queue shards (`WORKER_QUEUE_ID=<uuid>`) execute in complete isolation without lock competition.
+  3. **Deterministic Consistent Hashing**: Using 32-bit FNV-1a hashing ($\text{shardIndex} = \text{fnv1a}(shardKey) \pmod N$), jobs for the same tenant/customer consistently land on the same shard for FIFO order guarantees, while load is evenly balanced across the cluster.
+

@@ -16,11 +16,19 @@ import { claimJobs } from '../apps/worker/src/claim.js';
 import { WorkerHeartbeatManager } from '../apps/worker/src/heartbeat.js';
 
 
-const API_BASE = process.env.API_URL || 'http://localhost:3001/api/v1';
+import http from 'http';
+import { createApp } from '../apps/api/src/app.js';
 
 async function runRateLimitTests() {
   console.log('🧪 Starting Rate Limiting & Execution Throttling Test Suite...\n');
   let passedCount = 0;
+
+  // Spin up ephemeral Express API server for HTTP rate limit verification
+  const app = createApp();
+  const server = http.createServer(app);
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+  const address = server.address() as { port: number };
+  const baseUrl = `http://localhost:${address.port}/api/v1`;
 
   try {
     // ------------------------------------------------------------------------
@@ -67,21 +75,18 @@ async function runRateLimitTests() {
     // Test 3: HTTP API Header Verification & 429 Error Response
     // ------------------------------------------------------------------------
     console.log('\n🔹 Test 3: HTTP API Rate Limit Headers & 429 Too Many Requests');
-    try {
-      const response = await fetch(`${API_BASE}/health`);
-      const limitHeader = response.headers.get('x-ratelimit-limit');
-      const remainingHeader = response.headers.get('x-ratelimit-remaining');
-      const resetHeader = response.headers.get('x-ratelimit-reset');
+    const response = await fetch(`${baseUrl}/health`);
+    const limitHeader = response.headers.get('x-ratelimit-limit');
+    const remainingHeader = response.headers.get('x-ratelimit-remaining');
+    const resetHeader = response.headers.get('x-ratelimit-reset');
 
-      if (response.ok && limitHeader && remainingHeader && resetHeader) {
-        console.log(`  ✅ PASSED: API returned standard RFC RateLimit headers (Limit: ${limitHeader}, Remaining: ${remainingHeader}).`);
-        passedCount++;
-      } else {
-        console.warn('  ⚠️ NOTICE: API server may not be running locally on 3001, skipped HTTP assertion.');
-      }
-    } catch (err) {
-      console.log('  ℹ️ API server offline — skipping live HTTP request verification (Unit tests passed).');
+    if (response.ok && limitHeader && remainingHeader && resetHeader) {
+      console.log(`  ✅ PASSED: API returned standard RFC RateLimit headers (Limit: ${limitHeader}, Remaining: ${remainingHeader}).`);
+      passedCount++;
+    } else {
+      console.error('  ❌ FAILED: API response missing rate limit headers:', { status: response.status, limitHeader, remainingHeader });
     }
+
 
     // ------------------------------------------------------------------------
     // Test 4: Queue Execution Rate Limit Throttling
@@ -140,11 +145,14 @@ async function runRateLimitTests() {
     }
 
 
-    console.log(`\n🎉 Rate Limiting Test Suite Completed! ${passedCount}/3 Core Assertions Passed Successfully.`);
+    console.log(`\n🎉 Rate Limiting Test Suite Completed! ${passedCount}/4 Core Assertions Passed Successfully.`);
   } catch (err: any) {
     console.error('❌ Rate Limiting Test Suite Failed with Error:', err);
     process.exit(1);
+  } finally {
+    server.close();
   }
 }
 
 runRateLimitTests();
+

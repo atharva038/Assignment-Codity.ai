@@ -3,69 +3,43 @@
  * Dashboard API Client Service — Distributed Job Scheduler
  * ============================================================================
  * Connects to http://localhost:3000/api/v1 endpoints for authentication, queues,
- * jobs, workers, metrics, and DLQ management. Handles token caching and deduplicated
- * automatic user authentication.
+ * jobs, workers, metrics, workflows, events, and DLQ management.
+ * Handles token caching, user sessions, and authenticated API queries.
  */
 
 const API_BASE = 'http://localhost:3000/api/v1';
 
 let cachedToken: string | null = localStorage.getItem('dashboard_jwt_token');
-let authPromise: Promise<string> | null = null;
+const tokenListeners: Array<(token: string | null) => void> = [];
 
-export async function ensureAuthToken(): Promise<string> {
-  if (cachedToken) return cachedToken;
-  if (authPromise) return authPromise;
+export function setAuthToken(token: string | null) {
+  cachedToken = token;
+  if (token) {
+    localStorage.setItem('dashboard_jwt_token', token);
+  } else {
+    localStorage.removeItem('dashboard_jwt_token');
+  }
+  tokenListeners.forEach((listener) => listener(token));
+}
 
-  authPromise = (async () => {
-    try {
-      // 1. Try logging in with test credentials
-      const loginRes = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'mytest@example.com', password: 'password123' }),
-      });
+export function getAuthToken(): string | null {
+  return cachedToken || localStorage.getItem('dashboard_jwt_token');
+}
 
-      if (loginRes.ok) {
-        const data = await loginRes.json();
-        cachedToken = data.token;
-        localStorage.setItem('dashboard_jwt_token', cachedToken!);
-        return cachedToken!;
-      }
-
-      // 2. If login fails, register a dedicated dashboard user
-      const uniqueEmail = `dashboard-admin-${Date.now()}@codity.ai`;
-      const regRes = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: uniqueEmail,
-          password: 'password123',
-          name: 'Dashboard Administrator',
-          organizationName: 'Codity Corporation',
-        }),
-      });
-
-      if (regRes.ok) {
-        const data = await regRes.json();
-        cachedToken = data.token;
-        localStorage.setItem('dashboard_jwt_token', cachedToken!);
-        return cachedToken!;
-      }
-
-      return '';
-    } catch (err) {
-      console.error('Failed dashboard auto-authentication:', err);
-      return '';
-    } finally {
-      authPromise = null;
-    }
-  })();
-
-  return authPromise;
+export function subscribeAuthChange(callback: (token: string | null) => void) {
+  tokenListeners.push(callback);
+  return () => {
+    const idx = tokenListeners.indexOf(callback);
+    if (idx !== -1) tokenListeners.splice(idx, 1);
+  };
 }
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = await ensureAuthToken();
+  const token = getAuthToken();
+
+  if (!token && endpoint !== '/auth/login' && endpoint !== '/auth/register') {
+    throw new Error('Authentication required');
+  }
 
   const headers = {
     'Content-Type': 'application/json',
@@ -78,10 +52,10 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
     headers,
   });
 
-  if (response.status === 401) {
-    // Clear invalid cached token and retry once
-    localStorage.removeItem('dashboard_jwt_token');
-    cachedToken = null;
+  if (response.status === 401 && endpoint !== '/auth/login') {
+    // Clear invalid token
+    setAuthToken(null);
+    throw new Error('Session expired. Please log in again.');
   }
 
   if (!response.ok) {

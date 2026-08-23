@@ -8,11 +8,17 @@
 
 import { Router, Request, Response } from 'express';
 import { prisma, JobStatus, DLQResolutionStatus } from '@job-scheduler/database';
-import { createJobSchema, batchCreateJobSchema, jobQuerySchema } from '@job-scheduler/shared';
+import {
+  createJobSchema,
+  batchCreateJobSchema,
+  shardedCreateJobSchema,
+  jobQuerySchema,
+  routeToQueueShard,
+  calculateShardIndex,
+} from '@job-scheduler/shared';
 import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { emitStatsSnapshot } from '../ws/statsEmitter.js';
-
 
 export const jobsRouter = Router();
 
@@ -141,6 +147,107 @@ jobsRouter.post('/batch', validate(batchCreateJobSchema), async (req: Request, r
     message: `Batch of ${createdJobs.length} jobs created successfully`,
     count: createdJobs.length,
     jobs: createdJobs,
+  });
+});
+
+/**
+ * POST /api/v1/jobs/sharded
+ * Ingests a job with deterministic consistent hash partition routing across queue shards.
+ *
+ * VIVA EXPLANATION:
+ * 1. Takes a `shardKey` (e.g. tenantId, userId, customerId) and `shardQueueIds`.
+ * 2. Deterministically hashes the shard key to select target queue shard:
+ *    shardIndex = fnv1aHash(shardKey) % shardQueueIds.length
+ * 3. Enqueues the job into the mapped shard queue with ACID safety.
+ */
+jobsRouter.post('/sharded', validate(shardedCreateJobSchema), async (req: Request, res: Response) => {
+  const {
+    shardKey,
+    shardQueueIds,
+    type,
+    payload,
+    priority,
+    availableAt,
+    maxAttempts,
+    timeoutMs,
+    idempotencyKey,
+  } = req.body;
+
+  // 1. Deterministically route shard key to specific queue shard ID
+  const routedQueueId = routeToQueueShard(shardKey, shardQueueIds);
+  const shardIndex = calculateShardIndex(shardKey, shardQueueIds.length);
+
+  // 2. Verify routed queue exists and is ACTIVE
+  const queue = await prisma.queue.findUnique({
+    where: { id: routedQueueId },
+    include: { retryPolicy: true },
+  });
+
+  if (!queue) {
+    res.status(404).json({
+      error: 'Not Found',
+      message: `Routed Queue Shard ${routedQueueId} does not exist`,
+    });
+    return;
+  }
+
+  const effectiveMaxAttempts = maxAttempts || queue.retryPolicy?.maxAttempts || 3;
+
+  // 3. Check Idempotency Key deduplication if provided
+  if (idempotencyKey) {
+    const existingJob = await prisma.job.findUnique({
+      where: {
+        queueId_idempotencyKey: {
+          queueId: routedQueueId,
+          idempotencyKey,
+        },
+      },
+    });
+
+    if (existingJob) {
+      res.status(200).json({
+        message: 'Existing job returned (Idempotency Key deduplicated)',
+        job: existingJob,
+        deduplicated: true,
+        routedQueueId,
+        shardIndex,
+      });
+      return;
+    }
+  }
+
+  // 4. Determine initial status
+  const availableTimestamp = availableAt ? new Date(availableAt) : new Date();
+  const isDelayed = availableTimestamp.getTime() > Date.now();
+  const initialStatus = isDelayed ? JobStatus.SCHEDULED : JobStatus.QUEUED;
+
+  // 5. Ingest job into mapped queue partition
+  const job = await prisma.job.create({
+    data: {
+      queueId: routedQueueId,
+      type,
+      payload: payload || {},
+      priority: priority || queue.priority,
+      status: initialStatus,
+      maxAttempts: effectiveMaxAttempts,
+      availableAt: availableTimestamp,
+      timeoutMs: timeoutMs || 30000,
+      idempotencyKey,
+    },
+  });
+
+  emitStatsSnapshot().catch(() => {});
+
+  res.status(201).json({
+    message: isDelayed
+      ? `Delayed job scheduled on Shard ${shardIndex} (${queue.name})`
+      : `Job created and routed to Shard ${shardIndex} (${queue.name}) successfully`,
+    job,
+    routedQueueId,
+    shardIndex,
+    totalShards: shardQueueIds.length,
+    shardKey,
+    deduplicated: false,
   });
 });
 

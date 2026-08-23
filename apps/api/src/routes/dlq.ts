@@ -7,8 +7,9 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { prisma, JobStatus, DLQResolutionStatus } from '@job-scheduler/database';
+import { prisma, JobStatus, DLQResolutionStatus, Role } from '@job-scheduler/database';
 import { authenticateToken } from '../middleware/auth.js';
+import { requireSystemRole } from '../middleware/rbac.js';
 
 export const dlqRouter = Router();
 
@@ -108,9 +109,9 @@ dlqRouter.get('/:id', async (req: Request, res: Response) => {
 
 /**
  * POST /api/v1/dlq/:id/retry
- * Replays a dead job: creates a brand-new Job in QUEUED state and marks DLQ resolutionStatus = RETRIED.
+ * Replays a dead job (ADMIN ONLY): creates a brand-new Job in QUEUED state and marks DLQ resolutionStatus = RETRIED.
  */
-dlqRouter.post('/:id/retry', async (req: Request, res: Response) => {
+dlqRouter.post('/:id/retry', requireSystemRole([Role.ADMIN]), async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const dlqJob = await prisma.deadLetterJob.findUnique({
@@ -162,9 +163,9 @@ dlqRouter.post('/:id/retry', async (req: Request, res: Response) => {
 
 /**
  * POST /api/v1/dlq/:id/archive
- * Archives a dead job (marks resolutionStatus = ARCHIVED).
+ * Archives a dead job (ADMIN ONLY - marks resolutionStatus = ARCHIVED).
  */
-dlqRouter.post('/:id/archive', async (req: Request, res: Response) => {
+dlqRouter.post('/:id/archive', requireSystemRole([Role.ADMIN]), async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const dlqJob = await prisma.deadLetterJob.findUnique({ where: { id } });

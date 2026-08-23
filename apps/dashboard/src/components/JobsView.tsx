@@ -70,6 +70,15 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
     fetchServerJobs(false);
   }, [currentPage, selectedStatus, searchQuery]);
 
+  // Live WebSocket Sync: Automatically refresh server jobs in background with debounce
+  useEffect(() => {
+    if (!lastUpdatedTs) return;
+    const timer = setTimeout(() => {
+      fetchServerJobs(true);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [lastUpdatedTs]);
+
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
     setCurrentPage(1);

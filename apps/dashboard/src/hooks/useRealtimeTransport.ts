@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchApi, ensureAuthToken } from '../services/api.js';
+import { fetchApi, getAuthToken } from '../services/api.js';
 import { useWebSocket, WsConnectionStatus } from './useWebSocket.js';
 import { WsEvent, WsStatsSnapshotPayload } from '@job-scheduler/shared';
 
@@ -25,7 +25,7 @@ interface RealtimeDataState {
 
 export function useRealtimeTransport() {
   const [transportMode, setTransportModeState] = useState<TransportMode>(() => {
-    return (localStorage.getItem('dashboard_transport_mode') as TransportMode) || 'polling';
+    return (localStorage.getItem('dashboard_transport_mode') as TransportMode) || 'websocket';
   });
 
   const setTransportMode = (mode: TransportMode) => {
@@ -52,13 +52,15 @@ export function useRealtimeTransport() {
   });
 
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [lastUpdatedTs, setLastUpdatedTs] = useState<number>(Date.now());
-
+  const [lastUpdatedTs, setLastUpdatedTs] = useState<number>(0);
 
   // REST Fallback Loader (used by polling mode & manual refresh)
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (isManualRefresh = false) => {
+    if (!getAuthToken()) return;
+    if (document.hidden && !isManualRefresh) return; // Pause polling when tab is inactive
+
     try {
-      setRefreshing(true);
+      if (isManualRefresh) setRefreshing(true);
 
       const [queuesRes, statsRes, dlqRes, workersRes] = await Promise.all([
         fetchApi<{ queues: any[] }>('/queues').catch(() => ({ queues: [] })),
@@ -104,11 +106,14 @@ export function useRealtimeTransport() {
           throughputData: nextThroughput,
         };
       });
-      setLastUpdatedTs(Date.now());
+
+      if (isManualRefresh) {
+        setLastUpdatedTs(Date.now());
+      }
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     } finally {
-      setRefreshing(false);
+      if (isManualRefresh) setRefreshing(false);
     }
   }, []);
 
@@ -136,31 +141,35 @@ export function useRealtimeTransport() {
           throughputData: nextThroughput,
         };
       });
-      setLastUpdatedTs(Date.now());
     } else if (event.type === 'job:updated' || event.type === 'dlq:new') {
-      // Trigger a light refresh or stats fetch on instant state change
-      loadDashboardData();
-      setLastUpdatedTs(Date.now());
+      // Update local state timestamp so reactive views update cleanly without HTTP hammering
+      setLastUpdatedTs(event.ts || Date.now());
     }
-  }, [loadDashboardData]);
+  }, []);
 
   // WebSocket Hook instance
   const { status: connectionStatus, latency } = useWebSocket({
-    getToken: ensureAuthToken,
-    enabled: transportMode === 'websocket',
+    getToken: async () => getAuthToken() || '',
+    enabled: transportMode === 'websocket' && !!getAuthToken(),
     onEvent: handleWsEvent,
   });
 
-  // Polling Mode Loop
+  // Polling Mode Loop: Only polls when transportMode is explicitly 'polling' (every 10s)
   useEffect(() => {
     // Initial fetch on mount or mode toggle
-    loadDashboardData();
+    loadDashboardData(false);
 
     if (transportMode === 'polling') {
-      const interval = setInterval(loadDashboardData, 3000);
+      const interval = setInterval(() => {
+        loadDashboardData(false);
+      }, 10000);
       return () => clearInterval(interval);
     }
   }, [transportMode, loadDashboardData]);
+
+  const handleManualRefresh = useCallback(() => {
+    return loadDashboardData(true);
+  }, [loadDashboardData]);
 
   return {
     transportMode,
@@ -170,7 +179,7 @@ export function useRealtimeTransport() {
     data,
     refreshing,
     lastUpdatedTs,
-    loadDashboardData,
+    loadDashboardData: handleManualRefresh,
   };
-
 }
+

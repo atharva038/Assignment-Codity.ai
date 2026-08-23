@@ -13,5 +13,8 @@ export * from './schemas/retryPolicy.js';
 export * from './schemas/job.js';
 export * from './schemas/scheduledJob.js';
 export * from './schemas/workflow.js';
+export * from './schemas/events.js';
 export * from './schemas/ai.js';
 export * from './utils/dag.js';
+export * from './utils/sharding.js';
+export * from './utils/payloadInterpolator.js';

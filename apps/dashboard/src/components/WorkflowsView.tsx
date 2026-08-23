@@ -51,32 +51,32 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
     fetchWorkflows();
   }, []);
 
-  // Active polling loop while any workflow in the list is RUNNING / PENDING
+  // Live WebSocket Sync: Automatically update DAG execution state on websocket broadcasts
   useEffect(() => {
-    const hasActiveWorkflows = workflows.some((w) => w.status === 'RUNNING' || w.status === 'PENDING');
-    if (!hasActiveWorkflows) return;
-
-    const interval = setInterval(() => {
+    if (!lastUpdatedTs) return;
+    const timer = setTimeout(() => {
       fetchWorkflowsSilently();
-    }, 1500);
+      if (selectedWorkflowId) {
+        fetchWorkflowDetail(selectedWorkflowId);
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [lastUpdatedTs, selectedWorkflowId]);
 
-    return () => clearInterval(interval);
-  }, [workflows, selectedWorkflowId]);
-
-  const fetchWorkflows = async () => {
+  const fetchWorkflows = async (targetId?: string) => {
     setLoading(true);
-    await fetchWorkflowsSilently();
+    await fetchWorkflowsSilently(targetId);
     setLoading(false);
   };
 
-  const fetchWorkflowsSilently = async () => {
+  const fetchWorkflowsSilently = async (targetId?: string) => {
     try {
       const data = await fetchApi<{ workflows: any[] }>('/workflows');
       setWorkflows(data.workflows || []);
       
-      const currentSelected = selectedWorkflowId || data.workflows?.[0]?.id;
+      const currentSelected = targetId || selectedWorkflowId || data.workflows?.[0]?.id;
       if (currentSelected) {
-        if (!selectedWorkflowId) setSelectedWorkflowId(currentSelected);
+        setSelectedWorkflowId(currentSelected);
         fetchWorkflowDetail(currentSelected);
       }
     } catch (err) {
@@ -187,10 +187,12 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
         }),
       });
 
-      await fetchWorkflows();
-      if (data.workflow?.id) {
-        fetchWorkflowDetail(data.workflow.id);
+      const newId = data.workflow?.id;
+      if (newId) {
+        setSelectedWorkflowId(newId);
+        await fetchWorkflowDetail(newId);
       }
+      await fetchWorkflows(newId);
     } catch (err: any) {
       console.error('Failed to launch sample workflow:', err);
       alert(`Failed to launch workflow: ${err.message || err}`);
@@ -221,7 +223,7 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
             <Plus className="w-3.5 h-3.5" /> Launch Sample Workflow DAG
           </button>
           <button
-            onClick={fetchWorkflows}
+            onClick={() => fetchWorkflows()}
             className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-brand-400' : ''}`} /> Refresh Workflows

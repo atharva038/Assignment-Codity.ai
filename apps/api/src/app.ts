@@ -22,6 +22,7 @@ import { dlqRouter } from './routes/dlq.js';
 import { scheduledJobsRouter } from './routes/scheduledJobs.js';
 import { workersRouter } from './routes/workers.js';
 import { workflowsRouter } from './routes/workflows.js';
+import { eventsRouter } from './routes/events.js';
 
 import { createRateLimiter } from './middleware/rateLimit.js';
 
@@ -33,24 +34,24 @@ export function createApp(): Express {
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
 
-  // Global API Rate Limiter (120 req/min)
+  // Global API Rate Limiter (600 req/min for rich real-time dashboards)
   const globalLimiter = createRateLimiter({
     windowMs: 60000,
-    limit: 120,
+    limit: 600,
     keyPrefix: 'global',
   });
 
-  // Strict Auth Rate Limiter (10 req/min for login & register)
+  // Strict Auth Rate Limiter (30 req/min for login & register)
   const strictAuthLimiter = createRateLimiter({
     windowMs: 60000,
-    limit: 10,
+    limit: 30,
     keyPrefix: 'auth',
   });
 
-  // Job Creation Ingestion Rate Limiter (60 req/min)
+  // Job Creation Ingestion Rate Limiter (300 req/min)
   const jobIngestionLimiter = createRateLimiter({
     windowMs: 60000,
-    limit: 60,
+    limit: 300,
     keyPrefix: 'jobs_ingest',
   });
 
@@ -83,6 +84,7 @@ export function createApp(): Express {
   app.use('/api/v1/scheduled-jobs', scheduledJobsRouter);
   app.use('/api/v1/workers', workersRouter);
   app.use('/api/v1/workflows', workflowsRouter);
+  app.use('/api/v1/events', eventsRouter);
 
 
   // Global 404 Route Handler

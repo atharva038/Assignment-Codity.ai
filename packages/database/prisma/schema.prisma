@@ -91,11 +91,13 @@ model Project {
   name           String
   slug           String
   description    String?
-  queues         Queue[]
-  scheduledJobs  ScheduledJob[]
-  workflows      Workflow[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  queues             Queue[]
+  scheduledJobs      ScheduledJob[]
+  workflows          Workflow[]
+  eventSubscriptions EventSubscription[]
+  eventLogs          EventLog[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
   organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -171,11 +173,12 @@ model Queue {
   rateLimitWindowMs Int           @default(60000) // Execution window duration in ms
   rateLimitMaxJobs  Int?          // Max job executions allowed per window (null = unlimited)
   retryPolicyId    String?
-  jobs             Job[]
-  scheduledJobs    ScheduledJob[]
-  deadLetterJobs   DeadLetterJob[]
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  jobs               Job[]
+  scheduledJobs      ScheduledJob[]
+  deadLetterJobs     DeadLetterJob[]
+  eventSubscriptions EventSubscription[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
   project          Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   retryPolicy      RetryPolicy?   @relation(fields: [retryPolicyId], references: [id], onDelete: SetNull)
@@ -472,3 +475,72 @@ model DeadLetterJob {
   @@index([resolutionStatus, createdAt])
   @@map("dead_letter_jobs")
 }
+
+// ----------------------------------------------------------------------------
+// Event-Driven Execution & Inbound Webhooks
+// ----------------------------------------------------------------------------
+
+enum EventTriggerTarget {
+  JOB
+  WORKFLOW
+}
+
+enum EventDeliveryStatus {
+  PROCESSED
+  IGNORED
+  FAILED
+}
+
+model EventSubscription {
+  id                 String             @id @default(uuid())
+  projectId          String
+  name               String
+  eventType          String             // e.g. "payment.success", "user.signup", "order.*", "*"
+  description        String?
+  enabled            Boolean            @default(true)
+  targetType         EventTriggerTarget @default(JOB)
+
+  // Configuration when targetType = JOB
+  queueId            String?
+  jobType            String?            // e.g. "email_notification", "report_generation", "webhook_delivery"
+  jobPayloadTemplate Json?              // Templated JSON payload with {{event.prop}} replacements
+
+  // Configuration when targetType = WORKFLOW
+  workflowTemplate   Json?              // Multi-job DAG template definition to instantiate
+
+  // Webhook Security
+  secret             String?            // Optional HMAC SHA-256 secret key for webhook verification
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  project            Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  queue              Queue?             @relation(fields: [queueId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, eventType, enabled])
+  @@map("event_subscriptions")
+}
+
+model EventLog {
+  id                   String              @id @default(uuid())
+  projectId            String
+  eventType            String
+  source               String              @default("API") // "API", "WEBHOOK", "SIMULATION"
+  payload              Json
+  idempotencyKey       String?
+  status               EventDeliveryStatus @default(PROCESSED)
+  matchedRuleCount     Int                 @default(0)
+  triggeredJobIds      Json?               // Array of created Job IDs
+  triggeredWorkflowIds Json?               // Array of created Workflow IDs
+  errorReason          String?
+  signatureVerified    Boolean             @default(false)
+  createdAt            DateTime            @default(now())
+
+  project              Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, idempotencyKey])
+  @@index([projectId, eventType, createdAt])
+  @@index([status, createdAt])
+  @@map("event_logs")
+}
+

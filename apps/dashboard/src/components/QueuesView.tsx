@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { PauseCircle, PlayCircle, Shield, Layers, Server, ChevronLeft, ChevronRight, Plus, X, Send } from 'lucide-react';
+import { PauseCircle, PlayCircle, Shield, Layers, Server, ChevronLeft, ChevronRight, Plus, X, Send, Lock } from 'lucide-react';
 import { fetchApi } from '../services/api.js';
+import { useAuth } from '../hooks/useAuth.js';
 
 interface QueueItem {
   id: string;
@@ -21,6 +22,7 @@ interface QueuesViewProps {
 }
 
 export const QueuesView: React.FC<QueuesViewProps> = ({ queues, onRefresh }) => {
+  const { isAdmin } = useAuth();
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
 
@@ -184,14 +186,21 @@ export const QueuesView: React.FC<QueuesViewProps> = ({ queues, onRefresh }) => 
                   <td className="py-4 px-6 text-right">
                     <button
                       onClick={() => toggleQueueStatus(queue)}
-                      disabled={loadingId === queue.id}
+                      disabled={loadingId === queue.id || !isAdmin}
+                      title={!isAdmin ? 'Administrative role required to toggle queue status' : undefined}
                       className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg ${
-                        queue.status === 'ACTIVE'
+                        !isAdmin
+                          ? 'bg-zinc-900/60 text-zinc-500 border border-zinc-800 cursor-not-allowed opacity-60'
+                          : queue.status === 'ACTIVE'
                           ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 shadow-amber-500/10'
                           : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 shadow-emerald-500/10'
                       }`}
                     >
-                      {queue.status === 'ACTIVE' ? (
+                      {!isAdmin ? (
+                        <>
+                          <Lock className="w-3.5 h-3.5 text-zinc-500" /> {queue.status === 'ACTIVE' ? 'Pause' : 'Resume'} (Admin Only)
+                        </>
+                      ) : queue.status === 'ACTIVE' ? (
                         <>
                           <PauseCircle className="w-4 h-4 text-amber-400" /> Pause Queue
                         </>

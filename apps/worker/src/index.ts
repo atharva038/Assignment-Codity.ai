@@ -21,6 +21,8 @@ dotenv.config();
 const WORKER_ID = process.env.WORKER_ID || `worker-${os.hostname()}-${randomUUID().substring(0, 8)}`;
 const CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || '5', 10);
 const POLL_INTERVAL_MS = parseInt(process.env.WORKER_POLL_INTERVAL_MS || '1000', 10);
+// Optional Queue Sharding: bind this worker process to a dedicated Queue Shard
+const TARGET_QUEUE_ID = process.env.WORKER_QUEUE_ID || process.env.QUEUE_ID || undefined;
 
 let isRunning = true;
 let activeCount = 0;
@@ -31,7 +33,17 @@ const heartbeatManager = new WorkerHeartbeatManager(WORKER_ID, CONCURRENCY);
  * Worker main startup routine
  */
 async function startWorker() {
-  logger.info({ workerId: WORKER_ID, concurrency: CONCURRENCY }, '🚀 Worker node starting up...');
+  logger.info(
+    {
+      workerId: WORKER_ID,
+      concurrency: CONCURRENCY,
+      mode: TARGET_QUEUE_ID ? 'SHARDED_DEDICATED' : 'GLOBAL_MULTI_QUEUE',
+      targetQueueId: TARGET_QUEUE_ID || 'ALL',
+    },
+    TARGET_QUEUE_ID
+      ? `🚀 Worker starting in SHARDED mode (Dedicated to Queue: ${TARGET_QUEUE_ID})`
+      : '🚀 Worker starting in GLOBAL mode (Polling all active queues)'
+  );
 
   // 1. Register worker in database fleet
   await heartbeatManager.register();
@@ -60,10 +72,11 @@ async function runPollingLoop() {
       const availableCapacity = CONCURRENCY - activeCount;
 
       if (availableCapacity > 0) {
-        // 3. Atomically claim eligible jobs using FOR UPDATE SKIP LOCKED
+        // 3. Atomically claim eligible jobs using FOR UPDATE SKIP LOCKED (with optional queue shard filter)
         const claimedJobs = await claimJobs({
           workerId: WORKER_ID,
           batchSize: availableCapacity,
+          queueId: TARGET_QUEUE_ID,
         });
 
         if (claimedJobs.length > 0) {

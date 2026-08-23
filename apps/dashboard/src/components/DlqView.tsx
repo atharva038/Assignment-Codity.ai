@@ -18,9 +18,11 @@ import {
   Clock,
   Cpu,
   Copy,
-  Check
+  Check,
+  Lock,
 } from 'lucide-react';
 import { fetchApi } from '../services/api.js';
+import { useAuth } from '../hooks/useAuth.js';
 
 interface DeadLetterItem {
   id: string;
@@ -44,6 +46,7 @@ interface DlqViewProps {
 }
 
 export const DlqView: React.FC<DlqViewProps> = ({ dlqJobs, onRefresh }) => {
+  const { isAdmin } = useAuth();
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [aiModalItem, setAiModalItem] = useState<DeadLetterItem | null>(null);
   const [generatingAiId, setGeneratingAiId] = useState<string | null>(null);
@@ -215,17 +218,29 @@ export const DlqView: React.FC<DlqViewProps> = ({ dlqJobs, onRefresh }) => {
                         <>
                           <button
                             onClick={() => replayJob(item.id)}
-                            disabled={actionLoadingId === item.id}
-                            className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-full text-xs font-bold transition-all shadow-sm"
+                            disabled={actionLoadingId === item.id || !isAdmin}
+                            title={!isAdmin ? 'Administrative role required to replay DLQ jobs' : undefined}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${
+                              !isAdmin
+                                ? 'bg-zinc-900/60 text-zinc-500 border border-zinc-800 cursor-not-allowed opacity-60'
+                                : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30'
+                            }`}
                           >
-                            <RotateCcw className="w-3.5 h-3.5 inline mr-1" /> Replay
+                            {!isAdmin ? <Lock className="w-3.5 h-3.5 inline mr-1" /> : <RotateCcw className="w-3.5 h-3.5 inline mr-1" />}
+                            Replay {!isAdmin && '(Admin)'}
                           </button>
                           <button
                             onClick={() => archiveJob(item.id)}
-                            disabled={actionLoadingId === item.id}
-                            className="px-3.5 py-1.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-800 rounded-full text-xs font-bold transition-all shadow-sm"
+                            disabled={actionLoadingId === item.id || !isAdmin}
+                            title={!isAdmin ? 'Administrative role required to archive DLQ jobs' : undefined}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${
+                              !isAdmin
+                                ? 'bg-zinc-900/60 text-zinc-500 border border-zinc-800 cursor-not-allowed opacity-60'
+                                : 'bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-800'
+                            }`}
                           >
-                            <Archive className="w-3.5 h-3.5 inline mr-1" /> Archive
+                            {!isAdmin ? <Lock className="w-3.5 h-3.5 inline mr-1" /> : <Archive className="w-3.5 h-3.5 inline mr-1" />}
+                            Archive
                           </button>
                         </>
                       )}
