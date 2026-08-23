@@ -16,6 +16,7 @@ import cronParser from 'cron-parser';
 import { randomUUID } from 'crypto';
 import { prisma, JobStatus } from '@job-scheduler/database';
 import { logger } from '@job-scheduler/logger';
+import { publishJobEvent } from '@job-scheduler/redis';
 
 export async function evaluateCronSchedules(schedulerId: string): Promise<number> {
   const now = new Date();
@@ -65,7 +66,7 @@ export async function evaluateCronSchedules(schedulerId: string): Promise<number
       }
 
       // 4. Create new Job instance and advance nextRunAt in database transaction
-      await prisma.$transaction([
+      const [newJob] = await prisma.$transaction([
         prisma.job.create({
           data: {
             queueId: item.queueId,
@@ -89,6 +90,18 @@ export async function evaluateCronSchedules(schedulerId: string): Promise<number
 
       triggeredCount++;
       logger.info({ scheduledJobName: item.name, nextRunAt: nextRunAt.toISOString() }, '⏰ Recurring cron job triggered successfully');
+
+      // 5. Broadcast real-time WebSocket event for instant UI update
+      publishJobEvent({
+        type: 'job:updated',
+        payload: {
+          jobId: newJob.id,
+          queueId: item.queueId,
+          status: JobStatus.QUEUED,
+          batchSize: 1,
+          scheduledJobId: item.id,
+        },
+      }).catch(() => {});
     } catch (err) {
       logger.error({ scheduledJobId: item.id, err }, 'Failed to trigger scheduled cron job');
     }

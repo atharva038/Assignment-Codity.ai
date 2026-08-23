@@ -8,6 +8,7 @@
 
 import { prisma, JobStatus } from '@job-scheduler/database';
 import { logger } from '@job-scheduler/logger';
+import { publishJobEvent } from '@job-scheduler/redis';
 
 export async function promoteDelayedJobs(): Promise<number> {
   const promotedCount = await prisma.$executeRaw`
@@ -20,6 +21,13 @@ export async function promoteDelayedJobs(): Promise<number> {
 
   if (promotedCount > 0) {
     logger.info({ count: promotedCount }, '🚀 Promoted delayed jobs from SCHEDULED to QUEUED');
+    publishJobEvent({
+      type: 'job:updated',
+      payload: {
+        batchSize: promotedCount,
+        status: JobStatus.QUEUED,
+      },
+    }).catch(() => {});
   }
 
   return promotedCount;

@@ -1,18 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Send, Zap, AlertCircle, Plus, Layers, CheckCircle2 } from 'lucide-react';
+import { X, Send, Zap, AlertCircle, Plus, Clock, Repeat, Calendar } from 'lucide-react';
 import { fetchApi } from '../services/api.js';
 
+interface QueueItem {
+  id: string;
+  name: string;
+  projectId?: string;
+  project?: { id: string; name: string };
+}
+
 interface CreateJobModalProps {
-  queues: Array<{ id: string; name: string }>;
+  queues: Array<{ id: string; name: string; projectId?: string; project?: { id: string; name: string } }>;
   onClose: () => void;
   onSuccess: () => void;
 }
 
+type JobScheduleMode = 'IMMEDIATE' | 'DELAYED' | 'RECURRING_CRON';
+
 export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQueues, onClose, onSuccess }) => {
-  const [queuesList, setQueuesList] = useState<Array<{ id: string; name: string }>>(initialQueues);
+  const [queuesList, setQueuesList] = useState<QueueItem[]>(initialQueues);
   const [queueId, setQueueId] = useState<string>(initialQueues[0]?.id || '');
+  const [scheduleMode, setScheduleMode] = useState<JobScheduleMode>('IMMEDIATE');
   const [jobType, setJobType] = useState<string>('email_notification');
+  const [cronJobName, setCronJobName] = useState<string>('Periodic Background Sync');
+  const [cronExpression, setCronExpression] = useState<string>('*/5 * * * *');
+  const [delaySeconds, setDelaySeconds] = useState<number>(30);
   const [priority, setPriority] = useState<number>(20);
   const [payloadJson, setPayloadJson] = useState<string>(
     JSON.stringify({ to: 'user@example.com', subject: 'Dashboard Test Notification', template: 'welcome' }, null, 2)
@@ -23,7 +36,7 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
 
   const loadQueues = async () => {
     try {
-      const res = await fetchApi<{ queues: Array<{ id: string; name: string }> }>('/queues');
+      const res = await fetchApi<{ queues: QueueItem[] }>('/queues');
       if (res.queues && res.queues.length > 0) {
         setQueuesList(res.queues);
         if (!queueId || !res.queues.some((q) => q.id === queueId)) {
@@ -46,7 +59,7 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
     setCreatingDefaultQueue(true);
     setErrorMsg(null);
     try {
-      const res = await fetchApi<{ message: string; queue: { id: string; name: string } }>('/queues', {
+      const res = await fetchApi<{ message: string; queue: QueueItem }>('/queues', {
         method: 'POST',
         body: JSON.stringify({
           name: 'default-task-queue',
@@ -70,7 +83,9 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
     e.preventDefault();
     setErrorMsg(null);
 
-    const targetQueueId = queueId || queuesList[0]?.id;
+    const selectedQueue = queuesList.find((q) => q.id === queueId) || queuesList[0];
+    const targetQueueId = selectedQueue?.id;
+
     if (!targetQueueId) {
       setErrorMsg('No target queue selected. Please create a queue first.');
       return;
@@ -88,15 +103,44 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
         return;
       }
 
-      await fetchApi('/jobs', {
-        method: 'POST',
-        body: JSON.stringify({
-          queueId: targetQueueId,
-          type: jobType,
-          payload: parsedPayload,
-          priority: Number(priority),
-        }),
-      });
+      if (scheduleMode === 'RECURRING_CRON') {
+        const targetProjectId = selectedQueue.project?.id || selectedQueue.projectId;
+        if (!targetProjectId) {
+          setErrorMsg('Unable to determine project ID for target queue');
+          setSubmitting(false);
+          return;
+        }
+
+        await fetchApi('/scheduled-jobs', {
+          method: 'POST',
+          body: JSON.stringify({
+            projectId: targetProjectId,
+            queueId: targetQueueId,
+            name: cronJobName.trim() || `${jobType}-cron`,
+            cronExpression: cronExpression.trim(),
+            jobType,
+            payload: parsedPayload,
+            priority: Number(priority),
+            enabled: true,
+          }),
+        });
+      } else {
+        const availableAt =
+          scheduleMode === 'DELAYED'
+            ? new Date(Date.now() + Math.max(1, delaySeconds) * 1000).toISOString()
+            : undefined;
+
+        await fetchApi('/jobs', {
+          method: 'POST',
+          body: JSON.stringify({
+            queueId: targetQueueId,
+            type: jobType,
+            payload: parsedPayload,
+            priority: Number(priority),
+            availableAt,
+          }),
+        });
+      }
 
       onSuccess();
       onClose();
@@ -122,13 +166,55 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
 
   return createPortal(
     <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-      <div className="bg-zinc-950 border border-zinc-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
+      <div className="bg-zinc-950 border border-zinc-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <Zap className="w-5 h-5 text-orange-500" /> Ingest New Background Test Job
-          </h3>
+          <div>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Zap className="w-5 h-5 text-orange-500" /> Ingest & Schedule Jobs
+            </h3>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Create immediate, delayed, or recurring cron jobs
+            </p>
+          </div>
           <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white rounded-xl bg-zinc-900 border border-zinc-800">
             <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Schedule Mode Selector */}
+        <div className="grid grid-cols-3 gap-2 p-1 bg-zinc-900 border border-zinc-800 rounded-2xl">
+          <button
+            type="button"
+            onClick={() => setScheduleMode('IMMEDIATE')}
+            className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+              scheduleMode === 'IMMEDIATE'
+                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" /> Immediate
+          </button>
+          <button
+            type="button"
+            onClick={() => setScheduleMode('DELAYED')}
+            className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+              scheduleMode === 'DELAYED'
+                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-md'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" /> Delayed
+          </button>
+          <button
+            type="button"
+            onClick={() => setScheduleMode('RECURRING_CRON')}
+            className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+              scheduleMode === 'RECURRING_CRON'
+                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <Repeat className="w-3.5 h-3.5" /> Recurring (Cron)
           </button>
         </div>
 
@@ -183,6 +269,78 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
             )}
           </div>
 
+          {/* Conditional Delayed Options */}
+          {scheduleMode === 'DELAYED' && (
+            <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-2xl space-y-2">
+              <label className="block text-amber-300 font-bold uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" /> Execution Delay (Seconds)
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  min={1}
+                  max={86400}
+                  value={delaySeconds}
+                  onChange={(e) => setDelaySeconds(Number(e.target.value))}
+                  className="w-32 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-100 font-mono text-xs focus:outline-none focus:border-amber-500"
+                />
+                <span className="text-zinc-400 text-[11px]">
+                  Job will remain <code className="text-amber-400 font-mono">SCHEDULED</code> until {delaySeconds}s pass, then promoted to <code className="text-emerald-400 font-mono">QUEUED</code>.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Conditional Cron Options */}
+          {scheduleMode === 'RECURRING_CRON' && (
+            <div className="p-3.5 bg-purple-500/5 border border-purple-500/20 rounded-2xl space-y-3">
+              <div>
+                <label className="block text-purple-300 font-bold mb-1 uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" /> Cron Job Name
+                </label>
+                <input
+                  type="text"
+                  value={cronJobName}
+                  onChange={(e) => setCronJobName(e.target.value)}
+                  placeholder="e.g. Hourly DB Cleanup"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-100 font-medium text-xs focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-purple-300 font-bold mb-1.5 uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                  <Repeat className="w-3.5 h-3.5" /> Cron Expression (5 fields)
+                </label>
+                <div className="grid grid-cols-3 gap-1.5 mb-2">
+                  {[
+                    { label: 'Every 1 min', expr: '*/1 * * * *' },
+                    { label: 'Every 5 mins', expr: '*/5 * * * *' },
+                    { label: 'Every hour', expr: '0 * * * *' },
+                  ].map((p) => (
+                    <button
+                      type="button"
+                      key={p.expr}
+                      onClick={() => setCronExpression(p.expr)}
+                      className={`px-2 py-1.5 rounded-lg border text-[11px] font-mono transition-all ${
+                        cronExpression === p.expr
+                          ? 'border-purple-500 bg-purple-500/20 text-purple-300 font-bold'
+                          : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-zinc-200'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  value={cronExpression}
+                  onChange={(e) => setCronExpression(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-purple-200 font-mono text-xs focus:outline-none focus:border-purple-500 font-bold"
+                />
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-zinc-400 font-bold mb-1.5 uppercase text-[10px] tracking-wider">Preset Job Type</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -223,7 +381,7 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
           <div>
             <label className="block text-zinc-400 font-bold mb-1.5 uppercase text-[10px] tracking-wider">Payload (JSON)</label>
             <textarea
-              rows={4}
+              rows={3}
               value={payloadJson}
               onChange={(e) => setPayloadJson(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-200 focus:outline-none focus:border-orange-500 font-mono text-xs"
@@ -241,9 +399,22 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
             <button
               type="submit"
               disabled={submitting || queuesList.length === 0}
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className={`px-5 py-2 rounded-xl text-xs font-bold shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${
+                scheduleMode === 'RECURRING_CRON'
+                  ? 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-purple-500/20'
+                  : scheduleMode === 'DELAYED'
+                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black shadow-amber-500/20'
+                  : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-500/20'
+              }`}
             >
-              <Send className="w-4 h-4" /> {submitting ? 'Ingesting...' : 'Ingest Job'}
+              <Send className="w-4 h-4" />{' '}
+              {submitting
+                ? 'Submitting...'
+                : scheduleMode === 'RECURRING_CRON'
+                ? 'Save Cron Schedule'
+                : scheduleMode === 'DELAYED'
+                ? 'Schedule Delayed Job'
+                : 'Ingest Job'}
             </button>
           </div>
         </form>
@@ -252,3 +423,4 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({ queues: initialQ
     document.body
   );
 };
+
