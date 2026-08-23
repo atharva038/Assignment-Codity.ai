@@ -1604,22 +1604,29 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
   // 1. DOCKED SIDE-BY-SIDE SPLIT-SCREEN PANEL
   if (isDocked) {
     return createPortal(
-      <aside className="fixed top-0 bottom-0 right-0 z-[60] w-full sm:w-[480px] lg:w-[540px] bg-zinc-950/95 border-l border-zinc-800 shadow-2xl backdrop-blur-xl flex flex-col p-5 sm:p-6 animate-in slide-in-from-right duration-200">
-        <div className="absolute top-0 right-0 w-80 h-24 bg-gradient-to-b from-orange-500/15 to-transparent pointer-events-none blur-2xl" />
+      <aside className="fixed top-0 bottom-0 right-0 z-[60] w-full sm:w-[500px] lg:w-[560px] bg-gradient-to-b from-[#141720] via-[#0d1017] to-[#080a0f] border-l-2 border-orange-500/40 shadow-[-30px_0_70px_rgba(0,0,0,0.9)] backdrop-blur-2xl flex flex-col p-5 sm:p-6 animate-in slide-in-from-right duration-200 ring-1 ring-white/10">
+        {/* Split Pane Grab Indicator on Left Edge */}
+        <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-12 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-zinc-500 shadow-xl pointer-events-none z-20">
+          <div className="w-1 h-5 rounded-full bg-orange-500/70 animate-pulse" />
+        </div>
 
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-4 relative z-10 shrink-0 mb-4">
+        {/* Ambient Top Glow Accent */}
+        <div className="absolute top-0 right-0 w-96 h-32 bg-gradient-to-b from-orange-500/20 via-amber-500/10 to-transparent pointer-events-none blur-3xl" />
+
+        {/* Header Console */}
+        <div className="flex items-center justify-between border-b border-zinc-700/80 pb-4 relative z-10 shrink-0 mb-4 bg-zinc-950/60 -mx-5 sm:-mx-6 px-5 sm:px-6 pt-1">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25 shrink-0">
-              <Flame className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30 shrink-0 ring-1 ring-orange-400/40">
+              <Flame className="w-5 h-5 fill-current" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-extrabold text-zinc-100">Demo Lab (Split-Screen)</h2>
-                <span className="px-1.5 py-0.2 rounded text-[8px] font-mono font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 uppercase">
+                <h2 className="text-sm font-extrabold text-zinc-100 tracking-tight">Demo Lab (Split-Screen)</h2>
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-mono font-extrabold bg-orange-500/20 text-orange-400 border border-orange-500/30 uppercase tracking-wide">
                   Live
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-400">Interactive 6-Scenario Evaluation Suite</p>
+              <p className="text-[11px] text-zinc-400">Interactive 6-Scenario Evaluation Console</p>
             </div>
           </div>
 
@@ -1628,12 +1635,15 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
 
         {simulationContent}
 
-        <div className="flex items-center justify-between pt-3 border-t border-zinc-800 text-xs shrink-0 mt-3">
-          <span className="text-zinc-400 text-[11px]">Split-Screen Live View Active</span>
+        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/90 text-xs shrink-0 mt-3 bg-zinc-950/60 -mx-5 sm:-mx-6 px-5 sm:px-6 pb-1">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span className="text-zinc-300 text-[11px] font-medium">Split-Screen Live View Active</span>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition-colors font-semibold text-xs"
+            className="px-4 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 hover:text-white transition-all font-bold text-xs shadow-sm cursor-pointer"
           >
             Close Panel
           </button>

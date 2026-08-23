@@ -22,6 +22,7 @@ import { UsersView } from './components/UsersView.js';
 import { AuthScreen } from './components/AuthScreen.js';
 import { CreateJobModal } from './components/CreateJobModal.js';
 import { VivaSimulationLab } from './components/VivaSimulationLab.js';
+import { InteractiveTour } from './components/InteractiveTour.js';
 import { Sidebar, TabType } from './components/Sidebar.js';
 import { useAuth } from './hooks/useAuth.js';
 
@@ -33,6 +34,18 @@ export function App() {
   });
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('sidebar_collapsed') === 'true';
+  });
+  const [isTourOpen, setIsTourOpen] = useState(false);
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebar_collapsed', String(next));
+      return next;
+    });
+  };
 
   const {
     loading: authLoading,
@@ -94,6 +107,16 @@ export function App() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isVivaLabOpen, setIsVivaLabOpen] = useState<boolean>(false);
 
+  // Auto-launch product tour on initial visit
+  useEffect(() => {
+    if (isAuthenticated && !authLoading && !localStorage.getItem('scheduler_tour_completed')) {
+      const timer = setTimeout(() => {
+        setIsTourOpen(true);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, authLoading]);
+
   const {
     transportMode,
     setTransportMode,
@@ -139,6 +162,8 @@ export function App() {
       <Sidebar
         sidebarOpen={sidebarOpen}
         onCloseSidebar={() => setSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapse}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         isDark={isDark}
@@ -147,12 +172,13 @@ export function App() {
         activeWorkersCount={stats.activeWorkers}
         pendingDlqCount={stats.pendingDlq}
         onOpenDemoLab={() => setIsVivaLabOpen(true)}
+        onStartTour={() => setIsTourOpen(true)}
       />
 
       {/* ========================================================================= */}
       {/* MAIN CONTENT AREA WITH FULL TOP CONTROLS NAVBAR */}
       {/* ========================================================================= */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-[76px]' : 'lg:pl-64'}`}>
         {/* Top Controls Header */}
         <header className={`h-16 px-4 sm:px-8 border-b flex items-center justify-between sticky top-0 z-30 ${
           isDark ? 'bg-black/90 border-zinc-800/80' : 'bg-[#FDFBF7]/90 border-[#E7E2D9]'
@@ -199,12 +225,14 @@ export function App() {
           {/* Right: Controls (Transport Toggle, Theme, Trigger Job, Refresh) */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Transport Mode Toggle */}
-            <TransportToggle
-              mode={transportMode}
-              onToggle={setTransportMode}
-              status={connectionStatus}
-              latency={latency}
-            />
+            <div id="header-transport-toggle">
+              <TransportToggle
+                mode={transportMode}
+                onToggle={setTransportMode}
+                status={connectionStatus}
+                latency={latency}
+              />
+            </div>
 
             {/* Dark / Light Mode Switcher */}
             <button
@@ -221,8 +249,9 @@ export function App() {
 
             {/* Trigger Test Job Button */}
             <button
+              id="header-trigger-job"
               onClick={() => setIsModalOpen(true)}
-              className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold rounded-full shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5 active:scale-95 shrink-0"
+              className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold rounded-full shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5 active:scale-95 shrink-0 cursor-pointer"
             >
               <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Trigger Test Job</span>
             </button>
@@ -283,6 +312,18 @@ export function App() {
         onRefreshData={loadDashboardData}
         onNavigateToTab={(tab) => {
           setActiveTab(tab as TabType);
+        }}
+      />
+
+      {/* Interactive Guided Product Tour */}
+      <InteractiveTour
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onNavigateTab={(tab) => {
+          setActiveTab(tab);
+        }}
+        onOpenDemoLab={() => {
+          setIsVivaLabOpen(true);
         }}
       />
     </div>

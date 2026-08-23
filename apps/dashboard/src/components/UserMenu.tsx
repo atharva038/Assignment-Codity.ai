@@ -15,9 +15,10 @@ import { CreateOrgModal } from './CreateOrgModal.js';
 
 interface UserMenuProps {
   variant?: 'sidebar' | 'header';
+  isCollapsed?: boolean;
 }
 
-export function UserMenu({ variant = 'sidebar' }: UserMenuProps) {
+export function UserMenu({ variant = 'sidebar', isCollapsed = false }: UserMenuProps) {
   const { user, isAdmin, orgRole, orgName, orgId, setActiveOrgId, switchPersona, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -56,13 +57,16 @@ export function UserMenu({ variant = 'sidebar' }: UserMenuProps) {
   const isSidebar = variant === 'sidebar';
 
   return (
-    <div className={`relative ${isSidebar ? 'w-full' : ''}`} ref={menuRef}>
+    <div className={`relative ${isSidebar && !isCollapsed ? 'w-full' : 'flex justify-center'}`} ref={menuRef}>
       {/* Trigger Button */}
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className={`flex items-center gap-2.5 transition-all text-xs ${
+        title={isCollapsed ? `${user?.name} (${isAdmin ? 'ADMIN' : 'MEMBER'})` : undefined}
+        className={`flex items-center transition-all text-xs cursor-pointer ${
           isSidebar
-            ? 'w-full p-2.5 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 hover:bg-zinc-850 text-zinc-200 justify-between shadow-sm'
+            ? isCollapsed
+              ? 'w-10 h-10 rounded-xl justify-center p-0 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800'
+              : 'w-full p-2.5 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 hover:bg-zinc-850 text-zinc-200 justify-between shadow-sm'
             : 'pl-2 pr-2.5 py-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800/80 text-zinc-200'
         }`}
       >
@@ -78,40 +82,48 @@ export function UserMenu({ variant = 'sidebar' }: UserMenuProps) {
             {getInitials(user?.name)}
           </div>
 
-          <div className="text-left overflow-hidden">
-            <div className="font-bold text-[11px] leading-tight truncate">
-              {user?.name || 'Authenticated User'}
+          {!isCollapsed && (
+            <div className="text-left overflow-hidden">
+              <div className="font-bold text-[11px] leading-tight truncate">
+                {user?.name || 'Authenticated User'}
+              </div>
+              <div className="text-[10px] font-mono leading-none text-zinc-400 truncate mt-0.5">
+                {user?.email || 'developer@codity.ai'}
+              </div>
             </div>
-            <div className="text-[10px] font-mono leading-none text-zinc-400 truncate mt-0.5">
-              {user?.email || 'developer@codity.ai'}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span
-            className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-extrabold uppercase ${
-              isAdmin
-                ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-            }`}
-          >
-            {isAdmin ? 'ADMIN' : 'MEMBER'}
-          </span>
-
-          {isSidebar ? (
-            dropdownOpen ? <ChevronDown className="w-3.5 h-3.5 text-zinc-400" /> : <ChevronUp className="w-3.5 h-3.5 text-zinc-400" />
-          ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
           )}
         </div>
+
+        {!isCollapsed && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span
+              className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-extrabold uppercase ${
+                isAdmin
+                  ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                  : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+              }`}
+            >
+              {isAdmin ? 'ADMIN' : 'MEMBER'}
+            </span>
+
+            {isSidebar ? (
+              dropdownOpen ? <ChevronDown className="w-3.5 h-3.5 text-zinc-400" /> : <ChevronUp className="w-3.5 h-3.5 text-zinc-400" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+            )}
+          </div>
+        )}
       </button>
 
       {/* Dropdown Menu */}
       {dropdownOpen && (
         <div
           className={`absolute ${
-            isSidebar ? 'bottom-full mb-2 left-0 w-full' : 'right-0 mt-2 w-72'
+            isSidebar
+              ? isCollapsed
+                ? 'left-full ml-3 bottom-0 w-72'
+                : 'bottom-full mb-2 left-0 w-full'
+              : 'right-0 mt-2 w-72'
           } rounded-2xl bg-zinc-950 border border-zinc-800 p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 text-xs`}
         >
           {/* User Info Header */}
