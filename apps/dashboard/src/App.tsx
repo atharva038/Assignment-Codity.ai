@@ -102,6 +102,7 @@ export function App() {
     data,
     refreshing,
     lastUpdatedTs,
+    lastWsEvent,
     loadDashboardData,
   } = useRealtimeTransport();
 
@@ -243,7 +244,7 @@ export function App() {
         <main className="flex-1 p-4 sm:p-8 w-full max-w-7xl mx-auto">
           {activeTab === 'overview' && <Overview stats={stats} throughputData={throughputData} transportMode={transportMode} />}
           {activeTab === 'queues' && <QueuesView queues={queues} onRefresh={loadDashboardData} />}
-          {activeTab === 'jobs' && <JobsView jobs={[]} onRefresh={loadDashboardData} lastUpdatedTs={lastUpdatedTs} />}
+          {activeTab === 'jobs' && <JobsView jobs={[]} onRefresh={loadDashboardData} lastUpdatedTs={lastUpdatedTs} lastWsEvent={lastWsEvent} />}
           {activeTab === 'workflows' && <WorkflowsView onRefresh={loadDashboardData} lastUpdatedTs={lastUpdatedTs} />}
           {activeTab === 'events' && <EventsView queues={queues} onRefresh={loadDashboardData} lastUpdatedTs={lastUpdatedTs} />}
           {activeTab === 'sharding' && (

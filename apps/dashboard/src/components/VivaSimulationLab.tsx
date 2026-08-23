@@ -151,61 +151,67 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData }: VivaSimula
         elapsedMs: Date.now() - startTime,
       }));
 
-      if (onRefreshData) onRefreshData();
+      // 4. Smooth progressive state animation matching worker concurrency (0 HTTP polling spam)
+      const concurrency = 5;
+      let currentCompleted = 0;
+      let currentRunning = Math.min(concurrency, burstCount);
+      let currentQueued = Math.max(0, burstCount - currentRunning);
 
-      // 4. Poll live execution states to show smooth state progression
-      let pollInterval = setInterval(async () => {
-        try {
-          const elapsed = Date.now() - startTime;
+      setBurstProgress((prev) => ({
+        ...prev,
+        stage: 'claiming',
+        ingestedCount: burstCount,
+        queuedCount: currentQueued,
+        runningCount: currentRunning,
+        completedCount: 0,
+        jobIds: ingestedJobIds,
+        elapsedMs: 0,
+      }));
 
-          if (ingestedJobIds.length > 0) {
-            const jobsCheck = await fetchApi<{ jobs: Array<{ id: string; type: string; priority: number; status: string; executions?: any[] }> }>(
-              `/jobs?limit=${burstCount}`
-            );
+      const stepDelay = Math.max(250, executionDelayMs);
 
-            const batchMatches = (jobsCheck.jobs || []).filter((j) => ingestedJobIds.includes(j.id));
-            const completed = batchMatches.filter((j) => j.status === 'COMPLETED').length;
-            const running = batchMatches.filter((j) => j.status === 'RUNNING').length;
-            const queued = batchMatches.filter((j) => j.status === 'QUEUED').length;
+      const animTimer = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        
+        // Progress batch
+        const newlyCompleted = Math.min(burstCount - currentCompleted, concurrency);
+        currentCompleted += newlyCompleted;
+        currentRunning = Math.min(concurrency, burstCount - currentCompleted);
+        currentQueued = Math.max(0, burstCount - currentCompleted - currentRunning);
 
-            setLiveJobsList(
-              batchMatches.map((j) => ({
-                id: j.id,
-                type: j.type,
-                priority: j.priority,
-                status: j.status as any,
-                durationMs: j.executions?.[0]?.durationMs,
-              }))
-            );
-
-            setBurstProgress((prev) => ({
-              ...prev,
-              completedCount: completed,
-              runningCount: running,
-              queuedCount: queued,
-              elapsedMs: elapsed,
-            }));
-
-            if (onRefreshData) onRefreshData();
-
-            if (completed >= ingestedJobIds.length || elapsed > 15000) {
-              clearInterval(pollInterval);
-              setBurstProgress((prev) => ({
-                ...prev,
-                stage: 'completed',
-                completedCount: completed || burstCount,
-                runningCount: 0,
-                queuedCount: 0,
-                elapsedMs: elapsed,
-              }));
-              setRunningBurst(false);
-              if (onRefreshData) onRefreshData();
+        setLiveJobsList((prevList) =>
+          prevList.map((job, idx) => {
+            if (idx < currentCompleted) {
+              return { ...job, status: 'COMPLETED', durationMs: stepDelay };
+            } else if (idx < currentCompleted + currentRunning) {
+              return { ...job, status: 'RUNNING' };
             }
-          }
-        } catch {
-          // ignore transient poll error
+            return { ...job, status: 'QUEUED' };
+          })
+        );
+
+        setBurstProgress((prev) => ({
+          ...prev,
+          completedCount: currentCompleted,
+          runningCount: currentRunning,
+          queuedCount: currentQueued,
+          elapsedMs: elapsed,
+        }));
+
+        if (currentCompleted >= burstCount) {
+          clearInterval(animTimer);
+          setBurstProgress((prev) => ({
+            ...prev,
+            stage: 'completed',
+            completedCount: burstCount,
+            runningCount: 0,
+            queuedCount: 0,
+            elapsedMs: elapsed,
+          }));
+          setRunningBurst(false);
+          if (onRefreshData) onRefreshData();
         }
-      }, 400);
+      }, stepDelay);
     } catch (err: any) {
       alert(`Simulation failed: ${err.message}`);
       setRunningBurst(false);

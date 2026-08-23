@@ -22,9 +22,10 @@ interface JobsViewProps {
   jobs: JobItem[];
   onRefresh: () => void;
   lastUpdatedTs?: number;
+  lastWsEvent?: any;
 }
 
-export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) => {
+export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs, lastWsEvent }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null);
@@ -70,31 +71,36 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs }) 
     fetchServerJobs(false);
   }, [currentPage, selectedStatus, searchQuery]);
 
-  const lastFetchTimeRef = React.useRef<number>(0);
-  const pendingFetchRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  // Live WebSocket Sync: Instantly refresh server jobs on event with 250ms smooth throttle
+  // 1. In-Memory 0ms WebSocket Reactive Update (Zero HTTP requests!)
   useEffect(() => {
-    if (!lastUpdatedTs) return;
+    if (!lastWsEvent) return;
 
-    const now = Date.now();
-    const timeSinceLast = now - lastFetchTimeRef.current;
+    if (lastWsEvent.type === 'job:updated' && lastWsEvent.payload) {
+      const { jobId, status, durationMs, batchSize } = lastWsEvent.payload;
 
-    if (timeSinceLast >= 250) {
-      lastFetchTimeRef.current = now;
-      fetchServerJobs(true);
-    } else {
-      if (pendingFetchRef.current) clearTimeout(pendingFetchRef.current);
-      pendingFetchRef.current = setTimeout(() => {
-        lastFetchTimeRef.current = Date.now();
+      if (batchSize) {
+        // New batch arrived: fetch once to load all new jobs at top
         fetchServerJobs(true);
-      }, 250 - timeSinceLast);
-    }
+        return;
+      }
 
-    return () => {
-      if (pendingFetchRef.current) clearTimeout(pendingFetchRef.current);
-    };
-  }, [lastUpdatedTs]);
+      if (jobId && status) {
+        setServerJobs((prev) =>
+          prev.map((job) =>
+            job.id === jobId
+              ? {
+                  ...job,
+                  status,
+                  executions: durationMs
+                    ? [{ id: `exec-${Date.now()}`, attemptNumber: job.attempts || 1, status, durationMs }]
+                    : job.executions,
+                }
+              : job
+          )
+        );
+      }
+    }
+  }, [lastWsEvent]);
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);

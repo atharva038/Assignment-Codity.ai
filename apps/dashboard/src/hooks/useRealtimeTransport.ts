@@ -167,7 +167,7 @@ export function useRealtimeTransport() {
   }, [orgId]);
 
   // WebSocket Hook instance
-  const { status: connectionStatus, latency } = useWebSocket({
+  const { status: connectionStatus, latency, lastEvent } = useWebSocket({
     getToken: async () => getAuthToken() || '',
     enabled: transportMode === 'websocket' && !!getAuthToken(),
     onEvent: handleWsEvent,
@@ -197,6 +197,7 @@ export function useRealtimeTransport() {
     data,
     refreshing,
     lastUpdatedTs,
+    lastWsEvent: lastEvent,
     loadDashboardData: handleManualRefresh,
   };
 }
