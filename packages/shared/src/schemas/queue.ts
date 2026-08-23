@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { QueueStatus } from '../enums/index.js';
 
 export const createQueueSchema = z.object({
-  projectId: z.string().uuid('Invalid Project UUID'),
+  projectId: z.string().uuid('Invalid Project UUID').optional(),
   name: z.string().min(2, 'Queue name must be at least 2 characters long').regex(/^[a-z0-9-]+$/, 'Queue name must contain lowercase alphanumeric characters and hyphens only'),
   priority: z.number().int().min(1).max(100).default(10),
   concurrencyLimit: z.number().int().min(1).max(100).default(5),
