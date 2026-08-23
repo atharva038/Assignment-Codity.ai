@@ -30,7 +30,7 @@
 }
 
 /* ============================================================================
- * LIGHT BEIGE THEME (Ultra High Contrast, Crisp Typography)
+ * LIGHT BEIGE THEME (Ultra High Contrast, Crisp Typography & Panels)
  * ============================================================================ */
 .light,
 html.light,
@@ -49,11 +49,20 @@ body.light,
   color: #1C1917 !important;
 }
 
-.light p {
+.light p,
+.light label {
   color: #44403C !important;
 }
 
-.light .glass-panel {
+/* Card & Panels in Light Mode */
+.light .glass-panel,
+.light [class*="bg-zinc-950"],
+.light [class*="bg-slate-950"],
+.light [class*="bg-zinc-900/60"],
+.light [class*="bg-zinc-950/60"],
+.light [class*="bg-zinc-950/80"],
+.light [class*="bg-zinc-950/90"],
+.light [class*="bg-zinc-900/40"] {
   background-color: #FFFFFF !important;
   border-color: #E7E2D9 !important;
   color: #1C1917 !important;
@@ -66,6 +75,57 @@ body.light,
   color: #1C1917 !important;
 }
 
+/* Inputs, Textareas, Sub-boxes in Light Mode */
+.light input,
+.light textarea,
+.light select,
+.light .bg-zinc-900,
+.light .bg-slate-900 {
+  background-color: #F8F6F0 !important;
+  border-color: #E7E2D9 !important;
+  color: #1C1917 !important;
+}
+
+/* Text overrides in Light Mode */
+.light .text-zinc-100,
+.light .text-zinc-200,
+.light .text-slate-100,
+.light .text-slate-200 {
+  color: #1C1917 !important;
+}
+
+.light .text-zinc-300,
+.light .text-slate-300 {
+  color: #292524 !important;
+}
+
+.light .text-zinc-400,
+.light .text-slate-400 {
+  color: #57534E !important;
+}
+
+.light .text-zinc-500,
+.light .text-slate-500 {
+  color: #78716C !important;
+}
+
+/* Border overrides in Light Mode */
+.light .border-zinc-800,
+.light .border-slate-800,
+.light .border-zinc-700,
+.light .border-slate-700,
+.light [class*="border-zinc-800"],
+.light [class*="border-slate-800"] {
+  border-color: #E7E2D9 !important;
+}
+
+.light .divide-zinc-800,
+.light .divide-slate-800,
+.light [class*="divide-zinc-800"] > * {
+  border-color: #E7E2D9 !important;
+}
+
+/* Table header & cells */
 .light th {
   background-color: #F5F0E6 !important;
   color: #292524 !important;
@@ -80,6 +140,16 @@ body.light,
 .light tr:hover {
   background-color: #FAF7F2 !important;
 }
+
+/* Recharts Tooltip in Light Mode */
+.light .recharts-default-tooltip {
+  background-color: #FFFFFF !important;
+  border-color: #E7E2D9 !important;
+  color: #1C1917 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+
 
 /* ============================================================================
  * PITCH BLACK THEME (Ultra High Contrast Dark)

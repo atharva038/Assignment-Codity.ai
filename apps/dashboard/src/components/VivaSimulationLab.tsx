@@ -795,13 +795,13 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
   const simulationContent = (
     <div className="space-y-4 overflow-y-auto no-scrollbar pr-1 flex-1">
       {/* Dual Window / Split Screen Live Tip */}
-      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-transparent border border-orange-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+      <div className="p-3.5 rounded-2xl bg-orange-50/90 dark:bg-gradient-to-r dark:from-orange-500/10 dark:via-amber-500/10 dark:to-transparent border border-orange-200 dark:border-orange-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
         <div className="space-y-1">
-          <div className="font-extrabold text-orange-400 flex items-center gap-1.5 text-xs">
+          <div className="font-extrabold text-orange-600 dark:text-orange-400 flex items-center gap-1.5 text-xs">
             <Sparkles className="w-3.5 h-3.5" />
             Live Split-Screen Active
           </div>
-          <p className="text-[11px] text-zinc-300 leading-relaxed">
+          <p className="text-[11px] text-stone-700 dark:text-zinc-300 leading-relaxed">
             The left side of your screen is <strong>fully live and clickable</strong>! Switch to any tab to watch real-time state changes.
           </p>
         </div>
@@ -809,20 +809,20 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
         <button
           type="button"
           onClick={handleOpenCleanTab}
-          className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 font-bold text-[11px] flex items-center gap-1.5 shrink-0 shadow-sm transition-all active:scale-95 cursor-pointer"
+          className="px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 hover:bg-stone-100 dark:hover:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-stone-800 dark:text-zinc-200 font-bold text-[11px] flex items-center gap-1.5 shrink-0 shadow-sm transition-all active:scale-95 cursor-pointer"
           title="Open another authenticated dashboard tab"
         >
-          <ExternalLink className="w-3.5 h-3.5 text-orange-400" /> New Tab
+          <ExternalLink className="w-3.5 h-3.5 text-orange-500" /> New Tab
         </button>
       </div>
 
       {/* 6-Scenario Nav Switcher */}
-      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-zinc-900 p-1 border border-zinc-800 text-[11px] font-bold">
+      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-stone-200/80 dark:bg-zinc-900 p-1 border border-stone-300 dark:border-zinc-800 text-[11px] font-bold">
         <button
           type="button"
           onClick={() => setActiveScenario('scenario1')}
-          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 ${
-            activeScenario === 'scenario1' ? 'bg-orange-500 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
+            activeScenario === 'scenario1' ? 'bg-orange-500 text-white shadow-md' : 'text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
           }`}
         >
           <Cpu className="w-3 h-3" /> S1: Burst
@@ -830,8 +830,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
         <button
           type="button"
           onClick={() => setActiveScenario('scenario2')}
-          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 ${
-            activeScenario === 'scenario2' ? 'bg-rose-500 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
+            activeScenario === 'scenario2' ? 'bg-rose-500 text-white shadow-md' : 'text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
           }`}
         >
           <RotateCcw className="w-3 h-3" /> S2: Retries
@@ -839,8 +839,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
         <button
           type="button"
           onClick={() => setActiveScenario('scenario3')}
-          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 ${
-            activeScenario === 'scenario3' ? 'bg-indigo-600 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
+            activeScenario === 'scenario3' ? 'bg-indigo-600 text-white shadow-md' : 'text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
           }`}
         >
           <GitMerge className="w-3 h-3" /> S3: DAG
@@ -848,8 +848,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
         <button
           type="button"
           onClick={() => setActiveScenario('scenario4')}
-          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 ${
-            activeScenario === 'scenario4' ? 'bg-emerald-600 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
+            activeScenario === 'scenario4' ? 'bg-emerald-600 text-white shadow-md' : 'text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
           }`}
         >
           <Gauge className="w-3 h-3" /> S4: Rate Limit
@@ -857,8 +857,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
         <button
           type="button"
           onClick={() => setActiveScenario('scenario5')}
-          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 ${
-            activeScenario === 'scenario5' ? 'bg-purple-600 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
+            activeScenario === 'scenario5' ? 'bg-purple-600 text-white shadow-md' : 'text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
           }`}
         >
           <Bot className="w-3 h-3" /> S5: AI DLQ
@@ -866,8 +866,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
         <button
           type="button"
           onClick={() => setActiveScenario('scenario6')}
-          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 ${
-            activeScenario === 'scenario6' ? 'bg-cyan-600 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+          className={`py-1.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
+            activeScenario === 'scenario6' ? 'bg-cyan-600 text-white shadow-md' : 'text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
           }`}
         >
           <Radio className="w-3 h-3" /> S6: Webhooks
@@ -878,39 +878,39 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       {/* SCENARIO 1 VIEW */}
       {/* ===================================================================== */}
       {activeScenario === 'scenario1' && (
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 space-y-4 relative">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/70 border border-stone-200 dark:border-zinc-800 space-y-4 relative shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono font-bold text-orange-400 uppercase">Scenario 1</span>
-                <span className="text-zinc-500 text-xs">•</span>
-                <span className="text-xs font-bold text-zinc-200">High-Concurrency Burst & Atomic Claims</span>
+                <span className="text-xs font-mono font-bold text-orange-600 dark:text-orange-400 uppercase">Scenario 1</span>
+                <span className="text-stone-400 dark:text-zinc-500 text-xs">•</span>
+                <span className="text-xs font-bold text-stone-900 dark:text-zinc-200">High-Concurrency Burst & Atomic Claims</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Atomically bursts jobs into PostgreSQL. Multiple worker threads race to claim tasks using <code className="text-orange-400 font-mono text-[11px] bg-orange-500/10 px-1 py-0.5 rounded">FOR UPDATE SKIP LOCKED</code>, ensuring lock-free concurrency and zero duplicate processing.
+              <p className="text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
+                Atomically bursts jobs into PostgreSQL. Multiple worker threads race to claim tasks using <code className="text-orange-600 dark:text-orange-400 font-mono text-[11px] bg-orange-500/10 px-1 py-0.5 rounded font-bold">FOR UPDATE SKIP LOCKED</code>, ensuring lock-free concurrency and zero duplicate processing.
               </p>
             </div>
             <div className="shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
                 <Cpu className="w-3 h-3" /> SKIP LOCKED
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-800/80">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-stone-200 dark:border-zinc-800/80">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-orange-400" /> Burst Size:
+              <label className="text-[11px] font-semibold text-stone-600 dark:text-zinc-400 flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-orange-500" /> Burst Size:
               </label>
-              <div className="flex rounded-xl bg-zinc-950 p-1 border border-zinc-800">
+              <div className="flex rounded-xl bg-stone-100 dark:bg-zinc-950 p-1 border border-stone-200 dark:border-zinc-800">
                 {[10, 30, 50].map((size) => (
                   <button
                     key={size}
                     type="button"
                     disabled={runningBurst}
                     onClick={() => setBurstCount(size)}
-                    className={`flex-1 py-1 text-xs font-bold font-mono rounded-lg transition-all ${
-                      burstCount === size ? 'bg-orange-500 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+                    className={`flex-1 py-1 text-xs font-bold font-mono rounded-lg transition-all cursor-pointer ${
+                      burstCount === size ? 'bg-orange-500 text-white shadow-sm' : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
                     }`}
                   >
                     {size} Jobs
@@ -920,10 +920,10 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-amber-400" /> Simulated Task Delay:
+              <label className="text-[11px] font-semibold text-stone-600 dark:text-zinc-400 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-500" /> Simulated Task Delay:
               </label>
-              <div className="flex rounded-xl bg-zinc-950 p-1 border border-zinc-800">
+              <div className="flex rounded-xl bg-stone-100 dark:bg-zinc-950 p-1 border border-stone-200 dark:border-zinc-800">
                 {[
                   { label: 'Fast (150ms)', val: 150 },
                   { label: 'Realistic (500ms)', val: 500 },
@@ -934,8 +934,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
                     type="button"
                     disabled={runningBurst}
                     onClick={() => setExecutionDelayMs(d.val)}
-                    className={`flex-1 py-1 text-[11px] font-bold rounded-lg transition-all ${
-                      executionDelayMs === d.val ? 'bg-amber-500 text-black shadow-sm font-extrabold' : 'text-zinc-400 hover:text-zinc-200'
+                    className={`flex-1 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+                      executionDelayMs === d.val ? 'bg-amber-500 text-black shadow-sm font-extrabold' : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
                     }`}
                   >
                     {d.label}
@@ -967,18 +967,18 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
           </div>
 
           {burstProgress.stage !== 'idle' && (
-            <div className="p-4 rounded-2xl bg-black/70 border border-zinc-800 space-y-3.5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-black/70 border border-stone-200 dark:border-zinc-800 space-y-3.5 animate-in fade-in zoom-in-95 duration-150 shadow-sm">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-zinc-200 flex items-center gap-2">
-                  <Activity className={`w-4 h-4 ${runningBurst ? 'text-orange-400 animate-pulse' : 'text-emerald-400'}`} />
+                <span className="font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-2">
+                  <Activity className={`w-4 h-4 ${runningBurst ? 'text-orange-500 animate-pulse' : 'text-emerald-500'}`} />
                   {burstProgress.stage === 'ingesting' && '1/3: Ingesting Batch via Atomic Postgres Transaction...'}
                   {burstProgress.stage === 'claiming' && '2/3: Worker Fleet Concurrently Claiming via SKIP LOCKED...'}
                   {burstProgress.stage === 'completed' && '3/3: Burst Complete! All Jobs Executed.'}
                 </span>
-                <span className="font-mono text-[11px] text-zinc-400 font-bold">⏱️ {burstProgress.elapsedMs}ms</span>
+                <span className="font-mono text-[11px] text-stone-600 dark:text-zinc-400 font-bold">⏱️ {burstProgress.elapsedMs}ms</span>
               </div>
 
-              <div className="w-full bg-zinc-800/80 rounded-full h-2.5 overflow-hidden p-0.5">
+              <div className="w-full bg-stone-200 dark:bg-zinc-800/80 rounded-full h-2.5 overflow-hidden p-0.5 border border-stone-300 dark:border-zinc-700">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
                     burstProgress.stage === 'completed' ? 'bg-emerald-500' : 'bg-gradient-to-r from-orange-500 to-amber-500'
@@ -996,20 +996,20 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
               </div>
 
               <div className="grid grid-cols-3 gap-2 pt-1">
-                <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
-                  <div className="text-[10px] uppercase font-mono font-bold text-blue-400">Queued</div>
-                  <div className="text-base font-extrabold font-mono text-blue-300">{burstProgress.queuedCount}</div>
+                <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-center">
+                  <div className="text-[10px] uppercase font-mono font-bold text-blue-700 dark:text-blue-400">Queued</div>
+                  <div className="text-base font-extrabold font-mono text-blue-900 dark:text-blue-300">{burstProgress.queuedCount}</div>
                 </div>
-                <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
-                  <div className="text-[10px] uppercase font-mono font-bold text-amber-400 flex items-center justify-center gap-1">
+                <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-center">
+                  <div className="text-[10px] uppercase font-mono font-bold text-amber-700 dark:text-amber-400 flex items-center justify-center gap-1">
                     {runningBurst && <RefreshCw className="w-2.5 h-2.5 animate-spin" />}
                     Running
                   </div>
-                  <div className="text-base font-extrabold font-mono text-amber-300">{burstProgress.runningCount}</div>
+                  <div className="text-base font-extrabold font-mono text-amber-900 dark:text-amber-300">{burstProgress.runningCount}</div>
                 </div>
-                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-                  <div className="text-[10px] uppercase font-mono font-bold text-emerald-400">Completed</div>
-                  <div className="text-base font-extrabold font-mono text-emerald-300">{burstProgress.completedCount}</div>
+                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-center">
+                  <div className="text-[10px] uppercase font-mono font-bold text-emerald-700 dark:text-emerald-400">Completed</div>
+                  <div className="text-base font-extrabold font-mono text-emerald-900 dark:text-emerald-300">{burstProgress.completedCount}</div>
                 </div>
               </div>
             </div>
@@ -1021,28 +1021,28 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       {/* SCENARIO 2 VIEW */}
       {/* ===================================================================== */}
       {activeScenario === 'scenario2' && (
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 space-y-4 relative">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/70 border border-stone-200 dark:border-zinc-800 space-y-4 relative shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono font-bold text-rose-400 uppercase">Scenario 2</span>
-                <span className="text-zinc-500 text-xs">•</span>
-                <span className="text-xs font-bold text-zinc-200">Failure Lifecycle & Exponential Backoff to DLQ</span>
+                <span className="text-xs font-mono font-bold text-rose-600 dark:text-rose-400 uppercase">Scenario 2</span>
+                <span className="text-stone-400 dark:text-zinc-500 text-xs">•</span>
+                <span className="text-xs font-bold text-stone-900 dark:text-zinc-200">Failure Lifecycle & Exponential Backoff to DLQ</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Simulates real-world transient failures. Calculates mathematically rigorous exponential backoff (<code className="text-rose-400 font-mono text-[11px] bg-rose-500/10 px-1 py-0.5 rounded">delay = base × 2^(attempt) + jitter</code>) before routing exhausted jobs to DLQ.
+              <p className="text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
+                Simulates real-world transient failures. Calculates mathematically rigorous exponential backoff (<code className="text-rose-600 dark:text-rose-400 font-mono text-[11px] bg-rose-500/10 px-1 py-0.5 rounded font-bold">delay = base × 2^(attempt) + jitter</code>) before routing exhausted jobs to DLQ.
               </p>
             </div>
             <div className="shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1.5">
                 <AlertTriangle className="w-3 h-3" /> DLQ Routing
               </span>
             </div>
           </div>
 
-          <div className="space-y-1.5 pt-2 border-t border-zinc-800/80">
-            <label className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1.5">
-              <Bug className="w-3.5 h-3.5 text-rose-400" /> Simulated Failure Error:
+          <div className="space-y-1.5 pt-2 border-t border-stone-200 dark:border-zinc-800/80">
+            <label className="text-[11px] font-semibold text-stone-600 dark:text-zinc-400 flex items-center gap-1.5">
+              <Bug className="w-3.5 h-3.5 text-rose-500" /> Simulated Failure Error:
             </label>
             <div className="space-y-1.5">
               {[
@@ -1055,10 +1055,10 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
                   type="button"
                   disabled={simulatingFailure}
                   onClick={() => setSelectedErrorType(err)}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-mono transition-all border ${
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
                     selectedErrorType === err
-                      ? 'bg-rose-500/15 border-rose-500 text-rose-300 font-bold'
-                      : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+                      ? 'bg-rose-50 dark:bg-rose-500/15 border-rose-400 dark:border-rose-500 text-rose-800 dark:text-rose-300 font-bold shadow-sm'
+                      : 'bg-stone-50 dark:bg-zinc-950 border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
                   }`}
                 >
                   ⚠️ {err}
@@ -1089,14 +1089,14 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
           </div>
 
           {failureProgress.stage !== 'idle' && (
-            <div className="p-4 rounded-2xl bg-black/80 border border-zinc-800 space-y-3 animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between text-xs border-b border-zinc-800 pb-2">
-                <span className="font-bold text-zinc-200 flex items-center gap-2">
-                  <RotateCcw className={`w-4 h-4 ${simulatingFailure ? 'text-rose-400 animate-spin' : 'text-emerald-400'}`} />
+            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-black/80 border border-stone-200 dark:border-zinc-800 space-y-3 animate-in fade-in zoom-in-95 duration-150 shadow-sm">
+              <div className="flex items-center justify-between text-xs border-b border-stone-200 dark:border-zinc-800 pb-2">
+                <span className="font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-2">
+                  <RotateCcw className={`w-4 h-4 ${simulatingFailure ? 'text-rose-500 animate-spin' : 'text-emerald-500'}`} />
                   {failureProgress.stage === 'dead_dlq' ? 'Dead Letter Queue Routing Complete!' : `Attempt ${failureProgress.currentAttempt}/3 in Progress...`}
                 </span>
                 {failureProgress.jobId && (
-                  <span className="font-mono text-[10px] text-zinc-400 font-semibold truncate max-w-[150px]">ID: {failureProgress.jobId.slice(0, 13)}...</span>
+                  <span className="font-mono text-[10px] text-stone-600 dark:text-zinc-400 font-semibold truncate max-w-[150px]">ID: {failureProgress.jobId.slice(0, 13)}...</span>
                 )}
               </div>
 
@@ -1106,24 +1106,24 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
                     key={t.step}
                     className={`p-2.5 rounded-xl border text-xs transition-all ${
                       t.status === 'failed'
-                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                        ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-300 dark:border-rose-500/30 text-rose-800 dark:text-rose-300'
                         : t.status === 'active'
-                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 animate-pulse'
+                        ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 animate-pulse'
                         : t.status === 'done'
-                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
-                        : 'bg-zinc-950/60 border-zinc-800/60 text-zinc-500 opacity-60'
+                        ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-300'
+                        : 'bg-stone-100 dark:bg-zinc-950/60 border-stone-200 dark:border-zinc-800/60 text-stone-500 dark:text-zinc-500 opacity-60'
                     }`}
                   >
                     <div className="flex items-center justify-between font-bold mb-0.5">
                       <span className="flex items-center gap-1.5">
                         {t.status === 'failed' ? (
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                         ) : t.status === 'active' ? (
-                          <RefreshCw className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+                          <RefreshCw className="w-3.5 h-3.5 text-amber-500 animate-spin" />
                         ) : t.status === 'done' ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
                         ) : (
-                          <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                          <Clock className="w-3.5 h-3.5 text-stone-400 dark:text-zinc-500" />
                         )}
                         {t.title}
                       </span>
@@ -1135,8 +1135,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
               </div>
 
               {failureProgress.stage === 'dead_dlq' && (
-                <div className="pt-2 border-t border-zinc-800 flex items-center justify-between">
-                  <span className="text-xs text-rose-400 font-bold flex items-center gap-1.5">
+                <div className="pt-2 border-t border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+                  <span className="text-xs text-rose-700 dark:text-rose-400 font-bold flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4" /> Ready for AI Root-Cause Diagnosis
                   </span>
                   <button
@@ -1159,31 +1159,31 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       {/* SCENARIO 3 VIEW */}
       {/* ===================================================================== */}
       {activeScenario === 'scenario3' && (
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 space-y-4 relative">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/70 border border-stone-200 dark:border-zinc-800 space-y-4 relative shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono font-bold text-indigo-400 uppercase">Scenario 3</span>
-                <span className="text-zinc-500 text-xs">•</span>
-                <span className="text-xs font-bold text-zinc-200">Multi-Stage DAG Workflow Execution</span>
+                <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 uppercase">Scenario 3</span>
+                <span className="text-stone-400 dark:text-zinc-500 text-xs">•</span>
+                <span className="text-xs font-bold text-stone-900 dark:text-zinc-200">Multi-Stage DAG Workflow Execution</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Demonstrates Directed Acyclic Graph (DAG) orchestration with Kahn's Algorithm cycle validation. Downstream tasks stay <code className="text-indigo-400 font-mono text-[11px] bg-indigo-500/10 px-1 py-0.5 rounded">BLOCKED</code> until all parent prerequisites complete.
+              <p className="text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
+                Demonstrates Directed Acyclic Graph (DAG) orchestration with Kahn's Algorithm cycle validation. Downstream tasks stay <code className="text-indigo-600 dark:text-indigo-400 font-mono text-[11px] bg-indigo-500/10 px-1 py-0.5 rounded font-bold">BLOCKED</code> until all parent prerequisites complete.
               </p>
             </div>
             <div className="shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 flex items-center gap-1.5">
                 <GitMerge className="w-3 h-3" /> Kahn's Topo-Sort
               </span>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/80 border border-zinc-800 space-y-3">
-            <div className="flex items-center justify-between text-xs border-b border-zinc-800/80 pb-2">
-              <span className="font-bold text-zinc-200 flex items-center gap-1.5">
-                <Network className="w-4 h-4 text-indigo-400" /> Pipeline Stages (Dependency Graph)
+          <div className="p-4 rounded-2xl bg-stone-50 dark:bg-black/80 border border-stone-200 dark:border-zinc-800 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between text-xs border-b border-stone-200 dark:border-zinc-800/80 pb-2">
+              <span className="font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-1.5">
+                <Network className="w-4 h-4 text-indigo-500" /> Pipeline Stages (Dependency Graph)
               </span>
-              <span className="text-[10px] font-mono text-zinc-400">4 Nodes • 3 Edges</span>
+              <span className="text-[10px] font-mono text-stone-600 dark:text-zinc-400">4 Nodes • 3 Edges</span>
             </div>
 
             <div className="space-y-2.5 pt-1">
@@ -1192,31 +1192,31 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
                   key={node.key}
                   className={`p-3 rounded-xl border transition-all ${
                     node.status === 'COMPLETED'
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                      ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30 text-emerald-900 dark:text-emerald-300'
                       : node.status === 'RUNNING'
-                      ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-200 ring-1 ring-indigo-500/40 shadow-lg shadow-indigo-500/10'
+                      ? 'bg-indigo-50 dark:bg-indigo-500/20 border-indigo-300 dark:border-indigo-500/50 text-indigo-900 dark:text-indigo-200 ring-1 ring-indigo-500/40 shadow-md'
                       : node.status === 'QUEUED'
-                      ? 'bg-blue-500/10 border-blue-500/30 text-blue-300'
-                      : 'bg-zinc-950/80 border-zinc-800/80 text-zinc-500'
+                      ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/30 text-blue-900 dark:text-blue-300'
+                      : 'bg-white dark:bg-zinc-950/80 border-stone-200 dark:border-zinc-800/80 text-stone-500 dark:text-zinc-500'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {node.status === 'COMPLETED' ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       ) : node.status === 'RUNNING' ? (
-                        <RefreshCw className="w-4 h-4 text-indigo-400 animate-spin" />
+                        <RefreshCw className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin" />
                       ) : node.status === 'QUEUED' ? (
-                        <Play className="w-4 h-4 text-blue-400" />
+                        <Play className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       ) : (
-                        <Clock className="w-4 h-4 text-zinc-600" />
+                        <Clock className="w-4 h-4 text-stone-400 dark:text-zinc-600" />
                       )}
                       <div>
-                        <div className="font-bold text-xs text-zinc-200">{node.label}</div>
-                        <div className="text-[10px] font-mono text-zinc-400 flex items-center gap-2">
-                          <span>Type: <code className="text-zinc-300">{node.type}</code></span>
+                        <div className="font-bold text-xs text-stone-900 dark:text-zinc-200">{node.label}</div>
+                        <div className="text-[10px] font-mono text-stone-500 dark:text-zinc-400 flex items-center gap-2">
+                          <span>Type: <code className="text-stone-700 dark:text-zinc-300 font-semibold">{node.type}</code></span>
                           {node.parents.length > 0 && (
-                            <span>• Prereqs: <code className="text-indigo-400">{node.parents.join(', ')}</code></span>
+                            <span>• Prereqs: <code className="text-indigo-600 dark:text-indigo-400 font-semibold">{node.parents.join(', ')}</code></span>
                           )}
                         </div>
                       </div>
@@ -1224,19 +1224,19 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
 
                     <div className="text-right shrink-0">
                       {node.status === 'COMPLETED' ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">
                           DONE {node.durationMs ? `(${node.durationMs}ms)` : ''}
                         </span>
                       ) : node.status === 'RUNNING' ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 animate-pulse">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-500/40 animate-pulse">
                           EXECUTING
                         </span>
                       ) : node.status === 'QUEUED' ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 border border-blue-300 dark:border-blue-500/20">
                           QUEUED
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-400 border border-stone-300 dark:border-zinc-700">
                           BLOCKED ({node.unresolved} pending)
                         </span>
                       )}
@@ -1268,8 +1268,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
             </div>
 
             {dagProgress.stage === 'completed' && (
-              <div className="pt-2 border-t border-zinc-800 flex items-center justify-between animate-in fade-in duration-200">
-                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
+              <div className="pt-2 border-t border-stone-200 dark:border-zinc-800 flex items-center justify-between animate-in fade-in duration-200">
+                <span className="text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" /> Workflow 100% Completed ({dagProgress.elapsedMs}ms)
                 </span>
                 <button
@@ -1291,33 +1291,33 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       {/* SCENARIO 4 VIEW: RATE LIMITING & SLIDING WINDOW */}
       {/* ===================================================================== */}
       {activeScenario === 'scenario4' && (
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 space-y-4 relative">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/70 border border-stone-200 dark:border-zinc-800 space-y-4 relative shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono font-bold text-emerald-400 uppercase">Scenario 4</span>
-                <span className="text-zinc-500 text-xs">•</span>
-                <span className="text-xs font-bold text-zinc-200">Rate Limiting & Sliding Window Throttling</span>
+                <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase">Scenario 4</span>
+                <span className="text-stone-400 dark:text-zinc-500 text-xs">•</span>
+                <span className="text-xs font-bold text-stone-900 dark:text-zinc-200">Rate Limiting & Sliding Window Throttling</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Demonstrates high-throughput rate limiting with Redis Sorted Sets (<code className="text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-1 py-0.5 rounded">ZREMRANGEBYSCORE + ZADD</code>). Bursts 12 requests against a strict 5 req/5s quota.
+              <p className="text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
+                Demonstrates high-throughput rate limiting with Redis Sorted Sets (<code className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-1 py-0.5 rounded font-bold">ZREMRANGEBYSCORE + ZADD</code>). Bursts 12 requests against a strict 5 req/5s quota.
               </p>
             </div>
             <div className="shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
                 <Gauge className="w-3 h-3" /> Redis ZSET
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <div className="text-[10px] uppercase font-mono font-bold text-emerald-400">Allowed Requests (200 OK)</div>
-              <div className="text-lg font-extrabold font-mono text-emerald-300">{rateLimitResult.allowedCount} / 5</div>
+            <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
+              <div className="text-[10px] uppercase font-mono font-bold text-emerald-700 dark:text-emerald-400">Allowed Requests (200 OK)</div>
+              <div className="text-lg font-extrabold font-mono text-emerald-900 dark:text-emerald-300">{rateLimitResult.allowedCount} / 5</div>
             </div>
-            <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20">
-              <div className="text-[10px] uppercase font-mono font-bold text-rose-400">Throttled (429 Too Many)</div>
-              <div className="text-lg font-extrabold font-mono text-rose-300">{rateLimitResult.throttledCount} / 7</div>
+            <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20">
+              <div className="text-[10px] uppercase font-mono font-bold text-rose-700 dark:text-rose-400">Throttled (429 Too Many)</div>
+              <div className="text-lg font-extrabold font-mono text-rose-900 dark:text-rose-300">{rateLimitResult.throttledCount} / 7</div>
             </div>
           </div>
 
@@ -1343,8 +1343,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
           </div>
 
           {rateLimitResult.tokens.length > 0 && (
-            <div className="p-3.5 rounded-2xl bg-black/80 border border-zinc-800 space-y-2">
-              <div className="text-[10px] font-mono font-bold text-zinc-400 uppercase flex justify-between">
+            <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-black/80 border border-stone-200 dark:border-zinc-800 space-y-2 shadow-sm">
+              <div className="text-[10px] font-mono font-bold text-stone-600 dark:text-zinc-400 uppercase flex justify-between">
                 <span>Sliding Window Token Stream</span>
                 <span>Quota: 5 req / 5s</span>
               </div>
@@ -1354,8 +1354,8 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
                     key={token.id}
                     className={`flex items-center justify-between px-2.5 py-1 rounded-lg border text-[11px] font-mono ${
                       token.status === 'ALLOWED'
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                        : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                        ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                        : 'bg-rose-50 dark:bg-rose-500/10 border-rose-300 dark:border-rose-500/30 text-rose-800 dark:text-rose-300'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -1375,32 +1375,32 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       {/* SCENARIO 5 VIEW: DLQ AI ROOT-CAUSE DIAGNOSIS & REPLAY */}
       {/* ===================================================================== */}
       {activeScenario === 'scenario5' && (
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 space-y-4 relative">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/70 border border-stone-200 dark:border-zinc-800 space-y-4 relative shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono font-bold text-purple-400 uppercase">Scenario 5</span>
-                <span className="text-zinc-500 text-xs">•</span>
-                <span className="text-xs font-bold text-zinc-200">DLQ AI Root-Cause Diagnosis & 1-Click Replay</span>
+                <span className="text-xs font-mono font-bold text-purple-600 dark:text-purple-400 uppercase">Scenario 5</span>
+                <span className="text-stone-400 dark:text-zinc-500 text-xs">•</span>
+                <span className="text-xs font-bold text-stone-900 dark:text-zinc-200">DLQ AI Root-Cause Diagnosis & 1-Click Replay</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed">
+              <p className="text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
                 Uses intelligent heuristic analysis on stack traces and failure attempts to diagnose dead-letter jobs, proposing immediate remediation and safe 1-click replay.
               </p>
             </div>
             <div className="shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 flex items-center gap-1.5">
                 <Bot className="w-3 h-3" /> AI Diagnosis
               </span>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/80 border border-zinc-800 space-y-3">
-            <div className="flex items-center justify-between text-xs border-b border-zinc-800 pb-2">
-              <span className="font-bold text-zinc-200 flex items-center gap-2">
-                <Bot className="w-4 h-4 text-purple-400" />
-                Dead Letter Target: <code className="text-purple-300">{aiAnalysisResult.jobId}</code>
+          <div className="p-4 rounded-2xl bg-stone-50 dark:bg-black/80 border border-stone-200 dark:border-zinc-800 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between text-xs border-b border-stone-200 dark:border-zinc-800 pb-2">
+              <span className="font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-2">
+                <Bot className="w-4 h-4 text-purple-500" />
+                Dead Letter Target: <code className="text-purple-700 dark:text-purple-300">{aiAnalysisResult.jobId}</code>
               </span>
-              <span className="text-[10px] font-mono text-zinc-400 font-bold">Attempts: 3/3 (DEAD)</span>
+              <span className="text-[10px] font-mono text-stone-600 dark:text-zinc-400 font-bold">Attempts: 3/3 (DEAD)</span>
             </div>
 
             <div className="pt-2 flex justify-end">
@@ -1425,21 +1425,21 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
             </div>
 
             {aiAnalysisResult.stage === 'diagnosed' && (
-              <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 space-y-2 text-xs animate-in fade-in duration-150">
+              <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 space-y-2 text-xs animate-in fade-in duration-150">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-purple-300">Diagnostic Classification: {aiAnalysisResult.errorType}</span>
-                  <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  <span className="font-bold text-purple-900 dark:text-purple-300">Diagnostic Classification: {aiAnalysisResult.errorType}</span>
+                  <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-500/30">
                     {aiAnalysisResult.confidence}% Confidence
                   </span>
                 </div>
-                <p className="text-[11px] text-zinc-300 leading-relaxed">
+                <p className="text-[11px] text-stone-700 dark:text-zinc-300 leading-relaxed">
                   <strong>Root Cause:</strong> {aiAnalysisResult.rootCause}
                 </p>
-                <p className="text-[11px] text-emerald-300 leading-relaxed">
+                <p className="text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed">
                   <strong>Remediation:</strong> {aiAnalysisResult.recommendedFix}
                 </p>
 
-                <div className="pt-2 border-t border-purple-500/20 flex justify-end">
+                <div className="pt-2 border-t border-purple-200 dark:border-purple-500/20 flex justify-end">
                   <button
                     type="button"
                     onClick={handleReplayDlqJob}
@@ -1463,9 +1463,9 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
             )}
 
             {aiAnalysisResult.stage === 'replayed' && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center justify-between animate-in zoom-in-95 duration-150">
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between animate-in zoom-in-95 duration-150">
                 <span className="flex items-center gap-2 font-bold">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   Job Re-queued Successfully! Reset to Attempt 0.
                 </span>
                 <button
@@ -1473,7 +1473,7 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
                   onClick={() => {
                     if (onNavigateToTab) onNavigateToTab('jobs');
                   }}
-                  className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px]"
+                  className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] cursor-pointer"
                 >
                   View in Job Explorer
                 </button>
@@ -1487,34 +1487,34 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       {/* SCENARIO 6 VIEW: EVENT WEBHOOK INGESTION */}
       {/* ===================================================================== */}
       {activeScenario === 'scenario6' && (
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 space-y-4 relative">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/70 border border-stone-200 dark:border-zinc-800 space-y-4 relative shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono font-bold text-cyan-400 uppercase">Scenario 6</span>
-                <span className="text-zinc-500 text-xs">•</span>
-                <span className="text-xs font-bold text-zinc-200">Event-Driven Webhook Ingestion & Delivery</span>
+                <span className="text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400 uppercase">Scenario 6</span>
+                <span className="text-stone-400 dark:text-zinc-500 text-xs">•</span>
+                <span className="text-xs font-bold text-stone-900 dark:text-zinc-200">Event-Driven Webhook Ingestion & Delivery</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed">
+              <p className="text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
                 Demonstrates event publisher ingestion. Resolves topic subscriptions and triggers downstream webhook deliveries with delivery isolation.
               </p>
             </div>
             <div className="shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20 flex items-center gap-1.5">
                 <Radio className="w-3 h-3" /> Pub/Sub Webhooks
               </span>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/80 border border-zinc-800 space-y-3">
-            <div className="flex items-center justify-between text-xs border-b border-zinc-800 pb-2">
-              <span className="font-bold text-zinc-200 flex items-center gap-1.5">
-                <Radio className="w-4 h-4 text-cyan-400" /> Event Topic: <code className="text-cyan-300">order.completed</code>
+          <div className="p-4 rounded-2xl bg-stone-50 dark:bg-black/80 border border-stone-200 dark:border-zinc-800 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between text-xs border-b border-stone-200 dark:border-zinc-800 pb-2">
+              <span className="font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-1.5">
+                <Radio className="w-4 h-4 text-cyan-500" /> Event Topic: <code className="text-cyan-700 dark:text-cyan-300 font-bold">order.completed</code>
               </span>
-              <span className="text-[10px] font-mono text-zinc-400">2 Active Subscriptions</span>
+              <span className="text-[10px] font-mono text-stone-600 dark:text-zinc-400">2 Active Subscriptions</span>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 font-mono text-[10px] text-zinc-300">
+            <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 font-mono text-[10px] text-stone-800 dark:text-zinc-300">
               <pre className="overflow-x-auto">{webhookResult.payloadJson}</pre>
             </div>
 
@@ -1540,9 +1540,9 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
             </div>
 
             {webhookResult.stage === 'delivered' && (
-              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-300 flex items-center justify-between animate-in zoom-in-95 duration-150">
+              <div className="p-3 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/30 text-xs text-cyan-800 dark:text-cyan-300 flex items-center justify-between animate-in zoom-in-95 duration-150">
                 <span className="flex items-center gap-2 font-bold">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+                  <CheckCircle2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                   {webhookResult.deliveryStatus} (⏱️ {webhookResult.latencyMs}ms)
                 </span>
                 <button
@@ -1550,7 +1550,7 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
                   onClick={() => {
                     if (onNavigateToTab) onNavigateToTab('events');
                   }}
-                  className="px-3 py-1 rounded-lg bg-cyan-600 text-white font-bold text-[11px]"
+                  className="px-3 py-1 rounded-lg bg-cyan-600 text-white font-bold text-[11px] cursor-pointer"
                 >
                   View in Events Tab
                 </button>
@@ -1561,13 +1561,13 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       )}
 
       {/* Architectural Notes */}
-      <div className="p-4 rounded-2xl bg-orange-500/5 border border-orange-500/15 text-xs text-zinc-400 space-y-2">
-        <div className="font-bold text-orange-400 flex items-center gap-1.5 text-xs">
+      <div className="p-4 rounded-2xl bg-orange-50/80 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/15 text-xs text-stone-700 dark:text-zinc-400 space-y-2 shadow-sm">
+        <div className="font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1.5 text-xs">
           <ShieldCheck className="w-4 h-4" /> System Architecture & Concurrency Checklist
         </div>
-        <ul className="list-disc list-inside space-y-1 text-[11px] text-zinc-300">
+        <ul className="list-disc list-inside space-y-1 text-[11px] text-stone-700 dark:text-zinc-300">
           <li>
-            <strong>Sliding Window Rate Limiting</strong>: Redis Sorted Set algorithm with <code className="text-orange-400 font-mono text-[10px]">ZREMRANGEBYSCORE</code>.
+            <strong>Sliding Window Rate Limiting</strong>: Redis Sorted Set algorithm with <code className="text-orange-600 dark:text-orange-400 font-mono text-[10px] font-bold">ZREMRANGEBYSCORE</code>.
           </li>
           <li>
             <strong>Automated DLQ Root-Cause Analysis</strong>: Heuristic pattern classification on error stack traces.
@@ -1585,7 +1585,7 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       <button
         type="button"
         onClick={() => setIsDocked(!isDocked)}
-        className="p-1.5 text-zinc-400 hover:text-white rounded-xl bg-zinc-900 border border-zinc-800 transition-colors"
+        className="p-1.5 text-stone-600 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-stone-300 dark:border-zinc-800 transition-colors cursor-pointer"
         title={isDocked ? 'Switch to Centered Modal' : 'Dock to Split-Screen Panel'}
       >
         {isDocked ? <Maximize2 className="w-4 h-4" /> : <PanelRight className="w-4 h-4" />}
@@ -1593,7 +1593,7 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
 
       <button
         onClick={onClose}
-        className="p-1.5 text-zinc-400 hover:text-white rounded-xl bg-zinc-900 border border-zinc-800 transition-colors"
+        className="p-1.5 text-stone-600 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-stone-300 dark:border-zinc-800 transition-colors cursor-pointer"
         title="Close Demo Lab"
       >
         <X className="w-4 h-4" />
@@ -1604,29 +1604,29 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
   // 1. DOCKED SIDE-BY-SIDE SPLIT-SCREEN PANEL
   if (isDocked) {
     return createPortal(
-      <aside className="fixed top-0 bottom-0 right-0 z-[60] w-full sm:w-[500px] lg:w-[560px] bg-gradient-to-b from-[#141720] via-[#0d1017] to-[#080a0f] border-l-2 border-orange-500/40 shadow-[-30px_0_70px_rgba(0,0,0,0.9)] backdrop-blur-2xl flex flex-col p-5 sm:p-6 animate-in slide-in-from-right duration-200 ring-1 ring-white/10">
+      <aside className="fixed top-0 bottom-0 right-0 z-[60] w-full sm:w-[500px] lg:w-[560px] bg-[#FAF8F5] dark:bg-gradient-to-b dark:from-[#141720] dark:via-[#0d1017] dark:to-[#080a0f] border-l-2 border-orange-500/50 shadow-[-20px_0_50px_rgba(0,0,0,0.15)] dark:shadow-[-30px_0_70px_rgba(0,0,0,0.9)] backdrop-blur-2xl flex flex-col p-5 sm:p-6 animate-in slide-in-from-right duration-200 text-stone-900 dark:text-zinc-100 overflow-hidden">
         {/* Split Pane Grab Indicator on Left Edge */}
-        <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-12 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-zinc-500 shadow-xl pointer-events-none z-20">
-          <div className="w-1 h-5 rounded-full bg-orange-500/70 animate-pulse" />
+        <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-12 rounded-full bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 flex items-center justify-center text-stone-400 dark:text-zinc-500 shadow-xl pointer-events-none z-20">
+          <div className="w-1 h-5 rounded-full bg-orange-500 animate-pulse" />
         </div>
 
         {/* Ambient Top Glow Accent */}
-        <div className="absolute top-0 right-0 w-96 h-32 bg-gradient-to-b from-orange-500/20 via-amber-500/10 to-transparent pointer-events-none blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-32 bg-gradient-to-b from-orange-500/10 via-amber-500/5 to-transparent pointer-events-none blur-3xl" />
 
         {/* Header Console */}
-        <div className="flex items-center justify-between border-b border-zinc-700/80 pb-4 relative z-10 shrink-0 mb-4 bg-zinc-950/60 -mx-5 sm:-mx-6 px-5 sm:px-6 pt-1">
+        <div className="flex items-center justify-between border-b border-stone-200 dark:border-zinc-700/80 pb-4 relative z-10 shrink-0 mb-4 bg-white/90 dark:bg-zinc-950/60 -mx-5 sm:-mx-6 px-5 sm:px-6 pt-1 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30 shrink-0 ring-1 ring-orange-400/40">
               <Flame className="w-5 h-5 fill-current" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-extrabold text-zinc-100 tracking-tight">Demo Lab (Split-Screen)</h2>
-                <span className="px-1.5 py-0.5 rounded text-[8px] font-mono font-extrabold bg-orange-500/20 text-orange-400 border border-orange-500/30 uppercase tracking-wide">
+                <h2 className="text-sm font-extrabold text-stone-900 dark:text-zinc-100 tracking-tight">Demo Lab (Split-Screen)</h2>
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-mono font-extrabold bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30 uppercase tracking-wide">
                   Live
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-400">Interactive 6-Scenario Evaluation Console</p>
+              <p className="text-[11px] text-stone-500 dark:text-zinc-400">Interactive 6-Scenario Evaluation Console</p>
             </div>
           </div>
 
@@ -1635,15 +1635,15 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
 
         {simulationContent}
 
-        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/90 text-xs shrink-0 mt-3 bg-zinc-950/60 -mx-5 sm:-mx-6 px-5 sm:px-6 pb-1">
+        <div className="flex items-center justify-between pt-3 border-t border-stone-200 dark:border-zinc-800/90 text-xs shrink-0 mt-3 bg-white/90 dark:bg-zinc-950/60 -mx-5 sm:-mx-6 px-5 sm:px-6 pb-1 backdrop-blur-md">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-zinc-300 text-[11px] font-medium">Split-Screen Live View Active</span>
+            <span className="text-stone-700 dark:text-zinc-300 text-[11px] font-medium">Split-Screen Live View Active</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 hover:text-white transition-all font-bold text-xs shadow-sm cursor-pointer"
+            className="px-4 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-stone-800 dark:text-zinc-200 hover:text-stone-900 dark:hover:text-white transition-all font-bold text-xs shadow-sm cursor-pointer"
           >
             Close Panel
           </button>
@@ -1655,23 +1655,23 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
 
   // 2. CENTERED MODAL VIEW
   return createPortal(
-    <div className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-      <div className="bg-zinc-950 border border-zinc-800 rounded-3xl max-w-3xl w-full p-6 sm:p-7 shadow-2xl space-y-6 relative overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[32rem] h-24 bg-gradient-to-b from-orange-500/15 to-transparent pointer-events-none blur-2xl" />
+    <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+      <div className="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-3xl max-w-3xl w-full p-6 sm:p-7 shadow-2xl space-y-6 relative overflow-hidden max-h-[90vh] flex flex-col text-stone-900 dark:text-zinc-100">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[32rem] h-24 bg-gradient-to-b from-orange-500/10 to-transparent pointer-events-none blur-2xl" />
 
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-4 relative z-10 shrink-0">
+        <div className="flex items-center justify-between border-b border-stone-200 dark:border-zinc-800 pb-4 relative z-10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25 shrink-0">
-              <Flame className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25 shrink-0">
+              <Flame className="w-5 h-5 fill-current" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-extrabold text-zinc-100">Live Demo & Simulation Lab</h2>
-                <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 uppercase">
+                <h2 className="text-base sm:text-lg font-extrabold text-stone-900 dark:text-zinc-100">Live Demo & Simulation Lab</h2>
+                <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30 uppercase">
                   6 Scenarios Live
                 </span>
               </div>
-              <p className="text-xs text-zinc-400">Interactive distributed scheduling simulation suite</p>
+              <p className="text-xs text-stone-500 dark:text-zinc-400">Interactive distributed scheduling simulation suite</p>
             </div>
           </div>
 
@@ -1680,14 +1680,14 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
 
         {simulationContent}
 
-        <div className="flex items-center justify-between pt-3 border-t border-zinc-800 text-xs shrink-0">
-          <span className="text-zinc-400 text-[11px] hidden sm:inline">
+        <div className="flex items-center justify-between pt-3 border-t border-stone-200 dark:border-zinc-800 text-xs shrink-0">
+          <span className="text-stone-600 dark:text-zinc-400 text-[11px] hidden sm:inline">
             Demonstrates <strong>High-Concurrency, Fault Tolerance & DAG Scheduling</strong>.
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition-colors font-semibold"
+            className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-stone-800 dark:text-zinc-300 hover:text-stone-900 dark:hover:text-white transition-colors font-semibold cursor-pointer"
           >
             Close Sandbox
           </button>

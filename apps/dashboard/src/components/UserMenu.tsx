@@ -122,9 +122,9 @@ export function UserMenu({ variant = 'sidebar', isCollapsed = false }: UserMenuP
             isSidebar
               ? isCollapsed
                 ? 'left-full ml-3 bottom-0 w-72'
-                : 'bottom-full mb-2 left-0 w-full'
+                : 'bottom-full mb-2.5 left-0 w-full min-w-[230px]'
               : 'right-0 mt-2 w-72'
-          } rounded-2xl bg-zinc-950 border border-zinc-800 p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 text-xs`}
+          } rounded-2xl bg-zinc-950 border border-zinc-700/80 p-3 shadow-2xl z-[100] animate-in fade-in zoom-in-95 duration-150 text-xs ring-1 ring-white/10`}
         >
           {/* User Info Header */}
           <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 mb-2">

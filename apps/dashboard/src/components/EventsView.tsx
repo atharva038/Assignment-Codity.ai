@@ -386,15 +386,15 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
   return (
     <div className="space-y-6">
       {/* Top Banner Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent border border-orange-500/20 backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-xl">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-500 shadow-inner">
-            <Zap className="w-6 h-6 animate-pulse" />
+          <div className="w-11 h-11 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
+            <Zap className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold tracking-tight flex items-center gap-2">
+            <h2 className="text-lg font-extrabold tracking-tight flex items-center gap-2">
               Event-Driven Execution & Inbound Webhooks
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20">
                 Bonus Feature Active
               </span>
             </h2>
@@ -404,7 +404,7 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => {
               if (availableQueues.length === 0) {
@@ -412,16 +412,16 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
               }
               setIsModalOpen(true);
             }}
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-1.5 active:scale-95"
+            className="px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 hover:border-zinc-600 text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> New Event Trigger
+            <Plus className="w-4 h-4 text-orange-400" /> New Event Trigger
           </button>
           <button
             onClick={fetchSubscriptionsAndLogs}
-            className="p-2 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+            className="p-2 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors cursor-pointer"
             title="Refresh Event Engine"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-orange-500' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-orange-400' : ''}`} />
           </button>
         </div>
       </div>
@@ -429,19 +429,19 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
       {/* Main Grid: 2 Columns (Left: Interactive Sandbox, Right: Subscription Rules) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Interactive Event Dispatch Sandbox (5 Cols) */}
-        <div className="lg:col-span-5 rounded-2xl border border-zinc-800 bg-zinc-950/60 backdrop-blur-md p-5 flex flex-col justify-between shadow-xl">
+        <div className="lg:col-span-5 rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 backdrop-blur-md p-5 flex flex-col justify-between shadow-xl">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-zinc-800/80">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-orange-400" />
-                <h3 className="text-sm font-bold text-zinc-100">Interactive Event Dispatcher Sandbox</h3>
+                <Sparkles className="w-4 h-4 text-orange-500" />
+                <h3 className="text-sm font-bold text-stone-900 dark:text-zinc-100">Interactive Event Dispatcher Sandbox</h3>
               </div>
-              <span className="text-[10px] font-mono text-zinc-500 uppercase">Live Simulation</span>
+              <span className="text-[10px] font-mono text-stone-500 dark:text-zinc-500 uppercase">Live Simulation</span>
             </div>
 
             {/* Presets */}
             <div className="mt-4">
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1.5">
+              <label className="text-[11px] font-semibold text-stone-600 dark:text-zinc-400 uppercase tracking-wider block mb-1.5">
                 Load Preset Template
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -453,10 +453,10 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
                       setSimEventType(preset.eventType);
                       setSimPayload(preset.payload);
                     }}
-                    className={`px-3 py-2 text-left rounded-xl border text-xs transition-all ${
+                    className={`px-3 py-2 text-left rounded-xl border text-xs transition-all cursor-pointer ${
                       simEventType === preset.eventType
-                        ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 font-bold'
-                        : 'border-zinc-800/80 bg-zinc-900/40 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                        ? 'border-orange-500 bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold ring-1 ring-orange-500/30'
+                        : 'border-stone-200 dark:border-zinc-800/80 bg-stone-50 dark:bg-zinc-900/40 text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-900'
                     }`}
                   >
                     <div className="truncate font-semibold">{preset.name}</div>
@@ -468,41 +468,41 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
 
             {/* Event Name Input */}
             <div className="mt-4">
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1.5">
+              <label className="text-[11px] font-semibold text-stone-600 dark:text-zinc-400 uppercase tracking-wider block mb-1.5">
                 Event Type / Topic
               </label>
               <div className="relative">
-                <Radio className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+                <Radio className="w-4 h-4 text-stone-400 dark:text-zinc-500 absolute left-3 top-2.5" />
                 <input
                   type="text"
                   value={simEventType}
                   onChange={(e) => setSimEventType(e.target.value)}
                   placeholder="e.g. payment.success, user.signup"
-                  className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-xs text-zinc-100 font-mono focus:outline-none focus:border-orange-500"
+                  className="w-full bg-stone-50 dark:bg-zinc-900/80 border border-stone-300 dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-xs text-stone-900 dark:text-zinc-100 font-mono focus:outline-none focus:border-orange-500"
                 />
               </div>
             </div>
 
             {/* JSON Payload Editor */}
             <div className="mt-4">
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider flex items-center justify-between mb-1.5">
+              <label className="text-[11px] font-semibold text-stone-600 dark:text-zinc-400 uppercase tracking-wider flex items-center justify-between mb-1.5">
                 <span>Event JSON Payload</span>
-                <Code className="w-3.5 h-3.5 text-zinc-500" />
+                <Code className="w-3.5 h-3.5 text-stone-400 dark:text-zinc-500" />
               </label>
               <textarea
                 value={simPayload}
                 onChange={(e) => setSimPayload(e.target.value)}
                 rows={7}
-                className="w-full bg-black/60 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-orange-500 resize-none selection:bg-orange-500/30"
+                className="w-full bg-stone-50 dark:bg-black/60 border border-stone-300 dark:border-zinc-800 rounded-xl p-3 text-xs font-mono text-emerald-700 dark:text-emerald-400 focus:outline-none focus:border-orange-500 resize-none selection:bg-orange-500/30"
               />
             </div>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-zinc-800/80">
+          <div className="mt-5 pt-4 border-t border-stone-200 dark:border-zinc-800/80">
             <button
               onClick={handleSimulateEvent}
               disabled={simulating}
-              className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              className="w-full py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold rounded-xl shadow-md shadow-orange-950/40 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {simulating ? (
                 <>
@@ -517,29 +517,20 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
 
             {/* Result Box */}
             {simulationResult && (
-              <div className="mt-3 p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs font-mono">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-bold text-zinc-300">Dispatcher Response:</span>
-                  {simulationResult.success ? (
-                    <span className="text-emerald-400 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Dispatched
-                    </span>
-                  ) : (
-                    <span className="text-rose-400 flex items-center gap-1">
-                      <XCircle className="w-3.5 h-3.5" /> Failed
-                    </span>
-                  )}
+              <div className="mt-3 p-3 rounded-xl bg-stone-100 dark:bg-zinc-900/80 border border-stone-200 dark:border-zinc-800 text-xs font-mono">
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold mb-1">
+                  <CheckCircle2 className="w-4 h-4" /> {simulationResult.message}
                 </div>
-                <div className="text-[11px] text-zinc-400 space-y-0.5">
-                  <div>Status: <span className="text-orange-400 font-bold">{simulationResult.result?.status || 'ERROR'}</span></div>
-                  <div>Matched Rules: <span className="text-zinc-200">{simulationResult.result?.matchedRuleCount ?? 0}</span></div>
+                <div className="text-[11px] text-stone-600 dark:text-zinc-400 space-y-0.5">
+                  <div>Event ID: {simulationResult.eventId}</div>
+                  <div>Matched Rules: {simulationResult.result?.matchedRuleCount ?? 0}</div>
                   {simulationResult.result?.triggeredJobIds?.length > 0 && (
-                    <div className="text-emerald-400 truncate">
+                    <div className="text-orange-600 dark:text-orange-400 truncate">
                       Jobs: {simulationResult.result.triggeredJobIds.join(', ')}
                     </div>
                   )}
                   {simulationResult.result?.triggeredWorkflowIds?.length > 0 && (
-                    <div className="text-purple-400 truncate">
+                    <div className="text-purple-600 dark:text-purple-400 truncate">
                       Workflows: {simulationResult.result.triggeredWorkflowIds.join(', ')}
                     </div>
                   )}
@@ -550,23 +541,23 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
         </div>
 
         {/* Right Column: Active Event Subscriptions & Trigger Rules (7 Cols) */}
-        <div className="lg:col-span-7 rounded-2xl border border-zinc-800 bg-zinc-950/60 backdrop-blur-md p-5 shadow-xl flex flex-col justify-between">
+        <div className="lg:col-span-7 rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 backdrop-blur-md p-5 shadow-xl flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-zinc-800/80">
               <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-orange-400" />
-                <h3 className="text-sm font-bold text-zinc-100">Event Subscriptions & Trigger Rules</h3>
+                <Radio className="w-4 h-4 text-orange-500" />
+                <h3 className="text-sm font-bold text-stone-900 dark:text-zinc-100">Event Subscriptions & Trigger Rules</h3>
               </div>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 font-mono text-zinc-400">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 font-mono text-stone-700 dark:text-zinc-400">
                 {subscriptions.length} active rule{subscriptions.length === 1 ? '' : 's'}
               </span>
             </div>
 
             {subscriptions.length === 0 ? (
-              <div className="py-12 text-center text-zinc-500">
-                <Zap className="w-10 h-10 mx-auto text-zinc-700 mb-2 stroke-[1.5]" />
-                <p className="text-xs font-semibold text-zinc-400">No event subscriptions configured yet</p>
-                <p className="text-[11px] text-zinc-600 mt-1 max-w-sm mx-auto">
+              <div className="py-12 text-center text-stone-500 dark:text-zinc-500">
+                <Zap className="w-10 h-10 mx-auto text-stone-300 dark:text-zinc-700 mb-2 stroke-[1.5]" />
+                <p className="text-xs font-semibold text-stone-700 dark:text-zinc-400">No event subscriptions configured yet</p>
+                <p className="text-[11px] text-stone-500 dark:text-zinc-600 mt-1 max-w-sm mx-auto">
                   Create a rule to automatically dispatch Jobs or DAG Workflows when specific event types occur.
                 </p>
                 <button
@@ -576,9 +567,9 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
                     }
                     setIsModalOpen(true);
                   }}
-                  className="mt-4 px-3 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/30 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5"
+                  className="mt-4 px-3.5 py-2 bg-stone-900 hover:bg-stone-800 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-white dark:text-zinc-200 border border-stone-800 dark:border-zinc-700 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Create First Trigger
+                  <Plus className="w-3.5 h-3.5 text-orange-400" /> Create First Trigger
                 </button>
               </div>
             ) : (
@@ -588,31 +579,36 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
                     key={sub.id}
                     className={`p-4 rounded-xl border transition-all ${
                       sub.enabled
-                        ? 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
-                        : 'border-zinc-800/40 bg-zinc-950/40 opacity-60'
+                        ? 'border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-900/40 hover:border-stone-300 dark:hover:border-zinc-700'
+                        : 'border-stone-200 dark:border-zinc-800/40 bg-stone-100/50 dark:bg-zinc-950/40 opacity-60'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="text-xs font-bold text-zinc-100">{sub.name}</h4>
+                          <h4 className="text-xs font-bold text-stone-900 dark:text-zinc-100">{sub.name}</h4>
                           <span
                             className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase ${
                               sub.targetType === 'WORKFLOW'
-                                ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                                : 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20'
                             }`}
                           >
-                            {sub.targetType === 'WORKFLOW' ? 'DAG Workflow' : 'Single Job'}
+                            {sub.targetType}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[11px] font-mono text-orange-400 font-bold bg-orange-500/10 px-1.5 py-0.5 rounded">
+                          <span className="text-[11px] font-mono text-orange-600 dark:text-orange-400 font-bold bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">
                             {sub.eventType}
                           </span>
                           {sub.targetType === 'JOB' && sub.queue && (
-                            <span className="text-[11px] text-zinc-400 flex items-center gap-1">
-                              <Layers className="w-3 h-3 text-zinc-500" /> {sub.queue.name} ({sub.jobType})
+                            <span className="text-[11px] text-stone-600 dark:text-zinc-400 flex items-center gap-1">
+                              <Layers className="w-3 h-3 text-stone-400 dark:text-zinc-500" /> {sub.queue.name} ({sub.jobType || 'default'})
+                            </span>
+                          )}
+                          {sub.targetType === 'WORKFLOW' && (
+                            <span className="text-[11px] text-purple-600 dark:text-purple-400 font-mono">
+                              DAG Pipeline
                             </span>
                           )}
                         </div>
@@ -621,18 +617,18 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => handleToggleSub(sub)}
-                          className="p-1 text-zinc-400 hover:text-orange-400 transition-colors"
+                          className="p-1 text-stone-400 dark:text-zinc-400 hover:text-orange-500 transition-colors"
                           title={sub.enabled ? 'Disable Trigger' : 'Enable Trigger'}
                         >
                           {sub.enabled ? (
                             <ToggleRight className="w-5 h-5 text-orange-500" />
                           ) : (
-                            <ToggleLeft className="w-5 h-5 text-zinc-600" />
+                            <ToggleLeft className="w-5 h-5 text-stone-400 dark:text-zinc-600" />
                           )}
                         </button>
                         <button
                           onClick={() => handleDeleteSub(sub.id)}
-                          className="p-1 text-zinc-500 hover:text-rose-400 transition-colors"
+                          className="p-1 text-stone-400 dark:text-zinc-500 hover:text-rose-500 transition-colors"
                           title="Delete Trigger"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -641,20 +637,20 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
                     </div>
 
                     {/* Webhook Endpoint helper */}
-                    <div className="mt-3 pt-2.5 border-t border-zinc-800/60 flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                    <div className="mt-3 pt-2.5 border-t border-stone-200 dark:border-zinc-800/60 flex items-center justify-between text-[11px] font-mono text-stone-500 dark:text-zinc-400">
                       <div className="flex items-center gap-1.5 truncate max-w-[70%]">
-                        <Webhook className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                        <Webhook className="w-3.5 h-3.5 text-stone-400 dark:text-zinc-500 shrink-0" />
                         <span className="truncate">/api/v1/events/webhook/{sub.id.slice(0, 8)}...</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {sub.secret && (
-                          <span className="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                          <span className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
                             <ShieldCheck className="w-3 h-3" /> HMAC Secured
                           </span>
                         )}
                         <button
                           onClick={() => copyWebhookUrl(sub.id)}
-                          className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded text-[10px] flex items-center gap-1 transition-all"
+                          className="px-2 py-1 bg-stone-200 hover:bg-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-800 dark:text-zinc-200 rounded text-[10px] flex items-center gap-1 transition-all cursor-pointer"
                         >
                           <Copy className="w-3 h-3" />
                           {copiedId === sub.id ? 'Copied!' : 'Copy URL'}
@@ -670,13 +666,13 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
       </div>
 
       {/* Bottom Section: Real-Time Event Audit Stream */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 backdrop-blur-md p-5 shadow-xl">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+      <div className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 backdrop-blur-md p-5 shadow-xl">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-zinc-800/80">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-orange-400" />
-            <h3 className="text-sm font-bold text-zinc-100">Live Ingested Event Stream & Audit Trail</h3>
+            <Clock className="w-4 h-4 text-orange-500" />
+            <h3 className="text-sm font-bold text-stone-900 dark:text-zinc-100">Live Ingested Event Stream & Audit Trail</h3>
           </div>
-          <span className="text-[10px] font-mono text-zinc-500">Auto-refreshing via Telemetry</span>
+          <span className="text-[10px] font-mono text-stone-500 dark:text-zinc-500">Auto-refreshing via Telemetry</span>
         </div>
 
         {logs.length === 0 ? (
@@ -759,15 +755,15 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
 
       {/* Modal: Create Event Trigger */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="w-full max-w-lg rounded-2xl bg-zinc-950 border border-zinc-800 p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 className="text-base font-bold text-zinc-100 flex items-center gap-2">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 shadow-2xl space-y-4 text-stone-900 dark:text-zinc-100">
+            <div className="flex items-center justify-between border-b border-stone-200 dark:border-zinc-800 pb-3">
+              <h3 className="text-base font-bold text-stone-900 dark:text-zinc-100 flex items-center gap-2">
                 <Zap className="w-4 h-4 text-orange-500" /> Create Event Trigger Rule
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-zinc-500 hover:text-zinc-300 text-sm"
+                className="text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 text-sm cursor-pointer"
               >
                 ✕
               </button>
@@ -775,19 +771,19 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
 
             <form onSubmit={handleCreateSubscription} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-zinc-300 block mb-1">Rule Name</label>
+                <label className="text-xs font-semibold text-stone-700 dark:text-zinc-300 block mb-1">Rule Name</label>
                 <input
                   type="text"
                   required
                   value={newSubName}
                   onChange={(e) => setNewSubName(e.target.value)}
                   placeholder="e.g. Stripe Payment Workflow Trigger"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-orange-500"
+                  className="w-full bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-zinc-100 focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                <label className="text-xs font-semibold text-stone-700 dark:text-zinc-300 block mb-1">
                   Event Type Pattern (supports wildcards e.g. <code>payment.*</code>)
                 </label>
                 <input
@@ -796,17 +792,17 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
                   value={newSubEventType}
                   onChange={(e) => setNewSubEventType(e.target.value)}
                   placeholder="e.g. payment.success, order.*"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono text-orange-400 focus:outline-none focus:border-orange-500"
+                  className="w-full bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono text-orange-600 dark:text-orange-400 focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1">Target Action</label>
+                  <label className="text-xs font-semibold text-stone-700 dark:text-zinc-300 block mb-1">Target Action</label>
                   <select
                     value={newSubTarget}
                     onChange={(e) => setNewSubTarget(e.target.value as any)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-orange-500"
+                    className="w-full bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-zinc-100 focus:outline-none focus:border-orange-500"
                   >
                     <option value="JOB">Single Job</option>
                     <option value="WORKFLOW">DAG Workflow Pipeline</option>
@@ -815,20 +811,20 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-zinc-300">Target Queue</label>
+                    <label className="text-xs font-semibold text-stone-700 dark:text-zinc-300">Target Queue</label>
                     {availableQueues.length === 0 && (
                       <button
                         type="button"
                         onClick={ensureDefaultQueue}
                         disabled={creatingQueue}
-                        className="text-[10px] text-orange-400 hover:text-orange-300 flex items-center gap-1 font-bold underline"
+                        className="text-[10px] text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1 font-bold"
                       >
                         <PlusCircle className="w-3 h-3" /> {creatingQueue ? 'Creating...' : 'Create Queue'}
                       </button>
                     )}
                   </div>
                   {availableQueues.length === 0 ? (
-                    <div className="w-full bg-zinc-900 border border-amber-500/50 rounded-xl px-3 py-2 text-xs text-amber-400 flex items-center justify-between">
+                    <div className="w-full bg-amber-50 dark:bg-zinc-900 border border-amber-300 dark:border-amber-500/50 rounded-xl px-3 py-2 text-xs text-amber-700 dark:text-amber-400 flex items-center justify-between">
                       <span>No queues available</span>
                       <button
                         type="button"
@@ -843,7 +839,7 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
                     <select
                       value={selectedQueueId || availableQueues[0]?.id || ''}
                       onChange={(e) => setSelectedQueueId(e.target.value)}
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-orange-500"
+                      className="w-full bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-zinc-100 focus:outline-none focus:border-orange-500"
                     >
                       {availableQueues.map((q) => (
                         <option key={q.id} value={q.id}>
@@ -857,11 +853,11 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
 
               {newSubTarget === 'JOB' && (
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1">Job Handler Type</label>
+                  <label className="text-xs font-semibold text-stone-700 dark:text-zinc-300 block mb-1">Job Handler Type</label>
                   <select
                     value={newSubJobType}
                     onChange={(e) => setNewSubJobType(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-orange-500"
+                    className="w-full bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-zinc-100 focus:outline-none focus:border-orange-500"
                   >
                     <option value="email_notification">Email Notification</option>
                     <option value="report_generation">Report Generation</option>
@@ -871,33 +867,33 @@ export function EventsView({ queues: initialQueues = [], onRefresh, lastUpdatedT
               )}
 
               <div>
-                <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                <label className="text-xs font-semibold text-stone-700 dark:text-zinc-300 block mb-1">
                   Optional HMAC Webhook Secret (Leave empty for public API)
                 </label>
                 <div className="relative">
-                  <Key className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+                  <Key className="w-3.5 h-3.5 text-stone-400 dark:text-zinc-500 absolute left-3 top-2.5" />
                   <input
                     type="text"
                     value={newSubSecret}
                     onChange={(e) => setNewSubSecret(e.target.value)}
                     placeholder="e.g. whsec_super_secret_key"
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-xs font-mono text-zinc-300 focus:outline-none focus:border-orange-500"
+                    className="w-full bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-xs font-mono text-stone-900 dark:text-zinc-300 focus:outline-none focus:border-orange-500"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-200 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                  className="px-4 py-2 text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white text-xs font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={availableQueues.length === 0}
-                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-all active:scale-95 disabled:opacity-50"
+                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold shadow-md shadow-orange-500/20 transition-all cursor-pointer disabled:opacity-50"
                 >
                   Create Trigger Rule
                 </button>

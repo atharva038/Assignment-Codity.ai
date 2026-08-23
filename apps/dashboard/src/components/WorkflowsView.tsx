@@ -122,21 +122,21 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
   const getNodeStatusColor = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300 shadow-emerald-500/10';
+        return 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/50 text-emerald-900 dark:text-emerald-300 shadow-sm';
       case 'RUNNING':
       case 'CLAIMED':
-        return 'bg-indigo-950/60 border-indigo-500 text-indigo-200 shadow-indigo-500/25 animate-pulse';
+        return 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-500 text-indigo-900 dark:text-indigo-200 shadow-md animate-pulse';
       case 'QUEUED':
-        return 'bg-sky-950/40 border-sky-500/60 text-sky-300 shadow-sky-500/10';
+        return 'bg-sky-50 dark:bg-sky-950/40 border-sky-300 dark:border-sky-500/60 text-sky-900 dark:text-sky-300 shadow-sm';
       case 'BLOCKED':
-        return 'bg-slate-900/60 border-slate-700 text-slate-400 border-dashed opacity-80';
+        return 'bg-stone-100 dark:bg-slate-900/60 border-stone-300 dark:border-slate-700 text-stone-600 dark:text-slate-400 border-dashed opacity-80';
       case 'FAILED':
       case 'DEAD':
-        return 'bg-rose-950/40 border-rose-500/60 text-rose-300 shadow-rose-500/10';
+        return 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-500/60 text-rose-900 dark:text-rose-300 shadow-sm';
       case 'CANCELLED':
-        return 'bg-amber-950/30 border-amber-600/40 text-amber-400 line-through';
+        return 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-600/40 text-amber-900 dark:text-amber-400 line-through';
       default:
-        return 'bg-slate-900 border-slate-800 text-slate-300';
+        return 'bg-stone-50 dark:bg-slate-900 border-stone-200 dark:border-slate-800 text-stone-800 dark:text-slate-300';
     }
   };
 
@@ -215,15 +215,15 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
         <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
           <button
             onClick={launchSampleWorkflow}
-            className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-stone-900 hover:bg-stone-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" /> Launch Sample Workflow DAG
           </button>
           <button
             onClick={() => fetchWorkflows()}
-            className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-stone-100 dark:bg-slate-900 hover:bg-stone-200 dark:hover:bg-slate-800 border border-stone-300 dark:border-slate-700 text-stone-800 dark:text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-brand-400' : ''}`} /> Refresh Workflows
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-orange-500' : ''}`} /> Refresh Workflows
           </button>
         </div>
       </div>
@@ -232,20 +232,20 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Workflows Sidebar List */}
         <div className="lg:col-span-4 space-y-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">Active & Past Pipelines ({workflows.length})</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-slate-400 px-1">Active & Past Pipelines ({workflows.length})</h3>
 
           {loading && workflows.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 text-xs bg-slate-900/40 border border-slate-800 rounded-2xl">
+            <div className="p-8 text-center text-stone-500 dark:text-slate-500 text-xs bg-white dark:bg-slate-900/40 border border-stone-200 dark:border-slate-800 rounded-2xl shadow-sm">
               Loading workflow pipelines...
             </div>
           ) : workflows.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-xs bg-slate-900/40 border border-slate-800 rounded-2xl space-y-3">
-              <GitMerge className="w-8 h-8 mx-auto text-slate-600" />
-              <p className="font-bold text-slate-300">No Workflows created yet.</p>
-              <p className="text-[11px] text-slate-500">Launch a sample 4-step fan-out fan-in DAG workflow to visualize parent-child execution in action.</p>
+            <div className="p-8 text-center text-stone-600 dark:text-slate-400 text-xs bg-white dark:bg-slate-900/40 border border-stone-200 dark:border-slate-800 rounded-2xl space-y-3 shadow-sm">
+              <GitMerge className="w-8 h-8 mx-auto text-stone-400 dark:text-slate-600" />
+              <p className="font-bold text-stone-900 dark:text-slate-300">No Workflows created yet.</p>
+              <p className="text-[11px] text-stone-500">Launch a sample 4-step fan-out fan-in DAG workflow to visualize parent-child execution in action.</p>
               <button
                 onClick={launchSampleWorkflow}
-                className="w-full py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-stone-900 hover:bg-stone-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 text-xs font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Launch Sample Workflow DAG
               </button>
@@ -260,38 +260,38 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
                     onClick={() => fetchWorkflowDetail(wf.id)}
                     className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-slate-900 border-indigo-500/60 shadow-lg shadow-indigo-500/10'
-                        : 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/70'
+                        ? 'bg-white dark:bg-slate-900 border-orange-500/80 shadow-md ring-1 ring-orange-500/20'
+                        : 'bg-stone-50 dark:bg-slate-900/40 border-stone-200 dark:border-slate-800/80 hover:border-stone-300 dark:hover:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-900/70'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
-                        <h4 className="text-sm font-bold text-white tracking-tight">{wf.name}</h4>
-                        <span className="text-[10px] text-slate-500 font-mono">{wf.projectName}</span>
+                        <h4 className="text-sm font-bold text-stone-900 dark:text-white tracking-tight">{wf.name}</h4>
+                        <span className="text-[10px] text-stone-500 dark:text-slate-500 font-mono">{wf.projectName}</span>
                       </div>
                       {getStatusBadge(wf.status)}
                     </div>
 
                     {/* Progress Bar */}
                     <div className="space-y-1.5 mt-3">
-                      <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                      <div className="flex justify-between text-[10px] font-mono text-stone-600 dark:text-slate-400">
                         <span>Progress ({wf.stats.completedJobs}/{wf.stats.totalJobs} jobs)</span>
-                        <span>{wf.stats.progressPercentage}%</span>
+                        <span className="font-bold">{wf.stats.progressPercentage}%</span>
                       </div>
-                      <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800">
+                      <div className="w-full bg-stone-200 dark:bg-slate-950 rounded-full h-1.5 overflow-hidden border border-stone-300 dark:border-slate-800">
                         <div
-                          className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full transition-all duration-500"
+                          className="bg-gradient-to-r from-orange-500 to-emerald-500 h-full transition-all duration-500"
                           style={{ width: `${wf.stats.progressPercentage}%` }}
                         />
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-3 pt-2 border-t border-slate-800/60">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-stone-500 dark:text-slate-500 mt-3 pt-2 border-t border-stone-200 dark:border-slate-800/60">
                       <span>{new Date(wf.createdAt).toLocaleTimeString()}</span>
                       <div className="flex gap-1.5">
-                        {wf.stats.blockedJobs > 0 && <span className="px-1.5 py-0.2 bg-slate-800 text-slate-400 rounded">🔒 {wf.stats.blockedJobs}</span>}
-                        {wf.stats.queuedJobs > 0 && <span className="px-1.5 py-0.2 bg-sky-950 text-sky-400 rounded">⏳ {wf.stats.queuedJobs}</span>}
-                        {wf.stats.runningJobs > 0 && <span className="px-1.5 py-0.2 bg-indigo-950 text-indigo-400 rounded">⚡ {wf.stats.runningJobs}</span>}
+                        {wf.stats.blockedJobs > 0 && <span className="px-1.5 py-0.2 bg-stone-200 dark:bg-slate-800 text-stone-700 dark:text-slate-400 rounded">🔒 {wf.stats.blockedJobs}</span>}
+                        {wf.stats.queuedJobs > 0 && <span className="px-1.5 py-0.2 bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400 rounded">⏳ {wf.stats.queuedJobs}</span>}
+                        {wf.stats.runningJobs > 0 && <span className="px-1.5 py-0.2 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 rounded">⚡ {wf.stats.runningJobs}</span>}
                       </div>
                     </div>
                   </div>
@@ -304,21 +304,21 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
         {/* Workflow Detail & Interactive DAG Graph Inspector */}
         <div className="lg:col-span-8">
           {selectedDetail ? (
-            <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-5 space-y-5">
+            <div className="bg-white dark:bg-slate-950/60 border border-stone-200 dark:border-slate-800/80 rounded-2xl p-5 space-y-5 shadow-xl">
               {/* Header Details */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-800/80">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-stone-200 dark:border-slate-800/80">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-extrabold text-white tracking-tight">{selectedDetail.workflow.name}</h3>
+                    <h3 className="text-base font-extrabold text-stone-900 dark:text-white tracking-tight">{selectedDetail.workflow.name}</h3>
                     {getStatusBadge(selectedDetail.workflow.status)}
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">Workflow ID: <span className="font-mono text-slate-300">{selectedDetail.workflow.id}</span></p>
+                  <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">Workflow ID: <span className="font-mono text-stone-700 dark:text-slate-300">{selectedDetail.workflow.id}</span></p>
                 </div>
 
                 {selectedDetail.workflow.status === 'RUNNING' || selectedDetail.workflow.status === 'PENDING' ? (
                   <button
                     onClick={() => cancelWorkflow(selectedDetail.workflow.id)}
-                    className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                    className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Ban className="w-3.5 h-3.5" /> Cancel Workflow
                   </button>
@@ -327,8 +327,8 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
 
               {/* Interactive DAG Nodes Flow */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <GitMerge className="w-3.5 h-3.5 text-indigo-400" /> DAG Execution Nodes ({selectedDetail.nodes.length})
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-slate-400 flex items-center gap-1.5">
+                  <GitMerge className="w-3.5 h-3.5 text-orange-500" /> DAG Execution Nodes ({selectedDetail.nodes.length})
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
@@ -339,31 +339,31 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
                       <div
                         key={node.id}
                         onClick={() => setActiveNodeId(isSelected ? null : node.id)}
-                        className={`p-4 rounded-xl border transition-all cursor-pointer relative shadow-lg ${getNodeStatusColor(node.status)} ${
-                          isSelected ? 'ring-2 ring-indigo-400' : ''
+                        className={`p-4 rounded-xl border transition-all cursor-pointer relative shadow-sm ${getNodeStatusColor(node.status)} ${
+                          isSelected ? 'ring-2 ring-orange-500' : ''
                         }`}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900/60 border border-slate-700/60 text-slate-300">
+                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-white dark:bg-slate-900/80 border border-stone-200 dark:border-slate-700 text-stone-800 dark:text-slate-200 shadow-sm">
                               {node.type}
                             </span>
-                            <div className="text-[11px] font-mono text-slate-400 mt-1">
-                              Queue: <span className="text-slate-200">{node.queueName}</span>
+                            <div className="text-[11px] font-mono text-stone-600 dark:text-slate-400 mt-1.5">
+                              Queue: <span className="text-stone-900 dark:text-slate-200 font-semibold">{node.queueName}</span>
                             </div>
                           </div>
-                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border bg-slate-950/60">
+                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border bg-white dark:bg-slate-950/60 shadow-sm">
                             {node.status}
                           </span>
                         </div>
 
                         {/* Dependencies badges */}
-                        <div className="mt-3 pt-2 border-t border-slate-800/40 flex items-center justify-between text-[10px] font-mono">
-                          <span className="text-slate-400">
+                        <div className="mt-3 pt-2 border-t border-stone-200/80 dark:border-slate-800/40 flex items-center justify-between text-[10px] font-mono">
+                          <span className="text-stone-600 dark:text-slate-400">
                             {hasParents ? `Parents: ${node.parentJobIds.length}` : 'Root Node'}
                           </span>
                           {node.unresolvedParentCount > 0 && (
-                            <span className="text-amber-400 flex items-center gap-1">
+                            <span className="text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1">
                               🔒 {node.unresolvedParentCount} pending
                             </span>
                           )}
@@ -371,7 +371,7 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
 
                         {/* Error info if failed */}
                         {node.errorReason && (
-                          <div className="mt-2 text-[10px] text-rose-300 bg-rose-950/60 p-2 rounded border border-rose-800/50 font-mono">
+                          <div className="mt-2.5 text-[11px] text-rose-800 dark:text-rose-300 bg-rose-100/90 dark:bg-rose-950/60 p-2.5 rounded-xl border border-rose-200 dark:border-rose-800/50 font-mono">
                             ⚠️ {node.errorReason}
                           </div>
                         )}
@@ -382,21 +382,21 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
               </div>
 
               {/* Edge Connections List */}
-              <div className="pt-4 border-t border-slate-800/60 space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Directed Graph Edges ({selectedDetail.edges.length})</h4>
+              <div className="pt-4 border-t border-stone-200 dark:border-slate-800/60 space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-slate-400">Directed Graph Edges ({selectedDetail.edges.length})</h4>
                 <div className="flex flex-wrap gap-2 text-xs font-mono">
                   {selectedDetail.edges.map((edge, idx) => (
-                    <div key={idx} className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 flex items-center gap-2">
-                      <span className="text-indigo-400 font-bold">{edge.parent.substring(0, 8)}</span>
-                      <ArrowRight className="w-3 h-3 text-slate-500" />
-                      <span className="text-emerald-400 font-bold">{edge.child.substring(0, 8)}</span>
+                    <div key={idx} className="px-2.5 py-1 bg-stone-100 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-lg text-stone-700 dark:text-slate-300 flex items-center gap-2 shadow-sm">
+                      <span className="text-orange-600 dark:text-indigo-400 font-bold">{edge.parent.substring(0, 8)}</span>
+                      <ArrowRight className="w-3 h-3 text-stone-400 dark:text-slate-500" />
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">{edge.child.substring(0, 8)}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
           ) : (
-            <div className="p-12 text-center text-slate-500 text-xs bg-slate-950/40 border border-slate-800/80 rounded-2xl">
+            <div className="p-12 text-center text-stone-500 dark:text-slate-500 text-xs bg-white dark:bg-slate-950/40 border border-stone-200 dark:border-slate-800/80 rounded-2xl shadow-sm">
               Select a workflow pipeline from the list to view its DAG structure and job dependencies.
             </div>
           )}

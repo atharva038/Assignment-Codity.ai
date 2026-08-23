@@ -268,54 +268,54 @@ export function UsersView() {
           <div className="text-[11px] text-zinc-500">Full cluster & node governance</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-indigo-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-1">
+          <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
             <span>Developers (Member)</span>
-            <User className="w-4 h-4 text-indigo-400" />
+            <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <div className="text-2xl font-extrabold text-indigo-400">{memberCount}</div>
-          <div className="text-[11px] text-zinc-500">Task submission & workflow execution</div>
+          <div className="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">{memberCount}</div>
+          <div className="text-[11px] text-stone-500 dark:text-zinc-500">Task submission & workflow execution</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-emerald-400 text-xs font-semibold">
+        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 shadow-sm space-y-1">
+          <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
             <span>Enforcement Engine</span>
-            <Lock className="w-4 h-4 text-emerald-400" />
+            <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-extrabold text-emerald-400">Strict RBAC</div>
-          <div className="text-[11px] text-zinc-500">API Gateway & token validation active</div>
+          <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">Strict RBAC</div>
+          <div className="text-[11px] text-stone-500 dark:text-zinc-500">API Gateway & token validation active</div>
         </div>
       </div>
 
       {/* Main Roster Section */}
-      <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800 shadow-xl space-y-4">
+      <div className="p-5 rounded-2xl bg-white dark:bg-zinc-950/80 border border-stone-200 dark:border-zinc-800 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-bold text-zinc-100 flex items-center gap-2">
+            <h2 className="text-base font-bold text-stone-900 dark:text-zinc-100 flex items-center gap-2">
               <Shield className="w-4 h-4 text-orange-500" />
               Organization Team Roster
             </h2>
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[11px] text-stone-500 dark:text-zinc-400">
               Users provisioned under {orgName} with explicit permission scopes.
             </p>
           </div>
 
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-500" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-stone-400 dark:text-zinc-500" />
             <input
               type="text"
               placeholder="Search by name, email, or role..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-stone-900 dark:text-zinc-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
             />
           </div>
         </div>
 
         {/* Member Table */}
-        <div className="overflow-x-auto border border-zinc-800/80 rounded-xl">
+        <div className="overflow-x-auto border border-stone-200 dark:border-zinc-800/80 rounded-xl">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-900/80 text-zinc-400 font-mono text-[11px] border-b border-zinc-800">
+            <thead className="bg-stone-100/90 dark:bg-zinc-900/80 text-stone-600 dark:text-zinc-400 font-mono text-[11px] border-b border-stone-200 dark:border-zinc-800">
               <tr>
                 <th className="px-4 py-3">Member</th>
                 <th className="px-4 py-3">RBAC Role</th>
@@ -324,16 +324,16 @@ export function UsersView() {
                 {isAdmin && <th className="px-4 py-3 text-right">Admin Controls</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/60">
+            <tbody className="divide-y divide-stone-200 dark:divide-zinc-800/60">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-zinc-500 font-mono">
+                  <td colSpan={5} className="px-4 py-8 text-center text-stone-500 dark:text-zinc-500 font-mono">
                     Loading team roster...
                   </td>
                 </tr>
               ) : filteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-zinc-500 font-mono">
+                  <td colSpan={5} className="px-4 py-8 text-center text-stone-500 dark:text-zinc-500 font-mono">
                     No team members found matching your search.
                   </td>
                 </tr>
@@ -344,7 +344,7 @@ export function UsersView() {
                   const isOwner = m.role === 'OWNER';
 
                   return (
-                    <tr key={m.id} className="hover:bg-zinc-900/40 transition-colors">
+                    <tr key={m.id} className="hover:bg-stone-50 dark:hover:bg-zinc-900/40 transition-colors">
                       {/* Member Info */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -358,15 +358,15 @@ export function UsersView() {
                             {getInitials(m.user.name)}
                           </div>
                           <div>
-                            <div className="font-bold text-zinc-200 flex items-center gap-1.5">
+                            <div className="font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-1.5">
                               <span>{m.user.name || 'Unnamed User'}</span>
                               {isCurrent && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-400 font-mono font-bold">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-600 dark:text-orange-400 font-mono font-bold">
                                   YOU
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] font-mono text-zinc-400">{m.user.email}</div>
+                            <div className="text-[11px] font-mono text-stone-500 dark:text-zinc-400">{m.user.email}</div>
                           </div>
                         </div>
                       </td>
@@ -376,18 +376,18 @@ export function UsersView() {
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
                             isOwner
-                              ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                              ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
                               : isMemberAdmin
-                              ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                              : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                              ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20'
+                              : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20'
                           }`}
                         >
                           {isOwner ? (
-                            <ShieldCheck className="w-3 h-3 text-purple-400" />
+                            <ShieldCheck className="w-3 h-3 text-purple-600 dark:text-purple-400" />
                           ) : isMemberAdmin ? (
-                            <ShieldCheck className="w-3 h-3 text-orange-400" />
+                            <ShieldCheck className="w-3 h-3 text-orange-600 dark:text-orange-400" />
                           ) : (
-                            <User className="w-3 h-3 text-indigo-400" />
+                            <User className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
                           )}
                           {m.role}
                         </span>
@@ -403,34 +403,34 @@ export function UsersView() {
                                   key={p}
                                   className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
                                     ['cluster:scale', 'cluster:drain', 'dlq:purge', 'sharding:manage', 'users:manage'].includes(p)
-                                      ? 'bg-orange-500/10 text-orange-300 border border-orange-500/20'
-                                      : 'bg-zinc-800/80 text-zinc-300 border border-zinc-750'
+                                      ? 'bg-orange-500/10 text-orange-600 dark:text-orange-300 border border-orange-500/20'
+                                      : 'bg-stone-100 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-750'
                                   }`}
                                 >
                                   {p}
                                 </span>
                               ))}
                               {m.permissions.length > 3 && (
-                                <span className="px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-400 text-[10px] font-mono font-bold">
+                                <span className="px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-600 dark:text-orange-400 text-[10px] font-mono font-bold">
                                   +{m.permissions.length - 3} more
                                 </span>
                               )}
                             </>
                           ) : isMemberAdmin ? (
                             <>
-                              <span className="px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-300 border border-orange-500/20 text-[10px]">
+                              <span className="px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-300 border border-orange-500/20 text-[10px]">
                                 Full Cluster Admin
                               </span>
-                              <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
+                              <span className="px-1.5 py-0.5 rounded bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 text-[10px] border border-stone-200 dark:border-zinc-700">
                                 DLQ Replay & Purge
                               </span>
                             </>
                           ) : (
                             <>
-                              <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[10px]">
+                              <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 text-[10px]">
                                 Submit Jobs
                               </span>
-                              <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
+                              <span className="px-1.5 py-0.5 rounded bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 text-[10px] border border-stone-200 dark:border-zinc-700">
                                 DAG Workflows
                               </span>
                             </>

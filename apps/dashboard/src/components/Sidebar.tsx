@@ -109,7 +109,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Main Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col border-r transition-all duration-300 overflow-x-hidden ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col border-r transition-all duration-300 ${
           sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'
         } ${isCollapsed ? 'lg:w-[76px]' : 'lg:w-64'} ${
           isDark
@@ -204,17 +204,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between'
                 } ${
                   isActive
-                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
+                    ? isDark
+                      ? 'bg-zinc-800/90 text-white border border-zinc-700/80 shadow-sm'
+                      : 'bg-stone-200 text-stone-900 border border-stone-300 shadow-sm'
                     : isDark
-                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/80'
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60 border border-transparent'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100 border border-transparent'
                 }`}
               >
                 <div className="flex items-center gap-2.5 overflow-hidden">
                   <Icon
                     className={`w-4 h-4 shrink-0 transition-transform ${
                       isActive
-                        ? 'text-white'
+                        ? 'text-orange-400'
                         : isDark
                         ? 'text-zinc-400'
                         : 'text-stone-500'
@@ -228,7 +230,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${
                       isActive
-                        ? 'bg-white/20 text-white'
+                        ? isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-stone-300 text-stone-900'
                         : isDark
                         ? 'bg-zinc-900 text-zinc-400 border border-zinc-800'
                         : 'bg-stone-200 text-stone-700'
@@ -240,7 +242,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {!isCollapsed && item.count === undefined && item.badgeColor && (
                   <span
                     className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${
-                      isActive ? 'bg-white/20 text-white' : item.badgeColor
+                      isActive ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : item.badgeColor
                     }`}
                   >
                     {(item as any).badge || 'Active'}
@@ -268,7 +270,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             title={isCollapsed ? 'Demo Lab (6 Live Scenarios)' : undefined}
             className={`${
               isCollapsed
-                ? 'w-10 h-10 mx-auto rounded-xl flex items-center justify-center'
+                ? 'w-10 h-10 mx-auto rounded-2xl flex items-center justify-center'
                 : 'w-full px-3.5 py-2.5 rounded-2xl flex items-center justify-between'
             } bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-extrabold text-xs shadow-lg shadow-orange-500/25 transition-all relative active:scale-95 cursor-pointer shrink-0`}
           >
@@ -309,7 +311,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* User Profile & RBAC Card at Bottom of Sidebar */}
         <div
-          className={`p-2.5 border-t overflow-hidden shrink-0 ${
+          className={`p-2.5 border-t shrink-0 relative z-40 ${
             isDark ? 'border-zinc-800/80 bg-zinc-950/80' : 'border-[#E7E2D9] bg-[#FDFBF7]'
           }`}
         >

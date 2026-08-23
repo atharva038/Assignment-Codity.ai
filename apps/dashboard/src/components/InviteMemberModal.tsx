@@ -147,22 +147,22 @@ Login URL: http://localhost:5173`;
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150 overflow-y-auto">
-      <div className="w-full max-w-xl rounded-2xl bg-zinc-950 border border-zinc-800 p-6 shadow-2xl space-y-4 my-8 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150 overflow-y-auto">
+      <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 p-6 shadow-2xl space-y-4 my-8 max-h-[90vh] flex flex-col text-stone-900 dark:text-zinc-100">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-3 shrink-0">
+        <div className="flex items-center justify-between border-b border-stone-200 dark:border-zinc-800 pb-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-orange-500/20 text-orange-500 flex items-center justify-center border border-orange-500/30">
+            <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-500 flex items-center justify-center border border-orange-500/20">
               <UserPlus className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-extrabold text-zinc-100">Provision Team Member & RBAC Scope</h3>
-              <p className="text-[11px] text-zinc-400">Configure credentials & granular capabilities under {orgName}</p>
+              <h3 className="text-sm font-extrabold text-stone-900 dark:text-zinc-100">Provision Team Member & RBAC Scope</h3>
+              <p className="text-[11px] text-stone-500 dark:text-zinc-400">Configure credentials & granular capabilities under {orgName}</p>
             </div>
           </div>
           <button
             onClick={handleResetAndClose}
-            className="p-1 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
+            className="p-1 rounded-lg text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -171,33 +171,33 @@ Login URL: http://localhost:5173`;
         {/* Success State */}
         {successData ? (
           <div className="space-y-4 py-2 overflow-y-auto">
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 space-y-2">
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 space-y-2">
               <div className="flex items-center gap-2 font-bold text-sm">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>Member Provisioned with Custom RBAC Scope!</span>
               </div>
-              <p className="text-xs text-emerald-300/90">{successData.message}</p>
+              <p className="text-xs text-emerald-800 dark:text-emerald-300/90">{successData.message}</p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-zinc-900/80 border border-zinc-800 space-y-2 text-xs font-mono">
-              <div className="text-zinc-400 text-[11px]">Login Credentials:</div>
-              <div className="text-zinc-200">
-                <span className="text-zinc-500">Email:</span> {successData.email}
+            <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-zinc-900/80 border border-stone-200 dark:border-zinc-800 space-y-2 text-xs font-mono">
+              <div className="text-stone-500 dark:text-zinc-400 text-[11px]">Login Credentials:</div>
+              <div className="text-stone-900 dark:text-zinc-200">
+                <span className="text-stone-500 dark:text-zinc-500">Email:</span> {successData.email}
               </div>
-              <div className="text-zinc-200">
-                <span className="text-zinc-500">Temp Password:</span> {successData.tempPass}
+              <div className="text-stone-900 dark:text-zinc-200">
+                <span className="text-stone-500 dark:text-zinc-500">Temp Password:</span> {successData.tempPass}
               </div>
-              <div className="text-zinc-200">
-                <span className="text-zinc-500">Assigned Role:</span>{' '}
-                <span className={role === 'ADMIN' ? 'text-orange-400 font-bold' : 'text-indigo-400 font-bold'}>
+              <div className="text-stone-900 dark:text-zinc-200">
+                <span className="text-stone-500 dark:text-zinc-500">Assigned Role:</span>{' '}
+                <span className={role === 'ADMIN' ? 'text-orange-600 dark:text-orange-400 font-bold' : 'text-indigo-600 dark:text-indigo-400 font-bold'}>
                   {role}
                 </span>
               </div>
-              <div className="pt-2 border-t border-zinc-800/80">
-                <span className="text-zinc-500 block mb-1">Active Permissions ({selectedPermissions.length}):</span>
+              <div className="pt-2 border-t border-stone-200 dark:border-zinc-800/80">
+                <span className="text-stone-500 dark:text-zinc-500 block mb-1">Active Permissions ({selectedPermissions.length}):</span>
                 <div className="flex flex-wrap gap-1">
                   {selectedPermissions.map((p) => (
-                    <span key={p} className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
+                    <span key={p} className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-800 text-stone-800 dark:text-zinc-300 text-[10px]">
                       {p}
                     </span>
                   ))}
@@ -209,7 +209,7 @@ Login URL: http://localhost:5173`;
               <button
                 type="button"
                 onClick={handleCopyCredentials}
-                className="flex-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                className="flex-1 py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-800 dark:text-zinc-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Copy className="w-3.5 h-3.5" />
                 {copied ? 'Copied to Clipboard!' : 'Copy Credentials'}
@@ -217,7 +217,7 @@ Login URL: http://localhost:5173`;
               <button
                 type="button"
                 onClick={handleResetAndClose}
-                className="py-2 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors"
+                className="py-2 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors cursor-pointer"
               >
                 Done
               </button>
@@ -227,7 +227,7 @@ Login URL: http://localhost:5173`;
           /* Invite Form */
           <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-1">
             {error && (
-              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
@@ -235,30 +235,30 @@ Login URL: http://localhost:5173`;
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1">Full Name</label>
+                <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 mb-1">Full Name</label>
                 <div className="relative">
-                  <User className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-500" />
+                  <User className="w-3.5 h-3.5 absolute left-3 top-2.5 text-stone-400 dark:text-zinc-500" />
                   <input
                     type="text"
                     placeholder="e.g. Alex Chen"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-stone-900 dark:text-zinc-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1">Work Email *</label>
+                <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 mb-1">Work Email *</label>
                 <div className="relative">
-                  <Mail className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-500" />
+                  <Mail className="w-3.5 h-3.5 absolute left-3 top-2.5 text-stone-400 dark:text-zinc-500" />
                   <input
                     type="email"
                     required
                     placeholder="alex@codity.ai"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-stone-900 dark:text-zinc-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
                   />
                 </div>
               </div>
@@ -267,55 +267,55 @@ Login URL: http://localhost:5173`;
             {/* Role Preset Selector */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-zinc-300">Base Role Template</label>
-                <span className="text-[10px] text-zinc-500 font-mono">Select preset or customize below</span>
+                <label className="text-xs font-bold text-stone-700 dark:text-zinc-300">Base Role Template</label>
+                <span className="text-[10px] text-stone-500 dark:text-zinc-500 font-mono">Select preset or customize below</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => handleRolePreset('MEMBER')}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                     role === 'MEMBER'
-                      ? 'border-indigo-500/60 bg-indigo-500/10 text-indigo-300'
-                      : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200'
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-900 dark:text-indigo-300 font-bold shadow-sm'
+                      : 'border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-900/60 text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-xs">
-                    <User className="w-3.5 h-3.5 text-indigo-400" />
+                    <User className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                     <span>Developer (Member)</span>
                   </div>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Execution & telemetry scope</p>
+                  <p className="text-[10px] text-stone-500 dark:text-zinc-500 mt-0.5 font-normal">Execution & telemetry scope</p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleRolePreset('ADMIN')}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                     role === 'ADMIN'
-                      ? 'border-orange-500/60 bg-orange-500/10 text-orange-300'
-                      : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200'
+                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-900 dark:text-orange-300 font-bold shadow-sm'
+                      : 'border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-900/60 text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-xs">
-                    <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
                     <span>Lead Architect (Admin)</span>
                   </div>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Full cluster & node governance</p>
+                  <p className="text-[10px] text-stone-500 dark:text-zinc-500 mt-0.5 font-normal">Full cluster & node governance</p>
                 </button>
               </div>
             </div>
 
             {/* Granular Permissions Section */}
-            <div className="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/80 space-y-2.5">
+            <div className="p-3 rounded-xl bg-stone-50 dark:bg-zinc-900/50 border border-stone-200 dark:border-zinc-800/80 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-zinc-200 flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-xs font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-orange-500" />
                   Granular Permission Matrix ({selectedPermissions.length} granted)
                 </span>
                 <button
                   type="button"
                   onClick={handleSelectAll}
-                  className="text-[10px] font-mono text-orange-400 hover:text-orange-300 hover:underline"
+                  className="text-[10px] font-mono text-orange-600 dark:text-orange-400 hover:underline cursor-pointer font-bold"
                 >
                   {selectedPermissions.length === ALL_PERMISSIONS.length ? 'Reset to Defaults' : 'Select All (Full Admin)'}
                 </button>
@@ -333,28 +333,28 @@ Login URL: http://localhost:5173`;
                       className={`p-2 rounded-lg border text-xs flex items-start justify-between gap-2.5 cursor-pointer transition-all ${
                         isChecked
                           ? isDangerous
-                            ? 'border-orange-500/30 bg-orange-500/10 text-zinc-100'
-                            : 'border-indigo-500/30 bg-indigo-500/10 text-zinc-100'
-                          : 'border-zinc-850 bg-zinc-950/40 text-zinc-500 hover:border-zinc-800'
+                            ? 'border-orange-400/60 bg-orange-50 dark:bg-orange-500/10 text-stone-900 dark:text-zinc-100 shadow-sm'
+                            : 'border-indigo-400/60 bg-indigo-50 dark:bg-indigo-500/10 text-stone-900 dark:text-zinc-100 shadow-sm'
+                          : 'border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-stone-500 dark:text-zinc-500 hover:border-stone-300 dark:hover:border-zinc-700'
                       }`}
                     >
                       <div className="flex items-start gap-2">
                         {isChecked ? (
-                          <CheckSquare className={`w-4 h-4 mt-0.5 shrink-0 ${isDangerous ? 'text-orange-400' : 'text-indigo-400'}`} />
+                          <CheckSquare className={`w-4 h-4 mt-0.5 shrink-0 ${isDangerous ? 'text-orange-600 dark:text-orange-400' : 'text-indigo-600 dark:text-indigo-400'}`} />
                         ) : (
-                          <Square className="w-4 h-4 mt-0.5 shrink-0 text-zinc-600" />
+                          <Square className="w-4 h-4 mt-0.5 shrink-0 text-stone-400 dark:text-zinc-600" />
                         )}
                         <div>
                           <div className="font-bold flex items-center gap-1.5">
                             <span>{perm.name}</span>
-                            <span className="text-[9px] font-mono text-zinc-500">({perm.id})</span>
+                            <span className="text-[9px] font-mono text-stone-500 dark:text-zinc-500">({perm.id})</span>
                           </div>
-                          <p className="text-[10px] text-zinc-400 leading-tight mt-0.5">{perm.desc}</p>
+                          <p className="text-[10px] text-stone-500 dark:text-zinc-400 leading-tight mt-0.5">{perm.desc}</p>
                         </div>
                       </div>
 
                       {isDangerous && (
-                        <span className="px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase bg-orange-500/20 text-orange-400 shrink-0">
+                        <span className="px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase bg-orange-500/20 text-orange-600 dark:text-orange-400 shrink-0">
                           Admin
                         </span>
                       )}
@@ -365,30 +365,30 @@ Login URL: http://localhost:5173`;
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">
-                Temporary Password <span className="text-zinc-500 font-normal">(Optional, defaults to Welcome2026!)</span>
+              <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 mb-1">
+                Temporary Password <span className="text-stone-500 dark:text-zinc-500 font-normal">(Optional, defaults to Welcome2026!)</span>
               </label>
               <input
                 type="text"
                 placeholder="Welcome2026!"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full px-3 py-1.5 rounded-xl bg-stone-50 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-800 text-stone-900 dark:text-zinc-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
               />
             </div>
 
-            <div className="pt-2 flex items-center justify-end gap-2 border-t border-zinc-800/80 shrink-0">
+            <div className="pt-2 flex items-center justify-end gap-2 border-t border-stone-200 dark:border-zinc-800/80 shrink-0">
               <button
                 type="button"
                 onClick={handleResetAndClose}
-                className="px-3 py-1.5 rounded-xl text-zinc-400 hover:text-zinc-200 text-xs font-bold"
+                className="px-3 py-1.5 rounded-xl text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 text-xs font-bold cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting || !email || selectedPermissions.length === 0}
-                className="px-4 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                className="px-4 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-md shadow-orange-500/20"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 {submitting ? 'Provisioning...' : `Provision Member (${selectedPermissions.length} Perms)`}

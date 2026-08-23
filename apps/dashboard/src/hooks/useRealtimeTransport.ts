@@ -57,6 +57,8 @@ export function useRealtimeTransport() {
   const [lastUpdatedTs, setLastUpdatedTs] = useState<number>(0);
   const isFetchingRef = useRef<boolean>(false);
 
+  const lastStatsRef = useRef<{ completed: number; failed: number; ts: number } | null>(null);
+
   // REST Fallback Loader (used by polling mode & manual refresh)
   const loadDashboardData = useCallback(async (isManualRefresh = false) => {
     if (!getAuthToken()) return;
@@ -80,8 +82,42 @@ export function useRealtimeTransport() {
       const fetchedWorkers = workersRes.workers || [];
 
       setData((prev) => {
-        const timeStr = new Date().toLocaleTimeString();
-        const nextThroughput = [...prev.throughputData, { time: timeStr, completed: s.completed, failed: s.failed + s.dead }].slice(-10);
+        const now = Date.now();
+        const timeStr = new Date(now).toLocaleTimeString();
+        
+        let completedRate = s.running > 0 ? Math.min(s.running * 4, 24) : 0;
+        let failedRate = 0;
+
+        if (lastStatsRef.current) {
+          const dtSec = Math.max(1, (now - lastStatsRef.current.ts) / 1000);
+          const dComp = Math.max(0, s.completed - lastStatsRef.current.completed);
+          const dFail = Math.max(0, (s.failed + s.dead) - lastStatsRef.current.failed);
+          completedRate = Math.round((dComp / dtSec) * 10) / 10;
+          failedRate = Math.round((dFail / dtSec) * 10) / 10;
+        }
+
+        lastStatsRef.current = { completed: s.completed, failed: s.failed + s.dead, ts: now };
+
+        let nextThroughput = prev.throughputData;
+        if (nextThroughput.length === 0) {
+          nextThroughput = Array.from({ length: 8 }, (_, i) => ({
+            time: new Date(now - (7 - i) * 2000).toLocaleTimeString(),
+            completed: 0,
+            failed: 0,
+            active: s.running + s.queued,
+            rawCompleted: s.completed,
+            rawFailed: s.failed + s.dead,
+          }));
+        } else {
+          nextThroughput = [...nextThroughput, {
+            time: timeStr,
+            completed: completedRate,
+            failed: failedRate,
+            active: s.running + s.queued,
+            rawCompleted: s.completed,
+            rawFailed: s.failed + s.dead,
+          }].slice(-15);
+        }
 
         return {
           queues: queuesRes.queues || [],
@@ -150,8 +186,42 @@ export function useRealtimeTransport() {
       const fetchedWorkers = payload.workers || [];
 
       setData((prev) => {
-        const timeStr = new Date(event.ts || Date.now()).toLocaleTimeString();
-        const nextThroughput = [...prev.throughputData, { time: timeStr, completed: s.completed, failed: (s.failed || 0) + (s.dead || 0) }].slice(-10);
+        const now = event.ts || Date.now();
+        const timeStr = new Date(now).toLocaleTimeString();
+        
+        let completedRate = s.running > 0 ? Math.min(s.running * 4, 24) : 0;
+        let failedRate = 0;
+
+        if (lastStatsRef.current) {
+          const dtSec = Math.max(1, (now - lastStatsRef.current.ts) / 1000);
+          const dComp = Math.max(0, s.completed - lastStatsRef.current.completed);
+          const dFail = Math.max(0, (s.failed + (s.dead || 0)) - lastStatsRef.current.failed);
+          completedRate = Math.round((dComp / dtSec) * 10) / 10;
+          failedRate = Math.round((dFail / dtSec) * 10) / 10;
+        }
+
+        lastStatsRef.current = { completed: s.completed, failed: (s.failed || 0) + (s.dead || 0), ts: now };
+
+        let nextThroughput = prev.throughputData;
+        if (nextThroughput.length === 0) {
+          nextThroughput = Array.from({ length: 8 }, (_, i) => ({
+            time: new Date(now - (7 - i) * 2000).toLocaleTimeString(),
+            completed: 0,
+            failed: 0,
+            active: s.running + s.queued,
+            rawCompleted: s.completed,
+            rawFailed: (s.failed || 0) + (s.dead || 0),
+          }));
+        } else {
+          nextThroughput = [...nextThroughput, {
+            time: timeStr,
+            completed: completedRate,
+            failed: failedRate,
+            active: s.running + s.queued,
+            rawCompleted: s.completed,
+            rawFailed: (s.failed || 0) + (s.dead || 0),
+          }].slice(-15);
+        }
 
         return {
           queues: tenantQueues,
