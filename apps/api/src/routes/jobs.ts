@@ -20,6 +20,7 @@ import { validate } from '../middleware/validate.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { emitStatsSnapshot } from '../ws/statsEmitter.js';
 import { getActiveOrgId } from '../middleware/tenant.js';
+import { publishJobEvent } from '@job-scheduler/redis';
 
 export const jobsRouter = Router();
 
@@ -143,6 +144,14 @@ jobsRouter.post('/batch', validate(batchCreateJobSchema), async (req: Request, r
 
     return jobRecords;
   });
+
+  publishJobEvent({
+    type: 'job:updated',
+    payload: { batchSize: createdJobs.length, queueId },
+    ts: Date.now(),
+  }).catch(() => {});
+
+  emitStatsSnapshot().catch(() => {});
 
   res.status(201).json({
     message: `Batch of ${createdJobs.length} jobs created successfully`,

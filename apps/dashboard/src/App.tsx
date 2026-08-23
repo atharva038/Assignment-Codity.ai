@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  LayoutDashboard,
-  Layers,
-  ListFilter,
-  Cpu,
-  AlertOctagon,
   Plus,
   RefreshCw,
-  GitMerge,
   Sun,
   Moon,
-  Split,
-  Zap,
   Menu,
-  X,
   ChevronRight,
-  Users,
 } from 'lucide-react';
 import { useRealtimeTransport } from './hooks/useRealtimeTransport.js';
 import { TransportToggle } from './components/TransportToggle.js';
@@ -31,9 +21,10 @@ import { EventsView } from './components/EventsView.js';
 import { UsersView } from './components/UsersView.js';
 import { AuthScreen } from './components/AuthScreen.js';
 import { CreateJobModal } from './components/CreateJobModal.js';
+import { VivaSimulationLab } from './components/VivaSimulationLab.js';
+import { Sidebar, TabType } from './components/Sidebar.js';
 import { useAuth } from './hooks/useAuth.js';
 
-type TabType = 'overview' | 'queues' | 'jobs' | 'workflows' | 'events' | 'sharding' | 'workers' | 'dlq' | 'users';
 type ThemeMode = 'dark' | 'light';
 
 export function App() {
@@ -101,6 +92,7 @@ export function App() {
   }, []);
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isVivaLabOpen, setIsVivaLabOpen] = useState<boolean>(false);
 
   const {
     transportMode,
@@ -140,126 +132,21 @@ export function App() {
     );
   }
 
-  const navItems = [
-    { id: 'overview', label: 'Overview & Metrics', icon: LayoutDashboard },
-    { id: 'queues', label: 'Queues & Controls', icon: Layers, count: queues.length },
-    { id: 'jobs', label: 'Job Explorer', icon: ListFilter, count: stats.totalJobs },
-    { id: 'workflows', label: 'Workflows & DAGs', icon: GitMerge, badgeColor: 'bg-purple-500/10 text-purple-400 border border-purple-500/20' },
-    { id: 'events', label: 'Events & Webhooks', icon: Zap, badgeColor: 'bg-orange-500/10 text-orange-400 border border-orange-500/20' },
-    { id: 'sharding', label: 'Queue Sharding', icon: Split, badgeColor: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
-    { id: 'workers', label: 'Worker Fleet', icon: Cpu, count: stats.activeWorkers },
-    { id: 'dlq', label: 'Dead Letter Queue', icon: AlertOctagon, count: stats.pendingDlq, badgeColor: 'bg-rose-500/10 text-rose-400 border border-rose-500/20' },
-    { id: 'users', label: 'Users & RBAC', icon: Users, badge: 'ADMIN', badgeColor: 'bg-orange-500/10 text-orange-400 border border-orange-500/20' },
-  ];
-
   return (
     <div className={`min-h-screen ${isDark ? 'dark bg-black text-zinc-100' : 'light bg-[#FDFBF7] text-stone-900'} flex antialiased selection:bg-orange-500 selection:text-white transition-colors duration-200`}>
-      {/* Mobile Backdrop Overlay */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden animate-in fade-in"
-        />
-      )}
-
-      {/* ========================================================================= */}
-      {/* SIDEBAR — LOGO, NAVIGATION TABS & USER MENU FOOTER */}
-      {/* ========================================================================= */}
-      <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col border-r transition-transform duration-300 lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } ${
-          isDark
-            ? 'bg-zinc-950/95 border-zinc-800/80 backdrop-blur-md'
-            : 'bg-[#FDFBF7] border-[#E7E2D9] backdrop-blur-md'
-        }`}
-      >
-        {/* Sidebar Brand Header */}
-        <div className={`p-4 sm:p-5 border-b flex items-center justify-between ${isDark ? 'border-zinc-800/80' : 'border-[#E7E2D9]'}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-orange-600 to-orange-500 shadow-md shadow-orange-500/25 text-white font-extrabold text-xs flex items-center justify-center tracking-wider shrink-0">
-              JS
-            </div>
-            <div>
-              <h1 className="text-xs font-extrabold tracking-tight flex items-center gap-1.5 leading-tight">
-                Distributed Scheduler
-                <span className="px-1.5 py-0.2 rounded text-[8px] uppercase font-mono font-bold bg-orange-500/10 text-orange-500 border border-orange-500/20">
-                  v1.0
-                </span>
-              </h1>
-              <p className={`text-[10px] ${isDark ? 'text-zinc-400' : 'text-stone-500'}`}>Production Task Fleet</p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 lg:hidden"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Sidebar Navigation Tabs */}
-        <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto no-scrollbar">
-          <div className={`px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider font-mono ${isDark ? 'text-zinc-500' : 'text-stone-400'}`}>
-            Platform Navigation
-          </div>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id as any)}
-                className={`w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all group ${
-                  isActive
-                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                    : isDark
-                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/80'
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Icon
-                    className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                      isActive ? 'text-white' : isDark ? 'text-zinc-400 group-hover:text-zinc-200' : 'text-stone-500 group-hover:text-stone-800'
-                    }`}
-                  />
-                  <span>{item.label}</span>
-                </div>
-
-                {item.count !== undefined && (
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                      isActive
-                        ? 'bg-white/20 text-white'
-                        : isDark
-                        ? 'bg-zinc-900 text-zinc-400 border border-zinc-800'
-                        : 'bg-stone-200 text-stone-700'
-                    }`}
-                  >
-                    {item.count}
-                  </span>
-                )}
-                {item.count === undefined && item.badgeColor && (
-                  <span
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
-                      isActive ? 'bg-white/20 text-white' : item.badgeColor
-                    }`}
-                  >
-                    {(item as any).badge || 'Active'}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* User Profile & RBAC Card at Bottom of Sidebar */}
-        <div className={`p-3 border-t ${isDark ? 'border-zinc-800/80 bg-zinc-950/80' : 'border-[#E7E2D9] bg-[#FDFBF7]'}`}>
-          <UserMenu variant="sidebar" />
-        </div>
-      </aside>
+      {/* DEDICATED SIDEBAR COMPONENT */}
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        onCloseSidebar={() => setSidebarOpen(false)}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        isDark={isDark}
+        queuesCount={queues.length}
+        jobsCount={stats.totalJobs}
+        activeWorkersCount={stats.activeWorkers}
+        pendingDlqCount={stats.pendingDlq}
+        onOpenDemoLab={() => setIsVivaLabOpen(true)}
+      />
 
       {/* ========================================================================= */}
       {/* MAIN CONTENT AREA WITH FULL TOP CONTROLS NAVBAR */}
@@ -287,7 +174,23 @@ export function App() {
                 <span className="capitalize font-bold text-zinc-300">{activeTab}</span>
               </div>
               <h2 className="text-sm font-extrabold tracking-tight capitalize leading-tight">
-                {navItems.find((n) => n.id === activeTab)?.label || 'Overview'}
+                {activeTab === 'overview'
+                  ? 'Overview & Metrics'
+                  : activeTab === 'queues'
+                  ? 'Queues & Controls'
+                  : activeTab === 'jobs'
+                  ? 'Job Explorer'
+                  : activeTab === 'workflows'
+                  ? 'Workflows & DAGs'
+                  : activeTab === 'events'
+                  ? 'Events & Webhooks'
+                  : activeTab === 'sharding'
+                  ? 'Queue Sharding'
+                  : activeTab === 'workers'
+                  ? 'Worker Fleet'
+                  : activeTab === 'dlq'
+                  ? 'Dead Letter Queue'
+                  : 'Users & RBAC'}
               </h2>
             </div>
           </div>
@@ -371,6 +274,13 @@ export function App() {
           }}
         />
       )}
+
+      {/* Viva Demo Lab Modal */}
+      <VivaSimulationLab
+        isOpen={isVivaLabOpen}
+        onClose={() => setIsVivaLabOpen(false)}
+        onRefreshData={loadDashboardData}
+      />
     </div>
   );
 }

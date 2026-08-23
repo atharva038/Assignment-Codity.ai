@@ -8,8 +8,9 @@
 export async function reportHandler(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
   const { reportType, format = 'PDF' } = payload;
 
-  // Simulate CPU computation delay (150-300ms)
-  await new Promise((resolve) => setTimeout(resolve, 150 + Math.random() * 150));
+  // Simulate CPU computation delay (custom executionDelayMs or 150-300ms default)
+  const delay = typeof payload.executionDelayMs === 'number' ? payload.executionDelayMs : 150 + Math.random() * 150;
+  await new Promise((resolve) => setTimeout(resolve, delay));
 
   return {
     success: true,

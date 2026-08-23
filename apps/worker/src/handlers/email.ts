@@ -12,8 +12,9 @@ export async function emailHandler(payload: Record<string, unknown>): Promise<Re
     throw new Error('Invalid email payload: missing or invalid "to" recipient field');
   }
 
-  // Simulate network dispatch delay (50-200ms)
-  await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 100));
+  // Simulate network dispatch delay (custom executionDelayMs or 100-200ms default)
+  const delay = typeof payload.executionDelayMs === 'number' ? payload.executionDelayMs : 100 + Math.random() * 100;
+  await new Promise((resolve) => setTimeout(resolve, delay));
 
   return {
     delivered: true,

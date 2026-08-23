@@ -8,8 +8,9 @@
 export async function webhookHandler(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
   const { url = 'https://webhook.site/demo', event = 'event.triggered', data = {} } = payload;
 
-  // Simulate network POST dispatch
-  await new Promise((resolve) => setTimeout(resolve, 80 + Math.random() * 100));
+  // Simulate network POST dispatch (custom executionDelayMs or 80-180ms default)
+  const delay = typeof payload.executionDelayMs === 'number' ? payload.executionDelayMs : 80 + Math.random() * 100;
+  await new Promise((resolve) => setTimeout(resolve, delay));
 
   return {
     statusCode: 200,
