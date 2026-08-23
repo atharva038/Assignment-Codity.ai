@@ -42,9 +42,9 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, name: string, organizationName?: string) => Promise<boolean>;
   switchPersona: (persona: PersonaType) => Promise<boolean>;
-  inviteMember: (data: { email: string; name?: string; role: 'MEMBER' | 'ADMIN'; password?: string }) => Promise<any>;
+  inviteMember: (data: { email: string; name?: string; role: 'MEMBER' | 'ADMIN'; permissions?: string[]; password?: string }) => Promise<any>;
   fetchMembers: () => Promise<any[]>;
-  updateMemberRole: (userId: string, role: 'MEMBER' | 'ADMIN' | 'OWNER') => Promise<any>;
+  updateMemberRole: (userId: string, role: 'MEMBER' | 'ADMIN' | 'OWNER', permissions?: string[]) => Promise<any>;
   removeMember: (userId: string) => Promise<any>;
   logout: () => void;
   fetchProfile: () => Promise<void>;
@@ -209,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const orgId = user?.memberships?.[0]?.organization.id || '';
 
 
-  const inviteMember = useCallback(async (data: { email: string; name?: string; role: 'MEMBER' | 'ADMIN'; password?: string }) => {
+  const inviteMember = useCallback(async (data: { email: string; name?: string; role: 'MEMBER' | 'ADMIN'; permissions?: string[]; password?: string }) => {
     if (!orgId) throw new Error('No active organization found');
     return fetchApi<{ message: string; member: any; temporaryPassword?: string }>(
       `/organizations/${orgId}/members`,
@@ -226,13 +226,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.members || [];
   }, [orgId]);
 
-  const updateMemberRole = useCallback(async (userId: string, role: 'MEMBER' | 'ADMIN' | 'OWNER') => {
+  const updateMemberRole = useCallback(async (userId: string, role: 'MEMBER' | 'ADMIN' | 'OWNER', permissions?: string[]) => {
     if (!orgId) throw new Error('No active organization found');
     return fetchApi<{ message: string; member: any }>(`/organizations/${orgId}/members/${userId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ role }),
+      body: JSON.stringify({ role, permissions }),
     });
   }, [orgId]);
+
 
   const removeMember = useCallback(async (userId: string) => {
     if (!orgId) throw new Error('No active organization found');

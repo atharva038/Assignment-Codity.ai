@@ -111,13 +111,34 @@ organizationsRouter.get('/:organizationId', requireOrgMember(), async (req: Requ
   res.status(200).json({ organization });
 });
 
+export const ALL_SYSTEM_PERMISSIONS = [
+  'jobs:create',
+  'jobs:cancel',
+  'workflows:trigger',
+  'cluster:scale',
+  'cluster:drain',
+  'sharding:manage',
+  'dlq:replay',
+  'dlq:purge',
+  'users:invite',
+  'users:manage',
+];
+
+export const DEFAULT_MEMBER_PERMISSIONS = [
+  'jobs:create',
+  'jobs:cancel',
+  'workflows:trigger',
+];
+
+export const DEFAULT_ADMIN_PERMISSIONS = [...ALL_SYSTEM_PERMISSIONS];
+
 /**
  * POST /api/v1/organizations/:organizationId/members
  * Admin / Org Owner provisions/invites a new team member directly to their organization.
  */
 organizationsRouter.post('/:organizationId/members', requireOrgMember(), async (req: Request, res: Response) => {
   const { organizationId } = req.params;
-  const { email, name, role = 'MEMBER', password } = req.body;
+  const { email, name, role = 'MEMBER', permissions = [], password } = req.body;
 
   if (!email || !email.includes('@')) {
     res.status(400).json({ error: 'Bad Request', message: 'Valid email is required' });
@@ -147,8 +168,12 @@ organizationsRouter.post('/:organizationId/members', requireOrgMember(), async (
     }
   }
 
-  const assignedOrgRole: OrgRole = role === 'ADMIN' ? OrgRole.ADMIN : OrgRole.MEMBER;
-  const assignedGlobalRole: Role = role === 'ADMIN' ? Role.ADMIN : Role.USER;
+  // Check if permissions include admin-level actions
+  const adminPermissions = ['cluster:scale', 'cluster:drain', 'sharding:manage', 'dlq:purge', 'users:manage'];
+  const hasAdminPermissions = Array.isArray(permissions) && permissions.some((p: string) => adminPermissions.includes(p));
+
+  const assignedOrgRole: OrgRole = (role === 'ADMIN' || hasAdminPermissions) ? OrgRole.ADMIN : OrgRole.MEMBER;
+  const assignedGlobalRole: Role = (role === 'ADMIN' || hasAdminPermissions) ? Role.ADMIN : Role.USER;
   const initialPassword = password || 'Welcome2026!';
 
   // Find or create the user
@@ -163,6 +188,12 @@ organizationsRouter.post('/:organizationId/members', requireOrgMember(), async (
         passwordHash,
         role: assignedGlobalRole,
       },
+    });
+  } else if (assignedGlobalRole === Role.ADMIN) {
+    // Escalate user to Admin if assigned admin privileges
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { role: Role.ADMIN },
     });
   }
 
@@ -197,9 +228,16 @@ organizationsRouter.post('/:organizationId/members', requireOrgMember(), async (
     },
   });
 
+  const activePermissions = Array.isArray(permissions) && permissions.length > 0
+    ? permissions
+    : (assignedOrgRole === OrgRole.ADMIN ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_MEMBER_PERMISSIONS);
+
   res.status(201).json({
     message: `Team member ${user.email} successfully provisioned as ${assignedOrgRole}.`,
-    member: membership,
+    member: {
+      ...membership,
+      permissions: activePermissions,
+    },
     temporaryPassword: password ? undefined : initialPassword,
   });
 });
@@ -211,7 +249,7 @@ organizationsRouter.post('/:organizationId/members', requireOrgMember(), async (
 organizationsRouter.get('/:organizationId/members', requireOrgMember(), async (req: Request, res: Response) => {
   const { organizationId } = req.params;
 
-  const members = await prisma.organizationMember.findMany({
+  const rawMembers = await prisma.organizationMember.findMany({
     where: { organizationId },
     include: {
       user: {
@@ -227,6 +265,14 @@ organizationsRouter.get('/:organizationId/members', requireOrgMember(), async (r
     orderBy: { createdAt: 'asc' },
   });
 
+  const members = rawMembers.map((m) => {
+    const isMemberAdmin = m.role === OrgRole.OWNER || m.role === OrgRole.ADMIN || m.user.role === Role.ADMIN;
+    return {
+      ...m,
+      permissions: isMemberAdmin ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_MEMBER_PERMISSIONS,
+    };
+  });
+
   res.status(200).json({ members });
 });
 
@@ -236,9 +282,14 @@ organizationsRouter.get('/:organizationId/members', requireOrgMember(), async (r
  */
 organizationsRouter.patch('/:organizationId/members/:userId', requireOrgMember(), async (req: Request, res: Response) => {
   const { organizationId, userId } = req.params;
-  const { role } = req.body;
+  const { role, permissions } = req.body;
 
-  if (!role || !['MEMBER', 'ADMIN', 'OWNER'].includes(role)) {
+  const adminPermissions = ['cluster:scale', 'cluster:drain', 'sharding:manage', 'dlq:purge', 'users:manage'];
+  const hasAdminPermissions = Array.isArray(permissions) && permissions.some((p: string) => adminPermissions.includes(p));
+
+  const effectiveRole = role || (hasAdminPermissions ? 'ADMIN' : 'MEMBER');
+
+  if (!['MEMBER', 'ADMIN', 'OWNER'].includes(effectiveRole)) {
     res.status(400).json({ error: 'Bad Request', message: 'Valid role (MEMBER, ADMIN, OWNER) is required' });
     return;
   }
@@ -273,7 +324,7 @@ organizationsRouter.patch('/:organizationId/members/:userId', requireOrgMember()
       },
     },
     data: {
-      role: role as OrgRole,
+      role: effectiveRole as OrgRole,
     },
     include: {
       user: {
@@ -283,23 +334,31 @@ organizationsRouter.patch('/:organizationId/members/:userId', requireOrgMember()
   });
 
   // Also sync global user role if changing to ADMIN
-  if (role === 'ADMIN' || role === 'OWNER') {
+  if (effectiveRole === 'ADMIN' || effectiveRole === 'OWNER') {
     await prisma.user.update({
       where: { id: userId },
       data: { role: Role.ADMIN },
     });
-  } else if (role === 'MEMBER') {
+  } else if (effectiveRole === 'MEMBER') {
     await prisma.user.update({
       where: { id: userId },
       data: { role: Role.USER },
     });
   }
 
+  const activePermissions = Array.isArray(permissions) && permissions.length > 0
+    ? permissions
+    : (effectiveRole === 'ADMIN' || effectiveRole === 'OWNER' ? DEFAULT_ADMIN_PERMISSIONS : DEFAULT_MEMBER_PERMISSIONS);
+
   res.status(200).json({
-    message: `Updated permissions for ${updatedMembership.user.email} to ${role}`,
-    member: updatedMembership,
+    message: `Updated permissions for ${updatedMembership.user.email} to ${effectiveRole}`,
+    member: {
+      ...updatedMembership,
+      permissions: activePermissions,
+    },
   });
 });
+
 
 /**
  * DELETE /api/v1/organizations/:organizationId/members/:userId

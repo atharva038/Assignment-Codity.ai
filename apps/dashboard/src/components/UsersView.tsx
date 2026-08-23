@@ -25,6 +25,7 @@ import { InviteMemberModal } from './InviteMemberModal.js';
 interface MemberItem {
   id: string;
   role: 'OWNER' | 'ADMIN' | 'MEMBER';
+  permissions?: string[];
   createdAt: string;
   user: {
     id: string;
@@ -368,19 +369,33 @@ export function UsersView() {
                       {/* Capabilities Chips */}
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1 max-w-sm">
-                          {isMemberAdmin ? (
+                          {m.permissions && m.permissions.length > 0 ? (
+                            <>
+                              {m.permissions.slice(0, 3).map((p) => (
+                                <span
+                                  key={p}
+                                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                                    ['cluster:scale', 'cluster:drain', 'dlq:purge', 'sharding:manage', 'users:manage'].includes(p)
+                                      ? 'bg-orange-500/10 text-orange-300 border border-orange-500/20'
+                                      : 'bg-zinc-800/80 text-zinc-300 border border-zinc-750'
+                                  }`}
+                                >
+                                  {p}
+                                </span>
+                              ))}
+                              {m.permissions.length > 3 && (
+                                <span className="px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-400 text-[10px] font-mono font-bold">
+                                  +{m.permissions.length - 3} more
+                                </span>
+                              )}
+                            </>
+                          ) : isMemberAdmin ? (
                             <>
                               <span className="px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-300 border border-orange-500/20 text-[10px]">
                                 Full Cluster Admin
                               </span>
                               <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
                                 DLQ Replay & Purge
-                              </span>
-                              <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
-                                Scale Workers
-                              </span>
-                              <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
-                                Invite Users
                               </span>
                             </>
                           ) : (
@@ -390,9 +405,6 @@ export function UsersView() {
                               </span>
                               <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
                                 DAG Workflows
-                              </span>
-                              <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
-                                Telemetry Logs
                               </span>
                             </>
                           )}
