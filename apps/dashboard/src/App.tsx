@@ -134,7 +134,7 @@ export function App() {
   }
 
   return (
-    <div className={`min-h-screen ${isDark ? 'dark bg-black text-zinc-100' : 'light bg-[#FDFBF7] text-stone-900'} flex antialiased selection:bg-orange-500 selection:text-white transition-colors duration-200`}>
+    <div className={`min-h-screen ${isDark ? 'dark bg-black text-zinc-100' : 'light bg-[#FDFBF7] text-stone-900'} flex antialiased selection:bg-orange-500 selection:text-white`}>
       {/* DEDICATED SIDEBAR COMPONENT */}
       <Sidebar
         sidebarOpen={sidebarOpen}
@@ -152,7 +152,7 @@ export function App() {
       {/* ========================================================================= */}
       {/* MAIN CONTENT AREA WITH FULL TOP CONTROLS NAVBAR */}
       {/* ========================================================================= */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-all duration-300">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
         {/* Top Controls Header */}
         <header className={`h-16 px-4 sm:px-8 border-b flex items-center justify-between sticky top-0 z-30 ${
           isDark ? 'bg-black/90 border-zinc-800/80' : 'bg-[#FDFBF7]/90 border-[#E7E2D9]'

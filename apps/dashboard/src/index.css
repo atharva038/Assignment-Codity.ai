@@ -5,8 +5,17 @@
 @layer base {
   body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-    transition: background-color 0.25s ease, color 0.25s ease;
     letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* GPU Compositing for Smooth, Blink-Free Scrolling */
+  header, aside, .sticky, .fixed {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
