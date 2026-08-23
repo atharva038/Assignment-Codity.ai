@@ -56,12 +56,9 @@ export function WorkflowsView({ onRefresh, lastUpdatedTs }: WorkflowsViewProps) 
     if (!lastUpdatedTs) return;
     const timer = setTimeout(() => {
       fetchWorkflowsSilently();
-      if (selectedWorkflowId) {
-        fetchWorkflowDetail(selectedWorkflowId);
-      }
-    }, 600);
+    }, 800);
     return () => clearTimeout(timer);
-  }, [lastUpdatedTs, selectedWorkflowId]);
+  }, [lastUpdatedTs]);
 
   const fetchWorkflows = async (targetId?: string) => {
     setLoading(true);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchApi, getAuthToken } from '../services/api.js';
 import { useWebSocket, WsConnectionStatus } from './useWebSocket.js';
 import { useAuth } from './useAuth.js';
@@ -55,12 +55,15 @@ export function useRealtimeTransport() {
 
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [lastUpdatedTs, setLastUpdatedTs] = useState<number>(0);
+  const isFetchingRef = useRef<boolean>(false);
 
   // REST Fallback Loader (used by polling mode & manual refresh)
   const loadDashboardData = useCallback(async (isManualRefresh = false) => {
     if (!getAuthToken()) return;
     if (document.hidden && !isManualRefresh) return; // Pause polling when tab is inactive
+    if (isFetchingRef.current && !isManualRefresh) return; // Prevent duplicate parallel requests
 
+    isFetchingRef.current = true;
     try {
       if (isManualRefresh) setRefreshing(true);
 
@@ -115,6 +118,7 @@ export function useRealtimeTransport() {
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     } finally {
+      isFetchingRef.current = false;
       if (isManualRefresh) setRefreshing(false);
     }
   }, []);

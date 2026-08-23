@@ -281,6 +281,9 @@ export function App() {
         isOpen={isVivaLabOpen}
         onClose={() => setIsVivaLabOpen(false)}
         onRefreshData={loadDashboardData}
+        onNavigateToTab={(tab) => {
+          setActiveTab(tab as TabType);
+        }}
       />
     </div>
   );
