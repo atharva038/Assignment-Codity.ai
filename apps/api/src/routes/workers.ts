@@ -35,6 +35,15 @@ workersRouter.get('/', async (req: Request, res: Response) => {
   const [workers, totalCount, onlineCount] = await Promise.all([
     prisma.worker.findMany({
       where: whereClause,
+      include: {
+        heartbeats: {
+          orderBy: { timestamp: 'desc' },
+          take: 12,
+        },
+        _count: {
+          select: { executions: true, jobs: true },
+        },
+      },
       orderBy: { lastHeartbeatAt: 'desc' },
     }),
     prisma.worker.count(),

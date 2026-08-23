@@ -17,6 +17,19 @@ import {
 } from 'lucide-react';
 import { fetchApi } from '../services/api.js';
 
+interface JobExecutionItem {
+  id: string;
+  workerId?: string;
+  attemptNumber: number;
+  status: string;
+  durationMs?: number | null;
+  errorReason?: string | null;
+  stackTrace?: string | null;
+  startedAt?: string;
+  completedAt?: string;
+  result?: Record<string, unknown>;
+}
+
 interface JobItem {
   id: string;
   type: string;
@@ -25,12 +38,20 @@ interface JobItem {
   priority: number;
   attempts: number;
   maxAttempts: number;
+  timeoutMs?: number;
   availableAt: string;
   createdAt: string;
+  claimedAt?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  failedAt?: string | null;
+  lastWorkerId?: string | null;
+  errorReason?: string | null;
   payload: Record<string, unknown>;
-  queue?: { name: string };
-  executions?: Array<{ id: string; attemptNumber: number; status: string; durationMs: number; errorReason?: string }>;
-  logs?: Array<{ timestamp: string; level: string; message: string }>;
+  queue?: { id: string; name: string; project?: { name: string } };
+  worker?: { id: string; workerName: string; status: string; hostname?: string };
+  executions?: JobExecutionItem[];
+  logs?: Array<{ timestamp: string; level: string; message: string; metadata?: any }>;
 }
 
 interface ScheduledJobItem {
@@ -511,12 +532,12 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs, la
 
       {/* Inspect Job Details Drawer / Modal */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150 text-zinc-900 dark:text-zinc-100">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150 text-zinc-900 dark:text-zinc-100">
             <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
               <div>
                 <h3 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-orange-500" /> Job Execution Details
+                  <FileText className="w-5 h-5 text-orange-500" /> Job Execution & Telemetry Inspector
                 </h3>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">UUID: {selectedJob.id}</p>
               </div>
@@ -528,41 +549,134 @@ export const JobsView: React.FC<JobsViewProps> = ({ onRefresh, lastUpdatedTs, la
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-                  <span className="text-zinc-500">Status:</span>{' '}
-                  <span className={`ml-2 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${getStatusBadge(selectedJob.status)}`}>
-                    {selectedJob.status}
+            {/* Top Stat Badges & Worker Assignment */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+              <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                <span className="text-zinc-500 block text-[10px] uppercase font-bold">Status</span>
+                <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${getStatusBadge(selectedJob.status)}`}>
+                  {selectedJob.status}
+                </span>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                <span className="text-zinc-500 block text-[10px] uppercase font-bold">Attempts</span>
+                <span className="text-zinc-900 dark:text-white font-bold text-sm mt-1 block">
+                  {selectedJob.attempts} / {selectedJob.maxAttempts}
+                </span>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                <span className="text-zinc-500 block text-[10px] uppercase font-bold">Assigned Worker</span>
+                <span className="text-orange-600 dark:text-orange-400 font-bold text-xs mt-1 truncate block" title={selectedJob.worker?.workerName || selectedJob.lastWorkerId || 'Unassigned'}>
+                  {selectedJob.worker?.workerName || selectedJob.lastWorkerId || 'Pending Claim'}
+                </span>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                <span className="text-zinc-500 block text-[10px] uppercase font-bold">Queue</span>
+                <span className="text-zinc-900 dark:text-white font-bold text-xs mt-1 truncate block">
+                  ⚡ {selectedJob.queue?.name || 'Default'}
+                </span>
+              </div>
+            </div>
+
+            {/* Timestamps Lifecycle Breakdown */}
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/60 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-orange-500" /> Lifecycle Timestamps
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-[11px]">
+                <div>
+                  <span className="text-zinc-400 block text-[10px]">Created</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-semibold">{new Date(selectedJob.createdAt).toLocaleTimeString()}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-400 block text-[10px]">Available At</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-semibold">{new Date(selectedJob.availableAt).toLocaleTimeString()}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-400 block text-[10px]">Started</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-semibold">{selectedJob.startedAt ? new Date(selectedJob.startedAt).toLocaleTimeString() : '—'}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-400 block text-[10px]">Finished</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-semibold">
+                    {selectedJob.completedAt
+                      ? new Date(selectedJob.completedAt).toLocaleTimeString()
+                      : selectedJob.failedAt
+                      ? new Date(selectedJob.failedAt).toLocaleTimeString()
+                      : 'In-flight'}
                   </span>
                 </div>
-                <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-                  <span className="text-zinc-500">Attempts:</span>{' '}
-                  <span className="text-zinc-900 dark:text-white font-bold ml-2">{selectedJob.attempts} / {selectedJob.maxAttempts}</span>
-                </div>
               </div>
+            </div>
 
+            {/* Retry History & Execution Attempts */}
+            {selectedJob.executions && selectedJob.executions.length > 0 && (
               <div>
-                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2">Payload Data</h4>
-                <pre className="p-3.5 bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono text-orange-600 dark:text-orange-400 overflow-x-auto">
-                  {JSON.stringify(selectedJob.payload, null, 2)}
-                </pre>
-              </div>
-
-              {selectedJob.logs && selectedJob.logs.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2">Execution Logs</h4>
-                  <div className="bg-zinc-950 p-3.5 rounded-2xl border border-zinc-800 text-xs font-mono space-y-1.5 max-h-40 overflow-y-auto">
-                    {selectedJob.logs.map((l, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <span className="text-zinc-500 text-[10px]">{new Date(l.timestamp).toLocaleTimeString()}</span>
-                        <span className={`font-bold ${l.level === 'ERROR' ? 'text-rose-400' : 'text-emerald-400'}`}>[{l.level}]</span>
-                        <span className="text-zinc-300">{l.message}</span>
-                      </div>
-                    ))}
-                  </div>
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2 flex items-center gap-1.5">
+                  <Repeat className="w-3.5 h-3.5 text-purple-500" /> Retry History & Execution Metrics
+                </h4>
+                <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden text-xs font-mono">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-zinc-100 dark:bg-zinc-900 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase">
+                      <tr>
+                        <th className="py-2.5 px-3">Attempt</th>
+                        <th className="py-2.5 px-3">Worker Node</th>
+                        <th className="py-2.5 px-3">Outcome</th>
+                        <th className="py-2.5 px-3">Duration</th>
+                        <th className="py-2.5 px-3">Error Detail</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      {selectedJob.executions.map((exec) => (
+                        <tr key={exec.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/40">
+                          <td className="py-2 px-3 font-bold text-zinc-900 dark:text-white">#{exec.attemptNumber}</td>
+                          <td className="py-2 px-3 text-zinc-600 dark:text-zinc-400 text-[11px] truncate max-w-[120px]">
+                            {exec.workerId || 'Worker'}
+                          </td>
+                          <td className="py-2 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(exec.status)}`}>
+                              {exec.status}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-zinc-700 dark:text-zinc-300">
+                            {exec.durationMs !== undefined && exec.durationMs !== null ? `${exec.durationMs}ms` : '—'}
+                          </td>
+                          <td className="py-2 px-3 text-rose-500 text-[11px] truncate max-w-[180px]" title={exec.errorReason || ''}>
+                            {exec.errorReason || '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
+              </div>
+            )}
+
+            {/* Execution Logs */}
+            {selectedJob.logs && selectedJob.logs.length > 0 && (
+              <div>
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-orange-500" /> Execution Logs Console
+                </h4>
+                <div className="bg-zinc-950 p-3.5 rounded-2xl border border-zinc-800 text-xs font-mono space-y-1.5 max-h-44 overflow-y-auto shadow-inner">
+                  {selectedJob.logs.map((l, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <span className="text-zinc-500 text-[10px] shrink-0">{new Date(l.timestamp).toLocaleTimeString()}</span>
+                      <span className={`font-bold shrink-0 ${l.level === 'ERROR' ? 'text-rose-400' : l.level === 'WARN' ? 'text-amber-400' : 'text-emerald-400'}`}>
+                        [{l.level}]
+                      </span>
+                      <span className="text-zinc-300 break-all">{l.message}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Payload Data */}
+            <div>
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2">Input Payload</h4>
+              <pre className="p-3.5 bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono text-orange-600 dark:text-orange-400 overflow-x-auto max-h-36">
+                {JSON.stringify(selectedJob.payload, null, 2)}
+              </pre>
             </div>
 
             <div className="flex justify-end border-t border-zinc-200 dark:border-zinc-800 pt-4">
