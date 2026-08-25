@@ -31,6 +31,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext.js';
 import { DatabaseErDiagram } from './DatabaseErDiagram.js';
 
 export interface ArchitectureViewProps {
@@ -42,6 +43,9 @@ type ScenarioType = 'skip_locked' | 'crash_reaper' | 'cron_lock' | 'retry_jitter
 type ActiveNodeKey = 'ingress' | 'api' | 'postgres' | 'redis' | 'workers' | 'scheduler' | 'dlq';
 
 export const ArchitectureView: React.FC<ArchitectureViewProps> = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const [activeSection, setActiveSection] = useState<SectionViewType>('all');
   const [selectedNode, setSelectedNode] = useState<ActiveNodeKey>('postgres');
   const [activeScenario, setActiveScenario] = useState<ScenarioType>('skip_locked');
@@ -285,31 +289,47 @@ await prisma.job.update({
   return (
     <div className="space-y-8 animate-fadeIn pb-16">
       {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-stone-900 via-stone-850 to-stone-900 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 border border-stone-800 dark:border-zinc-800 p-6 sm:p-8 text-white shadow-2xl">
+      <div className={`relative overflow-hidden rounded-3xl border p-6 sm:p-8 shadow-2xl transition-colors ${
+        isDark
+          ? 'bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 border-zinc-800 text-white'
+          : 'bg-gradient-to-br from-white via-orange-50/50 to-amber-50/70 border-orange-200/80 text-stone-900 shadow-orange-500/5'
+      }`}>
         <div className="absolute -right-16 -top-16 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute right-1/3 -bottom-20 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
+          <div className="space-y-3">
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+              isDark
+                ? 'bg-orange-500/20 border border-orange-500/30 text-orange-400'
+                : 'bg-orange-500/10 border border-orange-500/30 text-orange-700'
+            }`}>
+              <Sparkles className="w-3.5 h-3.5" />
               Core Infrastructure Specification • Distributed Architecture
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${
+              isDark ? 'text-white' : 'text-stone-950'
+            }`}>
               Interactive System Architecture & Live Concurrency Visualizer
             </h1>
-            <p className="text-sm text-stone-300 dark:text-zinc-400 max-w-3xl leading-relaxed">
-              Explore the end-to-end topological layout, PostgreSQL ER schema, atomic <code className="text-orange-300 bg-black/40 px-1.5 py-0.5 rounded font-mono text-xs">FOR UPDATE SKIP LOCKED</code> claiming, crash recovery loops, DAG workflows, and retry jitter mathematics.
+            <p className={`text-sm max-w-3xl leading-relaxed font-medium ${
+              isDark ? 'text-zinc-300' : 'text-stone-700'
+            }`}>
+              Explore the end-to-end topological layout, PostgreSQL ER schema, atomic <code className={`px-1.5 py-0.5 rounded font-mono text-xs font-bold ${
+                isDark ? 'text-orange-300 bg-black/50 border border-orange-500/30' : 'text-orange-800 bg-orange-100 border border-orange-300'
+              }`}>FOR UPDATE SKIP LOCKED</code> claiming, crash recovery loops, DAG workflows, and retry jitter mathematics.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs shadow-lg transition-all ${
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg transition-all active:scale-95 cursor-pointer ${
                 isPlaying
-                  ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-orange-500/20'
-                  : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                  ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-orange-500/25'
+                  : isDark
+                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                  : 'bg-stone-200 text-stone-800 hover:bg-stone-300'
               }`}
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -320,7 +340,9 @@ await prisma.job.update({
       </div>
 
       {/* ARCHITECTURE SECTION SELECTOR BAR */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-stone-100 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800">
+      <div className={`flex flex-wrap items-center gap-2 p-1.5 rounded-2xl border shadow-sm ${
+        isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-stone-200 border-stone-300'
+      }`}>
         {[
           { id: 'all', label: 'All Architecture Sections', icon: Layers },
           { id: 'topology', label: '1. Master System Topology', icon: Network },
@@ -336,8 +358,10 @@ await prisma.job.update({
               onClick={() => setActiveSection(sec.id as SectionViewType)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                 isActive
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-100 hover:bg-stone-200/60 dark:hover:bg-zinc-800'
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20 font-extrabold'
+                  : isDark
+                  ? 'text-zinc-300 hover:text-white hover:bg-zinc-800'
+                  : 'text-stone-700 hover:text-stone-950 hover:bg-stone-300/80 font-bold'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -349,25 +373,31 @@ await prisma.job.update({
 
       {/* MASTER TOPOLOGY: Interactive Animated SVG Architecture Diagram */}
       {(activeSection === 'all' || activeSection === 'topology') && (
-      <div className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 shadow-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-900/50 flex flex-wrap items-center justify-between gap-4">
+      <div className={`rounded-2xl border shadow-xl overflow-hidden ${
+        isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-[#FAF8F5] border-[#D9D3C7]'
+      }`}>
+        <div className={`px-6 py-4 border-b flex flex-wrap items-center justify-between gap-4 ${
+          isDark ? 'bg-zinc-900/50 border-zinc-800' : 'bg-[#EDE8DC] border-[#D9D3C7]'
+        }`}>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
+            <div className="w-8 h-8 rounded-lg bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400 font-bold">
               <Network className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-stone-900 dark:text-zinc-100">Live System Topology & Data Bus</h2>
-              <p className="text-xs text-stone-500 dark:text-zinc-400">Click any component to inspect internal SQL, invariants, and failure handling</p>
+              <h2 className="text-sm font-extrabold text-stone-900 dark:text-zinc-100">Live System Topology & Data Bus</h2>
+              <p className="text-xs text-stone-600 dark:text-zinc-400">Click any component to inspect internal SQL, invariants, and failure handling</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono text-stone-500 dark:text-zinc-400">
+          <div className="flex items-center gap-2 text-xs font-mono text-stone-600 dark:text-zinc-400 font-bold">
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             Active Pipeline Bus • High Concurrency Mode
           </div>
         </div>
 
         {/* SVG Canvas with Clean Layout & Glowing Nodes */}
-        <div className="p-4 sm:p-6 bg-[#090a0f] relative overflow-x-auto select-none">
+        <div className={`p-4 sm:p-6 relative overflow-x-auto select-none ${
+          isDark ? 'bg-[#090a0f]' : 'bg-[#FAF8F5]'
+        }`}>
           <svg viewBox="0 0 1140 500" className="w-full min-w-[900px] h-auto font-sans">
             <defs>
               <linearGradient id="grad-client" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -403,30 +433,30 @@ await prisma.job.update({
 
             {/* Grid Pattern */}
             <pattern id="grid-dots" width="30" height="30" patternUnits="userSpaceOnUse">
-              <circle cx="15" cy="15" r="1" fill="rgba(255,255,255,0.06)" />
+              <circle cx="15" cy="15" r="1" fill={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.12)'} />
             </pattern>
             <rect width="1140" height="500" fill="url(#grid-dots)" />
 
             {/* CONNECTION PATHS */}
             {/* 1. Dashboard to API Gateway */}
-            <path d="M 200 110 L 270 170" stroke="#60a5fa" strokeWidth="2" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
+            <path d="M 200 110 L 270 170" stroke="#3b82f6" strokeWidth="2" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
             {/* 2. Webhooks to API Gateway */}
-            <path d="M 200 250 L 270 190" stroke="#a78bfa" strokeWidth="2" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
+            <path d="M 200 250 L 270 190" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
             
             {/* 3. API Gateway to PostgreSQL */}
-            <path d="M 450 160 L 530 110" stroke="#34d399" strokeWidth="2.5" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
+            <path d="M 450 160 L 530 110" stroke="#10b981" strokeWidth="2.5" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
             
             {/* 4. API Gateway to Redis */}
-            <path d="M 360 235 L 360 320" stroke="#f87171" strokeWidth="2" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
+            <path d="M 360 235 L 360 320" stroke="#ef4444" strokeWidth="2" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
             
             {/* 5. PostgreSQL to Worker Fleet (SKIP LOCKED) */}
-            <path d="M 635 190 L 635 300" stroke="#fbbf24" strokeWidth="3" strokeDasharray="8 4" className={isPlaying ? 'animate-dash' : ''} filter="url(#glow-bright)" />
+            <path d="M 635 190 L 635 300" stroke="#f59e0b" strokeWidth="3" strokeDasharray="8 4" className={isPlaying ? 'animate-dash' : ''} filter="url(#glow-bright)" />
             
             {/* 6. PostgreSQL to Scheduler */}
-            <path d="M 740 110 L 830 110" stroke="#f472b6" strokeWidth="2.5" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
+            <path d="M 740 110 L 830 110" stroke="#ec4899" strokeWidth="2.5" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
 
             {/* 7. Redis to Worker Fleet */}
-            <path d="M 450 380 L 530 380" stroke="#fb923c" strokeWidth="2" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
+            <path d="M 450 380 L 530 380" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
 
             {/* 8. Worker Fleet to Dead Letter Queue */}
             <path d="M 740 370 L 830 370" stroke="#f43f5e" strokeWidth="2.5" strokeDasharray="6 4" className={isPlaying ? 'animate-dash' : ''} />
@@ -434,59 +464,59 @@ await prisma.job.update({
             {/* Flowing animated circles along path if active */}
             {isPlaying && (
               <>
-                <circle cx="235" cy="140" r="4" fill="#93c5fd">
+                <circle cx="235" cy="140" r="4" fill="#3b82f6">
                   <animate attributeName="cx" from="200" to="270" dur="1.4s" repeatCount="indefinite" />
                   <animate attributeName="cy" from="110" to="170" dur="1.4s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="490" cy="135" r="4.5" fill="#6ee7b7">
+                <circle cx="490" cy="135" r="4.5" fill="#10b981">
                   <animate attributeName="cx" from="450" to="530" dur="1.2s" repeatCount="indefinite" />
                   <animate attributeName="cy" from="160" to="110" dur="1.2s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="635" cy="245" r="5" fill="#fde047" filter="url(#glow-bright)">
+                <circle cx="635" cy="245" r="5" fill="#f59e0b" filter="url(#glow-bright)">
                   <animate attributeName="cy" from="190" to="300" dur="1.0s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="360" cy="275" r="4" fill="#fca5a5">
+                <circle cx="360" cy="275" r="4" fill="#ef4444">
                   <animate attributeName="cy" from="235" to="320" dur="1.3s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="490" cy="380" r="4" fill="#fdba74">
+                <circle cx="490" cy="380" r="4" fill="#f97316">
                   <animate attributeName="cx" from="450" to="530" dur="1.2s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="785" cy="110" r="4" fill="#f472b6">
+                <circle cx="785" cy="110" r="4" fill="#ec4899">
                   <animate attributeName="cx" from="740" to="830" dur="1.3s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="785" cy="370" r="4" fill="#fda4af">
+                <circle cx="785" cy="370" r="4" fill="#f43f5e">
                   <animate attributeName="cx" from="740" to="830" dur="1.3s" repeatCount="indefinite" />
                 </circle>
               </>
             )}
 
             {/* Labels on Interconnects */}
-            <rect x="580" y="235" width="110" height="20" rx="4" fill="#18181b" stroke="#fbbf24" strokeWidth="0.8" />
-            <text x="635" y="249" fill="#fde047" fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">SKIP LOCKED</text>
+            <rect x="580" y="235" width="110" height="20" rx="4" fill={isDark ? '#18181b' : '#FFFFFF'} stroke="#fbbf24" strokeWidth="1" />
+            <text x="635" y="249" fill={isDark ? '#fde047' : '#b45309'} fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">SKIP LOCKED</text>
 
-            <rect x="755" y="98" width="60" height="18" rx="4" fill="#18181b" stroke="#f472b6" strokeWidth="0.8" />
-            <text x="785" y="111" fill="#f472b6" fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">LOCK TOKEN</text>
+            <rect x="755" y="98" width="60" height="18" rx="4" fill={isDark ? '#18181b' : '#FFFFFF'} stroke="#f472b6" strokeWidth="1" />
+            <text x="785" y="111" fill={isDark ? '#f472b6' : '#be185d'} fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">LOCK TOKEN</text>
 
             {/* NODE 1: Ingress & Clients */}
             <g
               onClick={() => setSelectedNode('ingress')}
               className="cursor-pointer transition-transform hover:scale-[1.01]"
             >
-              <rect x="30" y="60" width="170" height="95" rx="12" fill="#121318" stroke={selectedNode === 'ingress' ? '#3b82f6' : '#27272a'} strokeWidth={selectedNode === 'ingress' ? '3' : '1.5'} />
-              <rect x="30" y="60" width="170" height="95" rx="12" fill="url(#grad-client)" fillOpacity="0.12" />
-              <text x="45" y="88" fill="#93c5fd" fontSize="13" fontWeight="bold">🖥️ React Dashboard</text>
-              <text x="45" y="108" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Port 5173 • Recharts</text>
-              <text x="45" y="126" fill="#60a5fa" fontSize="9" fontFamily="monospace">Dual-Mode Transport</text>
+              <rect x="30" y="60" width="170" height="95" rx="12" fill={isDark ? '#121318' : '#FFFFFF'} stroke={selectedNode === 'ingress' ? '#3b82f6' : (isDark ? '#27272a' : '#D9D3C7')} strokeWidth={selectedNode === 'ingress' ? '3' : '1.5'} />
+              <rect x="30" y="60" width="170" height="95" rx="12" fill="url(#grad-client)" fillOpacity={isDark ? 0.12 : 0.08} />
+              <text x="45" y="88" fill={isDark ? '#93c5fd' : '#1e40af'} fontSize="13" fontWeight="bold">🖥️ React Dashboard</text>
+              <text x="45" y="108" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Port 5173 • Recharts</text>
+              <text x="45" y="126" fill={isDark ? '#60a5fa' : '#2563eb'} fontSize="9" fontFamily="monospace" fontWeight="bold">Dual-Mode Transport</text>
             </g>
 
             <g
               onClick={() => setSelectedNode('ingress')}
               className="cursor-pointer transition-transform hover:scale-[1.01]"
             >
-              <rect x="30" y="200" width="170" height="95" rx="12" fill="#121318" stroke={selectedNode === 'ingress' ? '#8b5cf6' : '#27272a'} strokeWidth={selectedNode === 'ingress' ? '3' : '1.5'} />
-              <text x="45" y="228" fill="#c4b5fd" fontSize="13" fontWeight="bold">🔔 Webhooks & SDKs</text>
-              <text x="45" y="248" fill="#a1a1aa" fontSize="10" fontFamily="monospace">HMAC SHA-256 Auth</text>
-              <text x="45" y="266" fill="#a78bfa" fontSize="9" fontFamily="monospace">Idempotent Ingestion</text>
+              <rect x="30" y="200" width="170" height="95" rx="12" fill={isDark ? '#121318' : '#FFFFFF'} stroke={selectedNode === 'ingress' ? '#8b5cf6' : (isDark ? '#27272a' : '#D9D3C7')} strokeWidth={selectedNode === 'ingress' ? '3' : '1.5'} />
+              <text x="45" y="228" fill={isDark ? '#c4b5fd' : '#6d28d9'} fontSize="13" fontWeight="bold">🔔 Webhooks & SDKs</text>
+              <text x="45" y="248" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">HMAC SHA-256 Auth</text>
+              <text x="45" y="266" fill={isDark ? '#a78bfa' : '#7c3aed'} fontSize="9" fontFamily="monospace" fontWeight="bold">Idempotent Ingestion</text>
             </g>
 
             {/* NODE 2: Express API Gateway */}
@@ -494,12 +524,12 @@ await prisma.job.update({
               onClick={() => setSelectedNode('api')}
               className="cursor-pointer transition-transform hover:scale-[1.01]"
             >
-              <rect x="270" y="120" width="180" height="115" rx="12" fill="#121318" stroke={selectedNode === 'api' ? '#8b5cf6' : '#3f3f46'} strokeWidth={selectedNode === 'api' ? '3' : '1.5'} />
-              <rect x="270" y="120" width="180" height="115" rx="12" fill="url(#grad-api)" fillOpacity="0.15" />
-              <text x="285" y="148" fill="#c4b5fd" fontSize="13" fontWeight="bold">🌐 Express API Gateway</text>
-              <text x="285" y="170" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Port 3000 • Zod Val</text>
-              <text x="285" y="190" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Sliding Rate Limiter</text>
-              <text x="285" y="210" fill="#a78bfa" fontSize="9" fontFamily="monospace">WebSocket Gateway</text>
+              <rect x="270" y="120" width="180" height="115" rx="12" fill={isDark ? '#121318' : '#FFFFFF'} stroke={selectedNode === 'api' ? '#8b5cf6' : (isDark ? '#3f3f46' : '#D9D3C7')} strokeWidth={selectedNode === 'api' ? '3' : '1.5'} />
+              <rect x="270" y="120" width="180" height="115" rx="12" fill="url(#grad-api)" fillOpacity={isDark ? 0.15 : 0.08} />
+              <text x="285" y="148" fill={isDark ? '#c4b5fd' : '#6d28d9'} fontSize="13" fontWeight="bold">🌐 Express API Gateway</text>
+              <text x="285" y="170" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Port 3000 • Zod Val</text>
+              <text x="285" y="190" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Sliding Rate Limiter</text>
+              <text x="285" y="210" fill={isDark ? '#a78bfa' : '#7c3aed'} fontSize="9" fontFamily="monospace" fontWeight="bold">WebSocket Gateway</text>
             </g>
 
             {/* NODE 3: Redis 7 Cache & PubSub */}
@@ -507,12 +537,12 @@ await prisma.job.update({
               onClick={() => setSelectedNode('redis')}
               className="cursor-pointer transition-transform hover:scale-[1.01]"
             >
-              <rect x="270" y="320" width="180" height="115" rx="12" fill="#121318" stroke={selectedNode === 'redis' ? '#ef4444' : '#3f3f46'} strokeWidth={selectedNode === 'redis' ? '3' : '1.5'} />
-              <rect x="270" y="320" width="180" height="115" rx="12" fill="url(#grad-redis)" fillOpacity="0.15" />
-              <text x="285" y="348" fill="#fca5a5" fontSize="13" fontWeight="bold">🔴 Redis 7 Cache / Bus</text>
-              <text x="285" y="370" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Pub/Sub Event Stream</text>
-              <text x="285" y="390" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Sliding Window Logs</text>
-              <text x="285" y="410" fill="#f87171" fontSize="9" fontFamily="monospace">Heartbeat Caching</text>
+              <rect x="270" y="320" width="180" height="115" rx="12" fill={isDark ? '#121318' : '#FFFFFF'} stroke={selectedNode === 'redis' ? '#ef4444' : (isDark ? '#3f3f46' : '#D9D3C7')} strokeWidth={selectedNode === 'redis' ? '3' : '1.5'} />
+              <rect x="270" y="320" width="180" height="115" rx="12" fill="url(#grad-redis)" fillOpacity={isDark ? 0.15 : 0.08} />
+              <text x="285" y="348" fill={isDark ? '#fca5a5' : '#b91c1c'} fontSize="13" fontWeight="bold">🔴 Redis 7 Cache / Bus</text>
+              <text x="285" y="370" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Pub/Sub Event Stream</text>
+              <text x="285" y="390" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Sliding Window Logs</text>
+              <text x="285" y="410" fill={isDark ? '#f87171' : '#dc2626'} fontSize="9" fontFamily="monospace" fontWeight="bold">Heartbeat Caching</text>
             </g>
 
             {/* NODE 4: PostgreSQL 16 (CENTER OF ARCHITECTURE) */}
@@ -520,13 +550,13 @@ await prisma.job.update({
               onClick={() => setSelectedNode('postgres')}
               className="cursor-pointer transition-transform hover:scale-[1.01]"
             >
-              <rect x="530" y="50" width="210" height="140" rx="14" fill="#121318" stroke={selectedNode === 'postgres' ? '#10b981' : '#059669'} strokeWidth={selectedNode === 'postgres' ? '3.5' : '2'} filter={selectedNode === 'postgres' ? 'url(#glow-bright)' : ''} />
-              <rect x="530" y="50" width="210" height="140" rx="14" fill="url(#grad-db)" fillOpacity="0.18" />
-              <text x="548" y="80" fill="#6ee7b7" fontSize="14" fontWeight="bold">🗄️ PostgreSQL 16</text>
-              <text x="548" y="102" fill="#fef08a" fontSize="11" fontWeight="bold" fontFamily="monospace">⚡ FOR UPDATE</text>
-              <text x="548" y="118" fill="#fef08a" fontSize="11" fontWeight="bold" fontFamily="monospace">   SKIP LOCKED</text>
-              <text x="548" y="140" fill="#a1a1aa" fontSize="10" fontFamily="monospace">B-Tree Indexes • 3NF</text>
-              <text x="548" y="160" fill="#34d399" fontSize="10" fontFamily="monospace">ACID Single Source</text>
+              <rect x="530" y="50" width="210" height="140" rx="14" fill={isDark ? '#121318' : '#FFFFFF'} stroke={selectedNode === 'postgres' ? '#10b981' : (isDark ? '#059669' : '#10b981')} strokeWidth={selectedNode === 'postgres' ? '3.5' : '2'} filter={selectedNode === 'postgres' ? 'url(#glow-bright)' : ''} />
+              <rect x="530" y="50" width="210" height="140" rx="14" fill="url(#grad-db)" fillOpacity={isDark ? 0.18 : 0.08} />
+              <text x="548" y="80" fill={isDark ? '#6ee7b7' : '#047857'} fontSize="14" fontWeight="bold">🗄️ PostgreSQL 16</text>
+              <text x="548" y="102" fill={isDark ? '#fef08a' : '#b45309'} fontSize="11" fontWeight="bold" fontFamily="monospace">⚡ FOR UPDATE</text>
+              <text x="548" y="118" fill={isDark ? '#fef08a' : '#b45309'} fontSize="11" fontWeight="bold" fontFamily="monospace">   SKIP LOCKED</text>
+              <text x="548" y="140" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">B-Tree Indexes • 3NF</text>
+              <text x="548" y="160" fill={isDark ? '#34d399' : '#059669'} fontSize="10" fontFamily="monospace" fontWeight="bold">ACID Single Source</text>
             </g>
 
             {/* NODE 5: Worker Fleet Execution Pool */}
@@ -534,13 +564,13 @@ await prisma.job.update({
               onClick={() => setSelectedNode('workers')}
               className="cursor-pointer transition-transform hover:scale-[1.01]"
             >
-              <rect x="530" y="300" width="210" height="140" rx="14" fill="#121318" stroke={selectedNode === 'workers' ? '#f59e0b' : '#3f3f46'} strokeWidth={selectedNode === 'workers' ? '3' : '1.5'} />
-              <rect x="530" y="300" width="210" height="140" rx="14" fill="url(#grad-worker)" fillOpacity="0.15" />
-              <text x="548" y="330" fill="#fde047" fontSize="13" fontWeight="bold">⚙️ Worker Fleet</text>
-              <text x="548" y="352" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Atomic SKIP Poller</text>
-              <text x="548" y="372" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Concurrency Limit: 5</text>
-              <text x="548" y="392" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Jitter Retry + Handlers</text>
-              <text x="548" y="412" fill="#fbbf24" fontSize="9" fontFamily="monospace">Telemetry Heartbeat (5s)</text>
+              <rect x="530" y="300" width="210" height="140" rx="14" fill={isDark ? '#121318' : '#FFFFFF'} stroke={selectedNode === 'workers' ? '#f59e0b' : (isDark ? '#3f3f46' : '#D9D3C7')} strokeWidth={selectedNode === 'workers' ? '3' : '1.5'} />
+              <rect x="530" y="300" width="210" height="140" rx="14" fill="url(#grad-worker)" fillOpacity={isDark ? 0.15 : 0.08} />
+              <text x="548" y="330" fill={isDark ? '#fde047' : '#b45309'} fontSize="13" fontWeight="bold">⚙️ Worker Fleet</text>
+              <text x="548" y="352" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Atomic SKIP Poller</text>
+              <text x="548" y="372" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Concurrency Limit: 5</text>
+              <text x="548" y="392" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Jitter Retry + Handlers</text>
+              <text x="548" y="412" fill={isDark ? '#fbbf24' : '#d97706'} fontSize="9" fontFamily="monospace" fontWeight="bold">Telemetry Heartbeat (5s)</text>
             </g>
 
             {/* NODE 6: Scheduler & Reaper */}
@@ -548,13 +578,13 @@ await prisma.job.update({
               onClick={() => setSelectedNode('scheduler')}
               className="cursor-pointer transition-transform hover:scale-[1.01]"
             >
-              <rect x="830" y="50" width="210" height="140" rx="14" fill="#121318" stroke={selectedNode === 'scheduler' ? '#ec4899' : '#3f3f46'} strokeWidth={selectedNode === 'scheduler' ? '3' : '1.5'} />
-              <rect x="830" y="50" width="210" height="140" rx="14" fill="url(#grad-sched)" fillOpacity="0.15" />
-              <text x="848" y="80" fill="#f472b6" fontSize="13" fontWeight="bold">⏰ Scheduler &</text>
-              <text x="848" y="98" fill="#f472b6" fontSize="13" fontWeight="bold">💀 Crash Reaper</text>
-              <text x="848" y="120" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Cron Optimistic Lock</text>
-              <text x="848" y="140" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Promoter (NOW())</text>
-              <text x="848" y="160" fill="#f472b6" fontSize="9" fontFamily="monospace">Reclaims Stale Leases</text>
+              <rect x="830" y="50" width="210" height="140" rx="14" fill={isDark ? '#121318' : '#FFFFFF'} stroke={selectedNode === 'scheduler' ? '#ec4899' : (isDark ? '#3f3f46' : '#D9D3C7')} strokeWidth={selectedNode === 'scheduler' ? '3' : '1.5'} />
+              <rect x="830" y="50" width="210" height="140" rx="14" fill="url(#grad-sched)" fillOpacity={isDark ? 0.15 : 0.08} />
+              <text x="848" y="80" fill={isDark ? '#f472b6' : '#be185d'} fontSize="13" fontWeight="bold">⏰ Scheduler &</text>
+              <text x="848" y="98" fill={isDark ? '#f472b6' : '#be185d'} fontSize="13" fontWeight="bold">💀 Crash Reaper</text>
+              <text x="848" y="120" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Cron Optimistic Lock</text>
+              <text x="848" y="140" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Promoter (NOW())</text>
+              <text x="848" y="160" fill={isDark ? '#f472b6' : '#db2777'} fontSize="9" fontFamily="monospace" fontWeight="bold">Reclaims Stale Leases</text>
             </g>
 
             {/* NODE 7: Dead Letter Queue */}
@@ -562,12 +592,12 @@ await prisma.job.update({
               onClick={() => setSelectedNode('dlq')}
               className="cursor-pointer transition-transform hover:scale-[1.01]"
             >
-              <rect x="830" y="300" width="210" height="140" rx="14" fill="#121318" stroke={selectedNode === 'dlq' ? '#f43f5e' : '#3f3f46'} strokeWidth={selectedNode === 'dlq' ? '3' : '1.5'} />
-              <text x="848" y="330" fill="#fb7185" fontSize="13" fontWeight="bold">⚠️ Dead Letter (DLQ)</text>
-              <text x="848" y="352" fill="#a1a1aa" fontSize="10" fontFamily="monospace">1:1 Job Relational FK</text>
-              <text x="848" y="372" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Preserves Log Stream</text>
-              <text x="848" y="392" fill="#a1a1aa" fontSize="10" fontFamily="monospace">Failure Stack Traces</text>
-              <text x="848" y="412" fill="#fda4af" fontSize="9" fontFamily="monospace">One-Click Replay</text>
+              <rect x="830" y="300" width="210" height="140" rx="14" fill={isDark ? '#121318' : '#FFFFFF'} stroke={selectedNode === 'dlq' ? '#f43f5e' : (isDark ? '#3f3f46' : '#D9D3C7')} strokeWidth={selectedNode === 'dlq' ? '3' : '1.5'} />
+              <text x="848" y="330" fill={isDark ? '#fb7185' : '#e11d48'} fontSize="13" fontWeight="bold">⚠️ Dead Letter (DLQ)</text>
+              <text x="848" y="352" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">1:1 Job Relational FK</text>
+              <text x="848" y="372" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Preserves Log Stream</text>
+              <text x="848" y="392" fill={isDark ? '#a1a1aa' : '#57534e'} fontSize="10" fontFamily="monospace">Failure Stack Traces</text>
+              <text x="848" y="412" fill={isDark ? '#fda4af' : '#be123c'} fontSize="9" fontFamily="monospace" fontWeight="bold">One-Click Replay</text>
             </g>
           </svg>
         </div>
