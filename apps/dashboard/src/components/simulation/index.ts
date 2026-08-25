@@ -1,2 +1,2 @@
-export * from '../VivaSimulationLab.js';
+export * from '../SimulationLab.js';
 export * from '../InteractiveTour.js';

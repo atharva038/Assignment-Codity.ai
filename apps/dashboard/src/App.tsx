@@ -18,7 +18,7 @@ import {
   ArchitectureView,
   AuthScreen,
   CreateJobModal,
-  VivaSimulationLab,
+  SimulationLab,
   InteractiveTour,
 } from './components/index.js';
 
@@ -32,7 +32,7 @@ function DashboardShell() {
   });
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isVivaLabOpen, setIsVivaLabOpen] = useState(false);
+  const [isSimulationLabOpen, setIsSimulationLabOpen] = useState(false);
 
   const toggleSidebarCollapse = () => {
     setIsSidebarCollapsed((prev) => {
@@ -145,7 +145,7 @@ function DashboardShell() {
         jobsCount={stats.totalJobs}
         activeWorkersCount={stats.activeWorkers}
         pendingDlqCount={stats.pendingDlq}
-        onOpenDemoLab={() => setIsVivaLabOpen(true)}
+        onOpenDemoLab={() => setIsSimulationLabOpen(true)}
         onStartTour={() => setIsTourOpen(true)}
       />
 
@@ -201,10 +201,10 @@ function DashboardShell() {
         />
       )}
 
-      {/* Viva Demo Lab Modal */}
-      <VivaSimulationLab
-        isOpen={isVivaLabOpen}
-        onClose={() => setIsVivaLabOpen(false)}
+      {/* Demo Simulation Lab Modal / Drawer */}
+      <SimulationLab
+        isOpen={isSimulationLabOpen}
+        onClose={() => setIsSimulationLabOpen(false)}
         onRefreshData={loadDashboardData}
         onNavigateToTab={(tab) => {
           setActiveTab(tab as TabType);
@@ -219,7 +219,7 @@ function DashboardShell() {
           setActiveTab(tab);
         }}
         onOpenDemoLab={() => {
-          setIsVivaLabOpen(true);
+          setIsSimulationLabOpen(true);
         }}
       />
     </div>

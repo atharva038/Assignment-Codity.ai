@@ -14,8 +14,13 @@ import {
   AlertTriangle,
   Flame,
   Radio,
-  ExternalLink,
+  Network,
+  Database,
+  ShieldCheck,
+  Activity,
+  Code2,
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext.js';
 import { TabType } from './Sidebar.js';
 
 export interface TourStep {
@@ -40,12 +45,12 @@ const TOUR_STEPS: TourStep[] = [
   {
     targetId: 'sidebar-demo-lab',
     title: 'Interactive Demo Lab',
-    badge: 'Evaluation Highlight',
+    badge: 'Live Concurrency Lab',
     description:
-      'The single best place to test all distributed systems features live! Features a built-in side-by-side drawer with 6 real-time simulation scenarios.',
+      'The central playground to test all distributed systems scenarios live! Run real-time race condition simulations, poison-pill failures, and multi-worker polling.',
     technicalHighlight:
-      'Demonstrates PostgreSQL SKIP LOCKED atomic claiming, exponential backoff to DLQ, Kahn’s algorithm DAGs, Redis sliding window rate limits, AI diagnosis, and webhooks.',
-    icon: <Flame className="w-5 h-5 text-orange-400" />,
+      'Demonstrates PostgreSQL SKIP LOCKED atomic claiming, exponential backoff to DLQ, Kahn’s DAG promotion, Redis sliding-window rate limits, and webhook ingestion.',
+    icon: <Flame className="w-5 h-5 text-orange-500" />,
     preferredPosition: 'right',
   },
   {
@@ -55,8 +60,8 @@ const TOUR_STEPS: TourStep[] = [
     description:
       'Seamlessly switch between High-Performance WebSockets and Adaptive REST Polling with real-time round-trip latency probes.',
     technicalHighlight:
-      'WebSocket state updates stream at 60fps via Redis Pub/Sub backplane. If the socket disconnects, the client gracefully falls back to adaptive polling without dropping data.',
-    icon: <Zap className="w-5 h-5 text-amber-400" />,
+      'WebSocket state updates stream at 60fps via Redis Pub/Sub backplane. If disconnected, gracefully falls back to adaptive polling without dropping data.',
+    icon: <Zap className="w-5 h-5 text-amber-500" />,
     preferredPosition: 'bottom',
   },
   {
@@ -67,7 +72,7 @@ const TOUR_STEPS: TourStep[] = [
       'Create single or batch tasks with priority levels, execution timeouts, custom JSON payloads, and idempotency keys.',
     technicalHighlight:
       'Ingests up to 100 jobs atomically per transaction. Computes SHA-256 idempotency key deduplication to guarantee strictly zero duplicate jobs.',
-    icon: <Layers className="w-5 h-5 text-blue-400" />,
+    icon: <Layers className="w-5 h-5 text-blue-500" />,
     preferredPosition: 'bottom',
   },
   {
@@ -79,7 +84,31 @@ const TOUR_STEPS: TourStep[] = [
       'Real-time metrics dashboard tracking total completed tasks, failure rates, active worker fleet heartbeats, and live throughput graphs.',
     technicalHighlight:
       'Metrics aggregate across multi-tenant organizations with tenant data isolation and sub-millisecond Redis cache snapshots.',
-    icon: <Compass className="w-5 h-5 text-orange-400" />,
+    icon: <Compass className="w-5 h-5 text-orange-500" />,
+    preferredPosition: 'right',
+  },
+  {
+    targetId: 'tab-architecture',
+    tab: 'architecture',
+    title: 'System Architecture & Concurrency Visualizer',
+    badge: 'Data Bus & Topology',
+    description:
+      'Full interactive architecture topology with animated packet flows between Ingress, API Gateway, PostgreSQL 16, Redis 7, Workers, and Schedulers.',
+    technicalHighlight:
+      'Features step-by-step concurrency simulators showing PostgreSQL SKIP LOCKED race conditions, Reaper worker crash recovery, and retry jitter curves.',
+    icon: <Network className="w-5 h-5 text-emerald-500" />,
+    preferredPosition: 'right',
+  },
+  {
+    targetId: 'tab-architecture',
+    tab: 'architecture',
+    title: 'Database ER Diagram & Schema Explorer',
+    badge: 'PostgreSQL 16 3NF',
+    description:
+      'Interactive visual entity-relationship diagram of all 14 models. Click any table node to launch the animated Argument Explorer modal with live JSON and SQL copy tools.',
+    technicalHighlight:
+      'Inspects composite B-Tree indexes, foreign key cascading deletion policies (RESTRICT, CASCADE, SET NULL), and high-concurrency invariants.',
+    icon: <Database className="w-5 h-5 text-teal-500" />,
     preferredPosition: 'right',
   },
   {
@@ -88,22 +117,22 @@ const TOUR_STEPS: TourStep[] = [
     title: 'Multi-Queue Priority & Rate Limits',
     badge: 'Queue Orchestration',
     description:
-      'Create and manage isolated priority queues with custom concurrency limits, sliding-window rate limiters, and pause/resume states.',
+      'Create and manage isolated priority queues with custom concurrency limits, sliding-window rate limiters, and pause/resume controls.',
     technicalHighlight:
       'Queue state changes broadcast instantly across all worker instances. Paused queues immediately stop worker thread claims.',
-    icon: <Cpu className="w-5 h-5 text-emerald-400" />,
+    icon: <Cpu className="w-5 h-5 text-indigo-500" />,
     preferredPosition: 'right',
   },
   {
     targetId: 'tab-jobs',
     tab: 'jobs',
-    title: 'Job Explorer & Zero-HTTP Streaming',
+    title: 'Job Explorer & Real-Time Log Streams',
     badge: 'State Machine & Logs',
     description:
-      'Inspect detailed job lifecycles, execution attempt histories, worker thread assignment, and microsecond log streams.',
+      'Inspect detailed job lifecycles, execution attempt histories, worker thread assignment, and microsecond terminal log streams.',
     technicalHighlight:
       'Table rows update live in-memory directly from WebSocket frames with zero HTTP polling spam, preserving 60fps browser UI fluidity.',
-    icon: <Search className="w-5 h-5 text-cyan-400" />,
+    icon: <Search className="w-5 h-5 text-cyan-500" />,
     preferredPosition: 'right',
   },
   {
@@ -115,7 +144,7 @@ const TOUR_STEPS: TourStep[] = [
       'Design and execute multi-stage Directed Acyclic Graph (DAG) pipelines with complex upstream/downstream parent dependencies.',
     technicalHighlight:
       'Uses Kahn’s Algorithm for topological sorting and cycle detection. Promotes child jobs from BLOCKED to QUEUED as parent dependencies resolve.',
-    icon: <GitMerge className="w-5 h-5 text-indigo-400" />,
+    icon: <GitMerge className="w-5 h-5 text-purple-500" />,
     preferredPosition: 'right',
   },
   {
@@ -127,7 +156,7 @@ const TOUR_STEPS: TourStep[] = [
       'Quarantines permanently failed jobs with full stack traces, heuristic AI root-cause diagnosis, and atomic 1-click retry replay.',
     technicalHighlight:
       'Isolates poison-pill jobs to protect worker nodes. AI diagnostic engine classifies error signatures (e.g. Gateway 503, DB deadlocks).',
-    icon: <AlertTriangle className="w-5 h-5 text-rose-400" />,
+    icon: <AlertTriangle className="w-5 h-5 text-rose-500" />,
     preferredPosition: 'right',
   },
   {
@@ -138,13 +167,16 @@ const TOUR_STEPS: TourStep[] = [
     description:
       'Visualizes 16-virtual-node consistent hashing ring, distributing queue shards evenly across multiple distributed worker clusters.',
     technicalHighlight:
-      'Uses MD5 virtual node mapping to minimize key reassignment during worker cluster scaling, guaranteeing uniform load distribution.',
-    icon: <Radio className="w-5 h-5 text-purple-400" />,
+      'Uses FNV-1a virtual node mapping to minimize key reassignment during worker cluster scaling, guaranteeing uniform load distribution.',
+    icon: <Radio className="w-5 h-5 text-amber-500" />,
     preferredPosition: 'right',
   },
 ];
 
 export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab }: InteractiveTourProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [cardPosition, setCardPosition] = useState<{ top: number; left: number }>({ top: 100, left: 100 });
@@ -165,7 +197,7 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
       // Measure exact dimensions
       const cardEl = cardRef.current;
       const actualCardWidth = cardEl ? cardEl.offsetWidth : 420;
-      const actualCardHeight = cardEl ? cardEl.offsetHeight : 360;
+      const actualCardHeight = cardEl ? cardEl.offsetHeight : 380;
       const pad = 16;
 
       let top = rect.bottom + pad;
@@ -174,14 +206,12 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
       // Position to the right of sidebar targets if space permits
       if (step.preferredPosition === 'right' && rect.right + actualCardWidth + pad < window.innerWidth) {
         left = rect.right + pad;
-        // If target is near the bottom (like Demo Lab / Product Tour), align card upwards from target bottom
         if (rect.bottom + actualCardHeight > window.innerHeight) {
           top = Math.max(pad, rect.bottom - actualCardHeight);
         } else {
           top = Math.max(pad, rect.top);
         }
       } else if (top + actualCardHeight + pad > window.innerHeight) {
-        // Place above target if bottom overflows
         top = Math.max(pad, rect.top - actualCardHeight - pad);
         left = Math.max(pad, Math.min(window.innerWidth - actualCardWidth - pad, rect.left));
       } else {
@@ -309,7 +339,7 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
       {/* 2. Glowing Neon Spotlight Ring around Target */}
       {targetRect && (
         <div
-          className="absolute rounded-2xl pointer-events-none transition-all duration-300 ring-2 ring-orange-500 shadow-[0_0_40px_rgba(249,115,22,0.4)] animate-pulse"
+          className="absolute rounded-2xl pointer-events-none transition-all duration-300 ring-2 ring-orange-500 shadow-[0_0_40px_rgba(249,115,22,0.5)] animate-pulse"
           style={{
             top: `${targetRect.top - 6}px`,
             left: `${targetRect.left - 6}px`,
@@ -319,41 +349,53 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
         />
       )}
 
-      {/* 3. Floating Guided Walkthrough Card */}
+      {/* 3. Floating Guided Walkthrough Card (High Contrast Light & Dark Themed) */}
       <div
         ref={cardRef}
-        className="absolute z-[210] w-[calc(100vw-32px)] sm:w-[420px] max-h-[calc(100vh-32px)] overflow-y-auto no-scrollbar bg-zinc-950/95 border border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-2xl transition-all duration-300 flex flex-col space-y-4"
+        className={`absolute z-[210] w-[calc(100vw-32px)] sm:w-[430px] max-h-[calc(100vh-32px)] overflow-y-auto no-scrollbar rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-2xl transition-all duration-300 flex flex-col space-y-4 border ${
+          isDark
+            ? 'bg-[#0b0c11]/95 border-zinc-800 text-zinc-100'
+            : 'bg-[#FAF8F5] border-[#D9D3C7] text-stone-900 shadow-stone-900/10'
+        }`}
         style={{
           top: `${cardPosition.top}px`,
           left: `${cardPosition.left}px`,
         }}
       >
         {/* Ambient Top Glow */}
-        <div className="absolute top-0 right-0 w-48 h-20 bg-gradient-to-b from-orange-500/20 to-transparent pointer-events-none blur-xl" />
+        <div className="absolute top-0 right-0 w-48 h-20 bg-gradient-to-b from-orange-500/15 to-transparent pointer-events-none blur-xl" />
 
         {/* Card Header: Step & Badge & Close */}
-        <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3 relative z-10">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+        <div className={`flex items-center justify-between border-b pb-3 relative z-10 ${
+          isDark ? 'border-zinc-800/80' : 'border-[#E7E2D9]'
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-xl border flex items-center justify-center ${
+              isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-[#D9D3C7] shadow-sm'
+            }`}>
               {step.icon}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-extrabold text-orange-400 uppercase tracking-wider">
+                <span className="text-[10px] font-mono font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider">
                   Step {currentStepIndex + 1} of {TOUR_STEPS.length}
                 </span>
-                <span className="px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-extrabold bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/30">
                   {step.badge}
                 </span>
               </div>
-              <h3 className="text-sm font-extrabold text-zinc-100">{step.title}</h3>
+              <h3 className="text-sm font-black text-stone-950 dark:text-zinc-100">{step.title}</h3>
             </div>
           </div>
 
           <button
             type="button"
             onClick={handleClose}
-            className="p-1.5 text-zinc-400 hover:text-white rounded-xl bg-zinc-900 border border-zinc-800 transition-colors"
+            className={`p-1.5 rounded-xl border transition-colors ${
+              isDark
+                ? 'text-zinc-400 hover:text-white bg-zinc-900 border-zinc-800'
+                : 'text-stone-600 hover:text-stone-950 bg-stone-100 border-[#D9D3C7]'
+            }`}
             title="Exit Walkthrough (Esc)"
           >
             <X className="w-4 h-4" />
@@ -362,22 +404,30 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
 
         {/* Card Body: Description & Technical Architecture Note */}
         <div className="space-y-3 relative z-10 text-xs">
-          <p className="text-zinc-300 leading-relaxed text-xs">
+          <p className={`leading-relaxed text-xs font-normal ${
+            isDark ? 'text-zinc-300' : 'text-stone-700 font-medium'
+          }`}>
             {step.description}
           </p>
 
-          <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 space-y-1">
-            <div className="text-[10px] font-mono font-bold text-orange-400 flex items-center gap-1 uppercase">
+          <div className={`p-3.5 rounded-2xl border space-y-1.5 ${
+            isDark
+              ? 'bg-orange-500/10 border-orange-500/20 text-zinc-200'
+              : 'bg-orange-50/80 border-orange-200 text-stone-900'
+          }`}>
+            <div className="text-[10px] font-mono font-black text-orange-600 dark:text-orange-400 flex items-center gap-1 uppercase tracking-wider">
               <Sparkles className="w-3 h-3" /> Core Engineering Highlight
             </div>
-            <p className="text-[11px] text-zinc-200 leading-relaxed font-mono">
+            <p className="text-[11px] leading-relaxed font-mono font-medium">
               {step.technicalHighlight}
             </p>
           </div>
         </div>
 
         {/* Progress Stepper Bar */}
-        <div className="w-full bg-zinc-900 rounded-full h-1.5 overflow-hidden">
+        <div className={`w-full rounded-full h-1.5 overflow-hidden ${
+          isDark ? 'bg-zinc-900' : 'bg-stone-200'
+        }`}>
           <div
             className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full transition-all duration-300"
             style={{ width: `${((currentStepIndex + 1) / TOUR_STEPS.length) * 100}%` }}
@@ -389,7 +439,9 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
           <button
             type="button"
             onClick={handleClose}
-            className="text-[11px] text-zinc-500 hover:text-zinc-300 font-semibold transition-colors"
+            className={`text-[11px] font-bold transition-colors ${
+              isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-stone-500 hover:text-stone-900'
+            }`}
           >
             Skip Tour
           </button>
@@ -399,7 +451,11 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-bold flex items-center gap-1 transition-all"
+                className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 transition-all ${
+                  isDark
+                    ? 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-300'
+                    : 'bg-stone-200 hover:bg-stone-300 border-stone-300 text-stone-800'
+                }`}
               >
                 <ChevronLeft className="w-3.5 h-3.5" /> Back
               </button>
@@ -412,7 +468,7 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
             >
               {currentStepIndex === TOUR_STEPS.length - 1 ? (
                 <>
-                  Start Demo Lab <Flame className="w-3.5 h-3.5" />
+                  Launch Demo Lab <Flame className="w-3.5 h-3.5" />
                 </>
               ) : (
                 <>

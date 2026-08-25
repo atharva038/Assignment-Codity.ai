@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { fetchApi } from '../services/api.js';
 
-interface VivaSimulationLabProps {
+export interface SimulationLabProps {
   isOpen: boolean;
   onClose: () => void;
   onRefreshData?: () => void;
@@ -46,7 +46,7 @@ interface LiveBatchJob {
   durationMs?: number;
 }
 
-export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateToTab }: VivaSimulationLabProps) {
+export function SimulationLab({ isOpen, onClose, onRefreshData, onNavigateToTab }: SimulationLabProps) {
   // Scenario Selection: Scenarios 1 to 6
   const [activeScenario, setActiveScenario] = useState<
     'scenario1' | 'scenario2' | 'scenario3' | 'scenario4' | 'scenario5' | 'scenario6'
@@ -795,21 +795,21 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
   const simulationContent = (
     <div className="space-y-4 overflow-y-auto no-scrollbar pr-1 flex-1">
       {/* Dual Window / Split Screen Live Tip */}
-      <div className="p-3.5 rounded-2xl bg-orange-50/90 dark:bg-gradient-to-r dark:from-orange-500/10 dark:via-amber-500/10 dark:to-transparent border border-orange-200 dark:border-orange-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
+      <div className="p-3.5 rounded-2xl bg-orange-50/90 dark:bg-zinc-900/90 border border-orange-200 dark:border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
         <div className="space-y-1">
           <div className="font-extrabold text-orange-600 dark:text-orange-400 flex items-center gap-1.5 text-xs">
             <Sparkles className="w-3.5 h-3.5" />
             Live Split-Screen Active
           </div>
-          <p className="text-[11px] text-stone-700 dark:text-zinc-300 leading-relaxed">
-            The left side of your screen is <strong>fully live and clickable</strong>! Switch to any tab to watch real-time state changes.
+          <p className="text-[11px] text-stone-700 dark:text-zinc-300 leading-relaxed font-normal">
+            The left side of your screen is <strong className="font-bold text-stone-950 dark:text-white">fully live and clickable</strong>! Switch to any tab to watch real-time state changes.
           </p>
         </div>
 
         <button
           type="button"
           onClick={handleOpenCleanTab}
-          className="px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 hover:bg-stone-100 dark:hover:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-stone-800 dark:text-zinc-200 font-bold text-[11px] flex items-center gap-1.5 shrink-0 shadow-sm transition-all active:scale-95 cursor-pointer"
+          className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 border border-stone-300 dark:border-zinc-700 text-stone-900 dark:text-zinc-100 font-bold text-[11px] flex items-center gap-1.5 shrink-0 shadow-sm transition-all active:scale-95 cursor-pointer"
           title="Open another authenticated dashboard tab"
         >
           <ExternalLink className="w-3.5 h-3.5 text-orange-500" /> New Tab
@@ -1561,7 +1561,7 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
       )}
 
       {/* Architectural Notes */}
-      <div className="p-4 rounded-2xl bg-orange-50/80 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/15 text-xs text-stone-700 dark:text-zinc-400 space-y-2 shadow-sm">
+      <div className="p-4 rounded-2xl bg-orange-50/80 dark:bg-zinc-900/90 border border-orange-200 dark:border-zinc-800 text-xs text-stone-700 dark:text-zinc-300 space-y-2 shadow-sm">
         <div className="font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1.5 text-xs">
           <ShieldCheck className="w-4 h-4" /> System Architecture & Concurrency Checklist
         </div>
@@ -1626,7 +1626,7 @@ export function VivaSimulationLab({ isOpen, onClose, onRefreshData, onNavigateTo
                   Live
                 </span>
               </div>
-              <p className="text-[11px] text-stone-500 dark:text-zinc-400">Interactive 6-Scenario Evaluation Console</p>
+              <p className="text-[11px] text-stone-500 dark:text-zinc-400">Interactive 6-Scenario Simulation Console</p>
             </div>
           </div>
 
