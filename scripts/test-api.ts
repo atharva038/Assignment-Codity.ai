@@ -273,6 +273,7 @@ async function runApiTests() {
 
   if (passedTests === totalTests) {
     console.log('🎉 ALL API INTEGRATION TESTS PASSED 100%!');
+    process.exit(0);
   } else {
     process.exit(1);
   }

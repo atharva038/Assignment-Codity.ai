@@ -46,18 +46,33 @@ async function runSchedulerTests() {
 
   try {
     // Setup Auth & Project
+    const email = `sched-tester-${Date.now()}@example.com`;
     const userRes = await fetch(`${baseUrl}/api/v1/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: `sched-tester-${Date.now()}@example.com`,
+        email,
         password: 'password123',
         name: 'Scheduler Tester',
       }),
     });
     const userData = (await userRes.json()) as any;
-    const token = userData.token;
     const projectId = userData.defaultProject.id;
+
+    // Promote test user to ADMIN so DLQ retry is authorized
+    await prisma.user.update({
+      where: { id: userData.user.id },
+      data: { role: 'ADMIN' },
+    });
+
+    // Re-login to get updated JWT token with ADMIN role
+    const loginRes = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'password123' }),
+    });
+    const loginData = (await loginRes.json()) as any;
+    const token = loginData.token;
 
     // Create test queue
     const queueRes = await fetch(`${baseUrl}/api/v1/queues`, {
@@ -239,6 +254,7 @@ async function runSchedulerTests() {
     console.error('Fatal error during scheduler test execution:', error);
   } finally {
     server.close();
+    await prisma.$disconnect();
   }
 
   console.log(`\n==================================================`);
@@ -248,6 +264,7 @@ async function runSchedulerTests() {
 
   if (passedTests === totalTests) {
     console.log('🎉 ALL SCHEDULER, CRON, REAPER & DLQ TESTS PASSED 100%!');
+    process.exit(0);
   } else {
     process.exit(1);
   }

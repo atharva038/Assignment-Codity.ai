@@ -315,6 +315,7 @@ async function runWorkerTests() {
     console.error('Fatal error during worker test execution:', error);
   } finally {
     server.close();
+    await prisma.$disconnect();
   }
 
   console.log(`\n==================================================`);
@@ -324,6 +325,7 @@ async function runWorkerTests() {
 
   if (passedTests === totalTests) {
     console.log('🎉 ALL WORKER & ATOMIC CLAIMING INTEGRATION TESTS PASSED 100%!');
+    process.exit(0);
   } else {
     process.exit(1);
   }

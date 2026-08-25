@@ -146,11 +146,17 @@ async function runRateLimitTests() {
 
 
     console.log(`\n🎉 Rate Limiting Test Suite Completed! ${passedCount}/4 Core Assertions Passed Successfully.`);
+    if (passedCount === 4) {
+      process.exit(0);
+    } else {
+      process.exit(1);
+    }
   } catch (err: any) {
     console.error('❌ Rate Limiting Test Suite Failed with Error:', err);
     process.exit(1);
   } finally {
     server.close();
+    await prisma.$disconnect();
   }
 }
 

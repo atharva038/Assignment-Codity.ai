@@ -236,6 +236,7 @@ async function runShardingTests() {
 
     if (passedCount === 4) {
       console.log('🎉 ALL QUEUE SHARDING & WORKER FLEET ISOLATION TESTS PASSED 100%!\n');
+      process.exit(0);
     } else {
       process.exit(1);
     }
