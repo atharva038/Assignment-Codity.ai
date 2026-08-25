@@ -4,7 +4,7 @@
  * ============================================================================
  * Detects crashed worker processes and recovers stuck/orphaned job leases.
  *
- * VIVA EXPLANATION:
+ * ARCHITECTURAL RATIONALE:
  * 1. Stale Worker Reaper: Workers missing heartbeats for >30s transition to `OFFLINE`.
  * 2. Orphaned Lease Recovery Reaper: Jobs stuck in `CLAIMED` or `RUNNING` whose
  *    `lockedUntil` timestamp has expired (worker crashed mid-handler execution)

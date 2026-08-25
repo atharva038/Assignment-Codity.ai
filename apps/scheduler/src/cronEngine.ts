@@ -4,7 +4,7 @@
  * ============================================================================
  * Evaluates recurring cron schedules and triggers job instance creation.
  *
- * VIVA EXPLANATION:
+ * ARCHITECTURAL RATIONALE:
  * 1. Optimistic Locking: Uses `lockToken` + `lockExpiresAt` to guarantee that
  *    when multiple scheduler replicas run in parallel, ONLY ONE replica claims
  *    and triggers a cron tick.

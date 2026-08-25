@@ -1,6 +1,6 @@
 # 🏛️ System Architecture — Distributed Job Scheduler Platform
 
-> **Evaluation Deliverable — System Architecture (20 Marks)**  
+> **System Architecture Specification & Concurrency Model**  
 > A comprehensive, production-grade architectural specification of the Distributed Job Scheduler & Execution Engine, detailing topological structure, atomic concurrency mechanisms, failure recovery loops, DAG workflow pipelines, and data flow semantics.
 
 ---
@@ -169,7 +169,7 @@ Assignment-Codity.ai/
 │   ├── redis/        # Redis 7 Client Wrapper, Pub/Sub & Heartbeat Subscriptions
 │   ├── shared/       # Shared Types, Zod Schemas & Jittered Retry Math
 │   └── logger/       # Structured Pino Logger with ISO Microsecond Timestamps
-└── docs/             # Evaluation Deliverables & Technical Viva Guides
+└── docs/             # System Architecture & Technical Specifications
 ```
 
 ### Component Responsibility Matrix
@@ -664,15 +664,15 @@ For detailed WebSocket protocol specs, payload schemas, and client reconnection 
 
 ---
 
-## 🏁 Summary of Architecture Deliverable Scorecard
+## 🏁 Summary of Architecture System Scorecard
 
-| Evaluation Dimension | Coverage in This Architecture Specification | Viva Defense Readiness |
+| Architectural Dimension | Coverage in This Architecture Specification | Production Verification & Integrity |
 | :--- | :--- | :---: |
-| **High-Level Topology** | Master System Block Diagram (Unicode & ASCII) detailing Ingress, API, PostgreSQL, Redis, Worker Fleet, and Scheduler. | **100%** |
-| **Concurrency & Claiming** | Full Sequence Diagram of PostgreSQL 16 `FOR UPDATE SKIP LOCKED` with transaction boundary analysis. | **100%** |
-| **Fault Tolerance & Recovery** | Crash Recovery Reaper sequence diagram, Lease duration calculations, and orphaned job reclamation proofs. | **100%** |
-| **Advanced Orchestration** | DAG Workflow resolution diagrams, Topological execution, and FNV-1a Consistent Hashing queue sharding. | **100%** |
-| **Mathematical Rigor** | Exponential Backoff equations with $\pm 10\%$ Jitter distributions and Sliding Window Rate Limiting algorithms. | **100%** |
-| **Security & Multi-Tenancy** | Hierarchical tenant boundary diagrams, JWT authentication flows, and RBAC matrix. | **100%** |
+| **High-Level Topology** | Master System Block Diagram (Unicode & ASCII) detailing Ingress, API, PostgreSQL, Redis, Worker Fleet, and Scheduler. | **Complete** |
+| **Concurrency & Claiming** | Full Sequence Diagram of PostgreSQL 16 `FOR UPDATE SKIP LOCKED` with transaction boundary analysis. | **Complete** |
+| **Fault Tolerance & Recovery** | Crash Recovery Reaper sequence diagram, Lease duration calculations, and orphaned job reclamation proofs. | **Complete** |
+| **Advanced Orchestration** | DAG Workflow resolution diagrams, Topological execution, and FNV-1a Consistent Hashing queue sharding. | **Complete** |
+| **Mathematical Rigor** | Exponential Backoff equations with $\pm 10\%$ Jitter distributions and Sliding Window Rate Limiting algorithms. | **Complete** |
+| **Security & Multi-Tenancy** | Hierarchical tenant boundary diagrams, JWT authentication flows, and RBAC matrix. | **Complete** |
 
 

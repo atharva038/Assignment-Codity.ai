@@ -5,7 +5,7 @@
  * Implements high-concurrency atomic job claiming using PostgreSQL's native
  * `SELECT ... FOR UPDATE SKIP LOCKED` row locking mechanism inside a transaction.
  *
- * VIVA EXPLANATION:
+ * ARCHITECTURAL RATIONALE:
  * 1. `FOR UPDATE` locks candidate job rows for the duration of the transaction.
  * 2. `SKIP LOCKED` causes concurrent worker transactions to immediately skip
  *    already-locked rows without blocking or waiting.

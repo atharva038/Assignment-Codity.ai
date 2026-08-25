@@ -6,7 +6,7 @@
 // Includes comprehensive indexing for status filtering, queue queues, worker heartbeats,
 // execution logs, scheduled cron jobs, and dead-letter queue (DLQ).
 //
-// KEY DESIGN DECISIONS (viva-ready):
+// KEY ARCHITECTURAL DESIGN DECISIONS:
 //   1. Job.availableAt replaces "scheduledAt" — clearer intent: the timestamp
 //      after which a worker is allowed to pick up the job (not when it was
 //      scheduled by the user). Worker claim query: `WHERE availableAt <= NOW()`.
@@ -388,7 +388,7 @@ model WorkerHeartbeat {
 // ----------------------------------------------------------------------------
 // Recurring Cron Scheduler
 // ----------------------------------------------------------------------------
-// ATOMIC SCHEDULING DESIGN (viva-ready):
+// ATOMIC SCHEDULING DESIGN:
 //   When multiple scheduler replicas run in parallel, they all evaluate
 //   `WHERE enabled = true AND nextRunAt <= NOW()` at the same interval.
 //   Without a lock, two replicas could both create a job for the same cron tick.
@@ -433,7 +433,7 @@ model ScheduledJob {
 // ----------------------------------------------------------------------------
 // Dead Letter Queue (DLQ)
 // ----------------------------------------------------------------------------
-// DESIGN DECISION (viva-ready):
+// ARCHITECTURAL DESIGN:
 //   The original Job row is KEPT with status = DEAD.  DeadLetterJob stores a
 //   FK back to it (`originalJobId → Job.id`) rather than copying all the
 //   payload / metadata.  This means:

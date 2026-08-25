@@ -3,7 +3,7 @@
  * Shared Enums & Constants — Distributed Job Scheduler
  * ============================================================================
  * These enums represent the authoritative states and categories across the system.
- * Documented in detail to explain the state machine transitions for assignment viva.
+ * Documented in detail to explain the high-concurrency state machine transitions.
  */
 
 /**

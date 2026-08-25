@@ -1,6 +1,6 @@
 # Major Design Decisions & Engineering Trade-Offs
 
-This document details the core architectural rationale and trade-offs made during the design and implementation of the Distributed Job Scheduler, specifically formatted for viva defense and evaluation.
+This document details the core architectural rationale and trade-offs made during the design and implementation of the Distributed Job Scheduler platform.
 
 ---
 

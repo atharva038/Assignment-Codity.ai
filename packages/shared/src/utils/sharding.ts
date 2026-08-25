@@ -5,7 +5,7 @@
  * Implements deterministic partition routing and consistent hashing for
  * distributing jobs across partitioned queues and dedicated worker fleets.
  *
- * VIVA EXPLANATION:
+ * ARCHITECTURAL RATIONALE:
  * 1. FNV-1a Hashing: Computes a fast, uniform 32-bit integer hash from any
  *    shard key (e.g. `userId`, `tenantId`, `customerId`, or `orderId`).
  * 2. Deterministic Routing: Ensures all jobs associated with the same key

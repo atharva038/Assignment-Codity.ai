@@ -164,7 +164,7 @@ jobsRouter.post('/batch', validate(batchCreateJobSchema), async (req: Request, r
  * POST /api/v1/jobs/sharded
  * Ingests a job with deterministic consistent hash partition routing across queue shards.
  *
- * VIVA EXPLANATION:
+ * ARCHITECTURAL RATIONALE:
  * 1. Takes a `shardKey` (e.g. tenantId, userId, customerId) and `shardQueueIds`.
  * 2. Deterministically hashes the shard key to select target queue shard:
  *    shardIndex = fnv1aHash(shardKey) % shardQueueIds.length

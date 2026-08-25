@@ -40,7 +40,7 @@ Assignment-Codity.ai/
 ├── docs/
 │   ├── ARCHITECTURE.md            # System Architecture, Mermaid diagrams & data flows
 │   ├── DATABASE_DESIGN.md         # Schema specification, ER diagram & index rationale
-│   ├── DESIGN_DECISIONS.md        # In-depth viva defense & engineering trade-offs
+│   ├── DESIGN_DECISIONS.md        # In-depth architectural rationale & engineering trade-offs
 │   ├── API_DOCUMENTATION.md       # REST API reference specification & schemas
 │   └── WEBSOCKET_IMPLEMENTATION.md # WebSocket protocol & live monitoring guide
 ├── scripts/                       # 11 Automated E2E & Concurrency Test Suites
@@ -140,13 +140,13 @@ Access the visual browser UI at **`http://localhost:5555`**.
 
 ---
 
-## 📖 Evaluation Deliverables & Documentation (5 / 5 Marks)
+## 📖 System Architecture & Technical Documentation
 
-For detailed technical evaluation, viva defense, and architectural deep-dives, consult the comprehensive documentation suite in [`docs/`](docs/):
+For detailed technical analysis, architectural deep-dives, and implementation proofs, consult the comprehensive documentation suite in [`docs/`](docs/):
 
 1. 🏛️ **[System Architecture](docs/ARCHITECTURE.md)** — High-level architecture, component specifications, state transition diagrams, and event flowcharts.
 2. 🗄️ **[Database Design](docs/DATABASE_DESIGN.md)** — Mermaid ER Diagram, table schemas, foreign key cascade rules, normalization decisions, and B-Tree indexing strategy.
-3. 💡 **[Design Decisions & Trade-Offs](docs/DESIGN_DECISIONS.md)** — Comprehensive viva defense covering `FOR UPDATE SKIP LOCKED`, optimistic cron locks, rate limiting sliding window algorithms, and DLQ audit preservation.
+3. 💡 **[Design Decisions & Trade-Offs](docs/DESIGN_DECISIONS.md)** — Comprehensive engineering rationale covering `FOR UPDATE SKIP LOCKED`, optimistic cron locks, rate limiting sliding window algorithms, and DLQ audit preservation.
 4. 🔌 **[API Documentation](docs/API_DOCUMENTATION.md)** — Complete REST API specification reference with sample request/response payloads, rate limit headers, and error schemas.
 5. ⚡ **[WebSocket Implementation](docs/WEBSOCKET_IMPLEMENTATION.md)** — Detailed specification of real-time bidirectional telemetry streaming and HTTP polling dual-mode fallbacks.
 
