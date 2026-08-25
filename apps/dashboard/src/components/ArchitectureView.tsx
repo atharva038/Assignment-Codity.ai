@@ -1052,38 +1052,40 @@ await prisma.job.update({
 
       {/* ENGINEERING TRADE-OFFS MATRIX */}
       {(activeSection === 'all' || activeSection === 'tradeoffs') && (
-      <div className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 shadow-xl p-6 sm:p-8 space-y-6">
+      <div className={`rounded-3xl border shadow-xl p-6 sm:p-8 space-y-6 ${
+        isDark ? 'bg-[#0f1016] border-zinc-800' : 'bg-white border-stone-200'
+      }`}>
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="w-5 h-5 text-emerald-500" />
           <h2 className="text-base font-bold text-stone-900 dark:text-zinc-100">Engineering Trade-Offs & Architecture Matrix</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div className="p-4 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-850/50 space-y-1.5">
-            <h4 className="font-bold text-stone-900 dark:text-zinc-100">Why PostgreSQL SKIP LOCKED over Redis Redlock?</h4>
-            <p className="text-stone-600 dark:text-zinc-400 leading-relaxed">
-              Redlock requires multiple independent Redis master nodes and relies on clock synchronicity (vulnerable to NTP drift and network partitions). PostgreSQL <code className="text-orange-500 font-mono">SKIP LOCKED</code> provides strict ACID consistency directly inside the database with zero external lock manager overhead.
+          <div className="p-5 rounded-2xl border border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/90 space-y-2">
+            <h4 className="font-bold text-stone-900 dark:text-zinc-100 text-sm">Why PostgreSQL SKIP LOCKED over Redis Redlock?</h4>
+            <p className="text-stone-600 dark:text-zinc-300 leading-relaxed font-normal">
+              Redlock requires multiple independent Redis master nodes and relies on clock synchronicity (vulnerable to NTP drift and network partitions). PostgreSQL <code className="text-orange-600 dark:text-orange-400 font-mono font-bold bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">SKIP LOCKED</code> provides strict ACID consistency directly inside the database with zero external lock manager overhead.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-850/50 space-y-1.5">
-            <h4 className="font-bold text-stone-900 dark:text-zinc-100">Why availableAt over scheduledAt?</h4>
-            <p className="text-stone-600 dark:text-zinc-400 leading-relaxed">
-              <code className="text-orange-500 font-mono">availableAt</code> represents a unified timeline query: immediate jobs (<code className="font-mono">availableAt &lt;= NOW()</code>), delayed jobs, and retrying jobs with backoff all share the exact same indexed query criteria (<code className="font-mono">WHERE availableAt &lt;= NOW()</code>).
+          <div className="p-5 rounded-2xl border border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/90 space-y-2">
+            <h4 className="font-bold text-stone-900 dark:text-zinc-100 text-sm">Why availableAt over scheduledAt?</h4>
+            <p className="text-stone-600 dark:text-zinc-300 leading-relaxed font-normal">
+              <code className="text-orange-600 dark:text-orange-400 font-mono font-bold bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">availableAt</code> represents a unified timeline query: immediate jobs (<code className="font-mono text-stone-800 dark:text-zinc-200">availableAt &lt;= NOW()</code>), delayed jobs, and retrying jobs with backoff all share the exact same indexed query criteria (<code className="font-mono text-stone-800 dark:text-zinc-200">WHERE availableAt &lt;= NOW()</code>).
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-850/50 space-y-1.5">
-            <h4 className="font-bold text-stone-900 dark:text-zinc-100">How is Split-Brain prevented in multi-replica Schedulers?</h4>
-            <p className="text-stone-600 dark:text-zinc-400 leading-relaxed">
-              Optimistic concurrency locking: Each scheduler attempts an atomic SQL <code className="text-orange-500 font-mono">UPDATE WHERE lockToken IS NULL OR lockExpiresAt &lt; NOW()</code>. Only the replica that receives <code className="font-mono">rows affected = 1</code> is allowed to evaluate and spawn jobs.
+          <div className="p-5 rounded-2xl border border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/90 space-y-2">
+            <h4 className="font-bold text-stone-900 dark:text-zinc-100 text-sm">How is Split-Brain prevented in multi-replica Schedulers?</h4>
+            <p className="text-stone-600 dark:text-zinc-300 leading-relaxed font-normal">
+              Optimistic concurrency locking: Each scheduler attempts an atomic SQL <code className="text-orange-600 dark:text-orange-400 font-mono font-bold bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">UPDATE WHERE lockToken IS NULL OR lockExpiresAt &lt; NOW()</code>. Only the replica that receives <code className="font-mono text-stone-800 dark:text-zinc-200">rows affected = 1</code> is allowed to evaluate and spawn jobs.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-850/50 space-y-1.5">
-            <h4 className="font-bold text-stone-900 dark:text-zinc-100">How does the Dead Letter Queue maintain audit integrity?</h4>
-            <p className="text-stone-600 dark:text-zinc-400 leading-relaxed">
-              Instead of deleting or moving rows to a separate database, <code className="text-orange-500 font-mono">DeadLetterJob</code> maintains a 1:1 foreign key relation to the original <code className="font-mono">Job.id</code>, preserving all historical execution logs, attempt metrics, and stack traces.
+          <div className="p-5 rounded-2xl border border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/90 space-y-2">
+            <h4 className="font-bold text-stone-900 dark:text-zinc-100 text-sm">How does the Dead Letter Queue maintain audit integrity?</h4>
+            <p className="text-stone-600 dark:text-zinc-300 leading-relaxed font-normal">
+              Instead of deleting or moving rows to a separate database, <code className="text-orange-600 dark:text-orange-400 font-mono font-bold bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">DeadLetterJob</code> maintains a 1:1 foreign key relation to the original <code className="font-mono text-stone-800 dark:text-zinc-200">Job.id</code>, preserving all historical execution logs, attempt metrics, and stack traces.
             </p>
           </div>
         </div>
