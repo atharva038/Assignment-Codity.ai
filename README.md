@@ -31,15 +31,16 @@ Assignment-Codity.ai/
 │   ├── api/          # Express REST API & WebSocket Gateway (Port 3000)
 │   ├── worker/       # Atomic Polling Worker Node Daemon (FOR UPDATE SKIP LOCKED)
 │   ├── scheduler/    # Cron Engine, Delayed Promoter & Crash Recovery Reaper
-│   └── dashboard/    # Next.js / React + Vite Real-Time Dashboard (Port 5173)
+│   └── dashboard/    # React 18 + Vite Real-Time Dashboard (Port 5173)
 ├── packages/
 │   ├── database/     # Prisma ORM Schema & PostgreSQL 16 Client
+│   ├── redis/        # Redis 7 Client Wrapper, Pub/Sub & Heartbeat Subscriptions
 │   ├── shared/       # Shared Types, Zod Schemas & Retry Algorithms
 │   └── logger/       # Structured Pino Logger Library
 ├── docs/
 │   ├── ARCHITECTURE.md            # System Architecture, Mermaid diagrams & data flows
 │   ├── DATABASE_DESIGN.md         # Schema specification, ER diagram & index rationale
-│   ├── DESIGN_DECISIONS.md       # In-depth viva defense & engineering trade-offs
+│   ├── DESIGN_DECISIONS.md        # In-depth viva defense & engineering trade-offs
 │   ├── API_DOCUMENTATION.md       # REST API reference specification & schemas
 │   └── WEBSOCKET_IMPLEMENTATION.md # WebSocket protocol & live monitoring guide
 ├── scripts/                       # 11 Automated E2E & Concurrency Test Suites
@@ -53,7 +54,8 @@ Assignment-Codity.ai/
 │   ├── test-workflows.ts          # DAG workflow & dependency resolution tests (12 tests)
 │   ├── test-event-driven.ts       # Webhook HMAC verification & event routing tests (28 tests)
 │   ├── test-rbac.ts               # Role-Based Access Control permission gates (10 tests)
-│   └── test-ai-summary.ts         # AI failure diagnostics & root-cause analysis (1 test)
+│   ├── test-ai-summary.ts         # AI failure diagnostics & root-cause analysis (1 test)
+│   └── monitor-redis.ts           # Live Redis telemetry stream inspector
 ├── docker-compose.yml             # PostgreSQL 16, Redis 7 & Adminer stack
 └── package.json                   # Root npm workspace orchestrator
 ```
@@ -77,12 +79,14 @@ docker compose up -d
 - **Redis 7**: `localhost:6379`
 - **Adminer DB GUI**: `http://localhost:8080`
 
-### 3. Install Dependencies & Seed Database
+### 3. Environment & Database Initialization
 ```bash
+cp .env.example .env
 npm install
 npm run db:push
 npm run db:seed
 ```
+*Default Seeded User:* `admin@codity.ai` (Admin Role) | Org: `codity-corp` | Project: `main-platform`
 
 ### 4. Launch Development Services
 Run the following services in separate terminal tabs:
