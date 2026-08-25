@@ -131,7 +131,7 @@ export function AuthScreen({
           <div className={`p-4 rounded-2xl border ${isDark ? 'bg-zinc-950/80 border-zinc-800' : 'bg-white border-[#E7E2D9]'} shadow-xl space-y-3`}>
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-orange-500 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> 1-Click Demo Personas (Viva & Evaluation)
+                <Sparkles className="w-3.5 h-3.5" /> 1-Click Demo Personas (Instant Access)
               </span>
               <span className={`text-[10px] font-mono ${isDark ? 'text-zinc-500' : 'text-stone-400'}`}>Instant Setup</span>
             </div>

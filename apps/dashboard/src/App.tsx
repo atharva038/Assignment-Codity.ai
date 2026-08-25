@@ -15,6 +15,7 @@ import {
   ShardingView,
   EventsView,
   UsersView,
+  ArchitectureView,
   AuthScreen,
   CreateJobModal,
   VivaSimulationLab,
@@ -51,7 +52,7 @@ function DashboardShell() {
 
   const [activeTab, setActiveTabState] = useState<TabType>(() => {
     const hash = window.location.hash.replace('#', '');
-    const validTabs: TabType[] = ['overview', 'queues', 'jobs', 'workflows', 'events', 'sharding', 'workers', 'dlq', 'users'];
+    const validTabs: TabType[] = ['overview', 'architecture', 'queues', 'jobs', 'workflows', 'events', 'sharding', 'workers', 'dlq', 'users'];
     if (validTabs.includes(hash as TabType)) {
       return hash as TabType;
     }
@@ -72,7 +73,7 @@ function DashboardShell() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      const validTabs: TabType[] = ['overview', 'queues', 'jobs', 'workflows', 'events', 'sharding', 'workers', 'dlq', 'users'];
+      const validTabs: TabType[] = ['overview', 'architecture', 'queues', 'jobs', 'workflows', 'events', 'sharding', 'workers', 'dlq', 'users'];
       if (validTabs.includes(hash as TabType)) {
         setActiveTabState(hash as TabType);
         localStorage.setItem('dashboard_active_tab', hash);
@@ -166,6 +167,7 @@ function DashboardShell() {
         {/* Active Tab View */}
         <main className="flex-1 p-4 sm:p-8 w-full max-w-7xl mx-auto">
           {activeTab === 'overview' && <Overview stats={stats} throughputData={throughputData} transportMode={transportMode} />}
+          {activeTab === 'architecture' && <ArchitectureView onRefresh={loadDashboardData} />}
           {activeTab === 'queues' && <QueuesView queues={queues} onRefresh={loadDashboardData} />}
           {activeTab === 'jobs' && <JobsView jobs={[]} onRefresh={loadDashboardData} lastUpdatedTs={lastUpdatedTs} lastWsEvent={lastWsEvent} />}
           {activeTab === 'workflows' && <WorkflowsView onRefresh={loadDashboardData} lastUpdatedTs={lastUpdatedTs} />}

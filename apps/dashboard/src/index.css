@@ -218,3 +218,28 @@ body.dark,
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(249, 115, 22, 0.8);
 }
+
+/* SVG Animated Pipelines */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.animate-dash {
+  animation: dash 1s linear infinite;
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 8s linear infinite;
+}
+

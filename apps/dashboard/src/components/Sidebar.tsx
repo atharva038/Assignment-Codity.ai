@@ -13,11 +13,13 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  Network,
 } from 'lucide-react';
 import { UserMenu } from './UserMenu.js';
 
 export type TabType =
   | 'overview'
+  | 'architecture'
   | 'queues'
   | 'jobs'
   | 'workflows'
@@ -60,6 +62,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navItems = [
     { id: 'overview' as TabType, label: 'Overview & Metrics', icon: LayoutDashboard },
+    {
+      id: 'architecture' as TabType,
+      label: 'System Architecture',
+      icon: Network,
+      badge: 'SPEC',
+      badgeColor: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+    },
     { id: 'queues' as TabType, label: 'Queues & Controls', icon: Layers, count: queuesCount },
     { id: 'jobs' as TabType, label: 'Job Explorer', icon: ListFilter, count: jobsCount },
     {

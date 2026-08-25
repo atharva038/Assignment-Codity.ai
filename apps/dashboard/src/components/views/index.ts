@@ -8,3 +8,5 @@ export * from '../EventsView.js';
 export * from '../ShardingView.js';
 export * from '../UsersView.js';
 export * from '../RateLimitStats.js';
+export * from '../ArchitectureView.js';
+

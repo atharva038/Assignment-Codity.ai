@@ -368,7 +368,7 @@ export function InteractiveTour({ isOpen, onClose, onNavigateTab, onOpenDemoLab 
 
           <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 space-y-1">
             <div className="text-[10px] font-mono font-bold text-orange-400 flex items-center gap-1 uppercase">
-              <Sparkles className="w-3 h-3" /> Architecture & Viva Talking Point
+              <Sparkles className="w-3 h-3" /> Core Engineering Highlight
             </div>
             <p className="text-[11px] text-zinc-200 leading-relaxed font-mono">
               {step.technicalHighlight}

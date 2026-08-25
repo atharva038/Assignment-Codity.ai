@@ -20,6 +20,7 @@ interface HeaderProps {
 
 const TAB_TITLES: Record<TabType, string> = {
   overview: 'Overview & Metrics',
+  architecture: 'System Architecture & Live Visualizer',
   queues: 'Queues & Controls',
   jobs: 'Job Explorer',
   workflows: 'Workflows & DAGs',
