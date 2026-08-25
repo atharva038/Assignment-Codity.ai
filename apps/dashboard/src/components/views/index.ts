@@ -9,4 +9,7 @@ export * from '../ShardingView.js';
 export * from '../UsersView.js';
 export * from '../RateLimitStats.js';
 export * from '../ArchitectureView.js';
+export * from '../JobStateMachineGraph.js';
+export * from '../DagWorkflowGraph.js';
+export * from '../DatabaseErDiagram.js';
 

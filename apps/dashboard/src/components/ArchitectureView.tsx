@@ -33,12 +33,14 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext.js';
 import { DatabaseErDiagram } from './DatabaseErDiagram.js';
+import { JobStateMachineGraph } from './JobStateMachineGraph.js';
+import { DagWorkflowGraph } from './DagWorkflowGraph.js';
 
 export interface ArchitectureViewProps {
   onRefresh?: () => void;
 }
 
-type SectionViewType = 'all' | 'topology' | 'er_diagram' | 'simulators' | 'tradeoffs';
+type SectionViewType = 'all' | 'topology' | 'er_diagram' | 'state_machine' | 'dag_engine' | 'simulators' | 'tradeoffs';
 type ScenarioType = 'skip_locked' | 'crash_reaper' | 'cron_lock' | 'retry_jitter' | 'dag_workflow' | 'sharding';
 type ActiveNodeKey = 'ingress' | 'api' | 'postgres' | 'redis' | 'workers' | 'scheduler' | 'dlq';
 
@@ -346,9 +348,11 @@ await prisma.job.update({
         {[
           { id: 'all', label: 'All Architecture Sections', icon: Layers },
           { id: 'topology', label: '1. Master System Topology', icon: Network },
-          { id: 'er_diagram', label: '2. Relational Database ER Diagram', icon: Database },
-          { id: 'simulators', label: '3. Concurrency Simulators', icon: Activity },
-          { id: 'tradeoffs', label: '4. Trade-Offs & Rationale', icon: ShieldCheck },
+          { id: 'er_diagram', label: '2. Database ER Schema', icon: Database },
+          { id: 'state_machine', label: '3. Job State Machine', icon: GitMerge },
+          { id: 'dag_engine', label: '4. DAG Workflow Engine', icon: Workflow },
+          { id: 'simulators', label: '5. Concurrency Simulators', icon: Activity },
+          { id: 'tradeoffs', label: '6. Trade-Offs & Rationale', icon: ShieldCheck },
         ].map((sec) => {
           const Icon = sec.icon;
           const isActive = activeSection === sec.id;
@@ -665,6 +669,16 @@ await prisma.job.update({
       {/* RELATIONAL DATABASE ER DIAGRAM (POSTGRESQL 16) */}
       {(activeSection === 'all' || activeSection === 'er_diagram') && (
         <DatabaseErDiagram />
+      )}
+
+      {/* JOB LIFECYCLE STATE MACHINE */}
+      {(activeSection === 'all' || activeSection === 'state_machine') && (
+        <JobStateMachineGraph />
+      )}
+
+      {/* DAG TOPOLOGICAL WORKFLOW ENGINE */}
+      {(activeSection === 'all' || activeSection === 'dag_engine') && (
+        <DagWorkflowGraph />
       )}
 
       {/* INTERACTIVE SCENARIO SIMULATION LAB */}
