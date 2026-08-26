@@ -79,17 +79,57 @@ docker compose up -d
 - **Redis 7**: `localhost:6379`
 - **Adminer DB GUI**: `http://localhost:8080`
 
-### 3. Environment & Database Initialization
+### 3. Environment Configuration (`.env`)
+Copy the provided `.env.example` to create your local `.env` file:
 ```bash
 cp .env.example .env
+```
+
+#### Environment Variables Reference
+
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/jobs_db?schema=public` | PostgreSQL 16 connection string for Prisma ORM |
+| `REDIS_HOST` | `localhost` | Redis 7 host for caching, rate limiting, and pub/sub |
+| `REDIS_PORT` | `6379` | Redis 7 port |
+| `REDIS_PASSWORD` | `""` | Redis authentication password (empty for local dev) |
+| `PORT` | `3000` | Port for Express REST API & WebSocket server |
+| `NODE_ENV` | `development` | Node environment (`development` / `production` / `test`) |
+| `JWT_SECRET` | `super-secret-assignment-jwt-key-2026` | Secret key used to sign and verify multi-tenant JWTs |
+| `WORKER_CONCURRENCY` | `5` | Maximum number of concurrent jobs processed per worker node |
+| `WORKER_POLL_INTERVAL_MS` | `1000` | Polling frequency for workers to query Postgres for `QUEUED` jobs |
+| `WORKER_HEARTBEAT_INTERVAL_MS` | `5000` | Frequency at which worker nodes publish liveness heartbeats |
+| `SCHEDULER_CHECK_INTERVAL_MS` | `5000` | Frequency for cron evaluations & promoting delayed jobs |
+| `STALE_WORKER_TIMEOUT_MS` | `30000` | Threshold after which dead worker leases are reclaimed by the Reaper |
+| `OPENAI_API_KEY` | `""` | *(Optional)* OpenAI API key for AI-driven job failure diagnostics |
+| `GEMINI_API_KEY` | `""` | *(Optional)* Google Gemini API key for failure root-cause analysis |
+
+> [!NOTE]
+> If no OpenAI or Gemini API key is provided, the platform automatically falls back to an internal **Deterministic Heuristic Diagnostic Engine** with zero downtime or missing functionality.
+
+### 4. Database Initialization & Seeding
+```bash
 npm install
 npm run db:push
 npm run db:seed
 ```
-*Default Seeded User:* `admin@codity.ai` (Admin Role) | Org: `codity-corp` | Project: `main-platform`
+*Default Seeded User Credentials:*
+- **Email:** `admin@codity.ai`
+- **Role:** `ADMIN`
+- **Organization:** `codity-corp` (slug: `codity-corp`)
+- **Project:** `main-platform` (slug: `main-platform`)
 
-### 4. Launch Development Services
-Run the following services in separate terminal tabs:
+---
+
+### 5. Launch Development Services
+Run the following services in separate terminal tabs (or use the monorepo root commands):
+
+| Service | Command | URL / Port | Purpose |
+| :--- | :--- | :--- | :--- |
+| **REST API + WebSocket** | `npm run dev:api` | `http://localhost:3000` | Express REST API & Real-Time Telemetry Gateway |
+| **Worker Node** | `npm run dev:worker` | Background Process | `FOR UPDATE SKIP LOCKED` atomic job claimer |
+| **Scheduler & Reaper** | `npm run dev:scheduler` | Background Process | 5-field Cron parser & Crash recovery daemon |
+| **Web Dashboard** | `npm run dev:dashboard` | `http://localhost:5173` | React 18 + Vite Real-time Web UI |
 
 ```bash
 # Terminal 1: Express REST API Server (http://localhost:3000)
